@@ -1,0 +1,3 @@
+module GigaSOM
+
+end # module
