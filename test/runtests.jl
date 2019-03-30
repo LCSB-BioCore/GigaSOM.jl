@@ -1,4 +1,5 @@
 using GigaSOM
-using Test
+using Compat
+using Compat.Test
 
-@test hello("Julia") == "Hello, Julia"
+@test 2*3 == 6
