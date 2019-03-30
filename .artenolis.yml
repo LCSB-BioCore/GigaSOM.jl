@@ -12,10 +12,10 @@ script:
     - cd $CURRENT_DIR
 
     # rename the cloned folder
-    - cd .. && cp -r $NODE_LABELS GigaSOM && cd GigaSOM
+    #- cd .. && cp -r $NODE_LABELS GigaSOM && cd GigaSOM
 
     # launch the tests
     - bash .artenolis/runtests.sh
 
     # clean up the build directory
-    - cd .. && rm -rf GigaSOM
+    #- cd .. && rm -rf GigaSOM
