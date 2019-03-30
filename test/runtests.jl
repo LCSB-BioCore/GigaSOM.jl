@@ -1,4 +1,4 @@
 using GigaSOM
 using Test
 
-@test 2*3 == 6
+@test hello("Julia") == "Hello, Julia"
