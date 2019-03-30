@@ -4,7 +4,7 @@ echo "JULIA_VER = $JULIA_VER"
 
 # launch the test script
 if [ "$ARCH" == "Linux" ]; then
-    $ARTENOLIS_SOFT_PATH/julia/$JULIA_VER/bin/julia --color=yes -e 'using Pkg; Pkg.add(pwd());'
+    $ARTENOLIS_SOFT_PATH/julia/$JULIA_VER/bin/julia --color=yes -e 'import Pkg; Pkg.add(pwd()); Pkg.rm("GigaSOM");'
 fi
 
 CODE=$?
