@@ -23,4 +23,4 @@ script:
     - cd .. && rm -rf GigaSOM
 
 after_success:
-    - if [ "$ARCH" == "Linux" ]; then $ARTENOLIS_SOFT_PATH/julia/$JULIA_VER/bin/julia --color=yes -e 'import Pkg; cd(Pkg.dir("GigaSOM")); using Coverage; tmp=process_folder(); Codecov.submit(tmp, verbose=false); Coveralls.submit(tmp);'; fi
+    - if [ "$ARCH" == "Linux" ]; then $ARTENOLIS_SOFT_PATH/julia/$JULIA_VER/bin/julia --color=yes -e 'import Pkg; import GigaSOM; cd(joinpath(dirname(pathof(GigaSOM)), "..")); using Coverage; tmp=process_folder(); Codecov.submit(tmp, verbose=false); Coveralls.submit(tmp);'; fi
