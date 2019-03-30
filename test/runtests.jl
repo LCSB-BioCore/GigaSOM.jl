@@ -1,5 +1,4 @@
 using GigaSOM
-using Compat
-using Compat.Test
+using test
 
 @test 2*3 == 6
