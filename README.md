@@ -1,6 +1,6 @@
 ![GigaSOM.jl](https://prince.lcsb.uni.lu/GigaSOM.jl/img/logo-GigaSOM.jl.png?maxAge=0)
 
-GigaSOM.jl - Huge-scale, high-performance flow cytometry clustering
+GigaSOM.jl <br> Huge-scale, high-performance flow cytometry clustering
 ===================================================================
 
 | **Coverage** | **[ARTENOLIS](http://opencobra.github.io/artenolis)** |
