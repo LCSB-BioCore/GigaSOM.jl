@@ -11,16 +11,17 @@ extend this in the original package
 
 using FileIO
 Pkg.add("FCSFiles")
-Pkg.add("XLSX")
+# Pkg.add("XLSX")
 Pkg.add("DataFrames")
 Pkg.add("CSV")
 
 cd("/home/ohunewald/work/GigaSOM_data/test_data")
 
 # import XLSX
-using XLSX, DataFrames
+using DataFrames
 using CSV
 
+"reads in FCS files from metada list and retuns a flowset"
 function readflowset(f_names)
     flowFrame = Dict()
     # read all FCS files into flowFrame
@@ -41,6 +42,23 @@ function readflowset(f_names)
     return flowFrame
 end
 
+# TODO: implement function
+"applies a function to all data sets in this frame"
+function fsApply(args)
+    body
+end
+
+# TODO: implement transformation on complete dataset
+"data transformation, currently only asinh"
+function transform_ff(flowset; method = "asinh")
+
+    # asinh()
+
+end
+
+####################################################
+# this is part of the original workflow in R
+####################################################
 # materialize a csv file as a DataFrame
 md = CSV.File("metadata.xlsx") |> DataFrame
 print(md)
@@ -54,25 +72,37 @@ lineage_markers = panel.Antigen[panel.Lineage .== 1, : ]
 # remove critical characters
 lineage_markers = [replace(i, "-"=>"_") for i in lineage_markers]
 
-# load the first fcs file in the metadata list
-flowrun = load(md.file_name[1])
-flowrun.params
-
-# flowrun.data[("164Dy_CD15_SSEA_1_", "174Yb_CD4")]
-get(flowrun.data, "164Dy_CD15_SSEA_1_",5)
-
-fcs = readflowset(md.file_name)
-# remove critical characters in keys from flowrun
-
-
-# from R:
-# # Replace problematic characters
-# panel_fcs$desc <- gsub("-", "_", panel_fcs$desc)
-# =#
+# TODO: remove critical characters in keys from flowrun
+# implement as core function in readflowset? or manually
+# as in original R workflow?
+#
 # for k in keys(flowrun.data)
 #     k = replace(k, "-"=>"_") for k in
 #
 # end
+
+fcs = readflowset(md.file_name)
+
+
+# TODO: call fsApply  subset and transform to arcsinh
+# this is the original part in R:
+#
+## arcsinh transformation and column subsetting
+# fcs <- fsApply(fcs_raw, function(x, cofactor=5){
+#   # browser()
+#   colnames(x) <- panel_fcs$desc
+#   expr <- exprs(x)
+#   # use unique function because markers can be lineage AND functional
+#   expr <- asinh(expr[, unique(c(lineage_markers, functional_markers))] / cofactor)
+#   exprs(x) <- expr
+#   x
+# })
+# fcs
+
+
+
+
+
 
 ##################################################
 # subselect columns and do arcsinh transformation
