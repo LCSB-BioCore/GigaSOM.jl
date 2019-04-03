@@ -48,11 +48,30 @@ function fsApply(args)
     body
 end
 
-# TODO: implement transformation on complete dataset
-"data transformation, currently only asinh"
-function transform_ff(flowset; method = "asinh")
 
-    # asinh()
+"data transformation, currently only asinh"
+function transform_ff(flowset, method = "asinh", cofactor = 5)
+
+    # loop through every file in dict
+    # get the dataframe
+    # convert to matrix
+    # arcsinh transformation
+    # convert back to dataframe
+    for (k,v) in flowset
+        single_fcs = flowset[k]
+        colnames = names(single_fcs["data"]) # keep the column names
+        dMatrix = Matrix(single_fcs["data"])
+        # single_fcs["data"] = [(asinh(x)/cofactor) for x in dMatrix]
+        dMatrix = [(asinh(x)/cofactor) for x in dMatrix]
+
+        ddf = DataFrame(dMatrix)
+
+        names!(ddf, Symbol.(colnames))
+        single_fcs["data"] = ddf
+        flowset[k] = single_fcs
+    end
+
+    return flowset
 
 end
 
@@ -82,6 +101,10 @@ lineage_markers = [replace(i, "-"=>"_") for i in lineage_markers]
 # end
 
 fcs = readflowset(md.file_name)
+
+file1data = fcs["file1.fcs"]["data"]
+names(file1data)
+fcs_transformed = transform_ff(fcs, "ar")
 
 
 # TODO: call fsApply  subset and transform to arcsinh
