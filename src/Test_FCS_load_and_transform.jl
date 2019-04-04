@@ -11,21 +11,30 @@ extend this in the original package
 
 using FileIO
 Pkg.add("FCSFiles")
-# Pkg.add("XLSX")
 Pkg.add("DataFrames")
 Pkg.add("CSV")
 
 cd("/home/ohunewald/work/GigaSOM_data/test_data")
 
-# import XLSX
 using DataFrames
 using CSV
+include("MyFunctions.jl")
 
-"reads in FCS files from metada list and retuns a flowset"
-function readflowset(f_names)
+
+"reads in FCS files from metada list and retuns a flowset. Add sampleid as column"
+# let's keep this function generic and only return the dict of dataframes (FCS files)
+function playwithdata(metadata)
     flowFrame = Dict()
+
+
+    for i in range(1, sizeof(metadata,2)
+
+    end
+
+
+
     # read all FCS files into flowFrame
-    for fname in f_names
+    for fname in metadata.file_name
 
         flowfile = Dict()
         flowrun = load(fname) # FCS file
@@ -35,8 +44,11 @@ function readflowset(f_names)
         for (k,v) in flowrun.data
             df[Symbol(k)] = v
         end
-        flowfile["data"] = df
-
+        # add sample id to df
+        # df[:sampleid] = metadata.sample_id
+        # number of rows in df
+        size(df,2)
+        df[:sampleid] = repeat()
         flowFrame[fname] = flowfile
     end
     return flowFrame
@@ -45,6 +57,14 @@ end
 # TODO: implement function
 "applies a function to all data sets in this frame"
 function fsApply(args)
+    body
+end
+
+# TODO: write functions exprs (original from flowCore package)
+# which returns the data matrix. Find if we can use some
+# kind of named matrix with column names and rownumbers
+"returns the data matrix of a flow files"
+function exprs(args)
     body
 end
 
@@ -100,11 +120,24 @@ lineage_markers = [replace(i, "-"=>"_") for i in lineage_markers]
 #
 # end
 
+
 fcs = readflowset(md.file_name)
 
+# compare state of transfromation
 file1data = fcs["file1.fcs"]["data"]
 names(file1data)
 fcs_transformed = transform_ff(fcs, "ar")
+
+# add sample_id as last column to DataFrame to keep track of samples
+# not by default to keep readflowset more generic
+for i in eachindex(md.Column1)
+    df = fcs[md.file_name[i]]["data"]
+    df[:sample_id] = string(md.sample_id[i])
+# Do something with i and/or A[i]
+end
+# check last columns
+file1data = fcs["file2.fcs"]["data"]
+print(file1data[95:100, 32:36])
 
 
 # TODO: call fsApply  subset and transform to arcsinh
