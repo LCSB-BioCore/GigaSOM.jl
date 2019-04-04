@@ -21,39 +21,6 @@ using CSV
 include("MyFunctions.jl")
 
 
-"reads in FCS files from metada list and retuns a flowset. Add sampleid as column"
-# let's keep this function generic and only return the dict of dataframes (FCS files)
-function playwithdata(metadata)
-    flowFrame = Dict()
-
-
-    for i in range(1, sizeof(metadata,2)
-
-    end
-
-
-
-    # read all FCS files into flowFrame
-    for fname in metadata.file_name
-
-        flowfile = Dict()
-        flowrun = load(fname) # FCS file
-        flowfile["params"] = flowrun.params
-        # change the data structure into a dataframe
-        df = DataFrame()
-        for (k,v) in flowrun.data
-            df[Symbol(k)] = v
-        end
-        # add sample id to df
-        # df[:sampleid] = metadata.sample_id
-        # number of rows in df
-        size(df,2)
-        df[:sampleid] = repeat()
-        flowFrame[fname] = flowfile
-    end
-    return flowFrame
-end
-
 # TODO: implement function
 "applies a function to all data sets in this frame"
 function fsApply(args)
@@ -90,9 +57,6 @@ function transform_ff(flowset, method = "asinh", cofactor = 5)
         single_fcs["data"] = ddf
         flowset[k] = single_fcs
     end
-
-    return flowset
-
 end
 
 ####################################################
@@ -124,9 +88,9 @@ lineage_markers = [replace(i, "-"=>"_") for i in lineage_markers]
 fcs = readflowset(md.file_name)
 
 # compare state of transfromation
-file1data = fcs["file1.fcs"]["data"]
-names(file1data)
-fcs_transformed = transform_ff(fcs, "ar")
+file1data = fcs["file1.fcs"]["data"] # control before transfrom
+transform_ff(fcs, "ar")
+file2dat = fcs["file1.fcs"]["data"] # control after transform
 
 # add sample_id as last column to DataFrame to keep track of samples
 # not by default to keep readflowset more generic
@@ -138,6 +102,23 @@ end
 # check last columns
 file1data = fcs["file2.fcs"]["data"]
 print(file1data[95:100, 32:36])
+
+
+# TODO: barplot for samplesize
+# create DF with sample ids and cells counts and conditon
+
+
+# TODO: pca plot
+# create DF with sample ids as columns, median expression per sample
+dfall = vcat(fcs["file1.fcs"]["data"],fcs["file2.fcs"]["data"])
+# by(dfall, :sample_id, :1 => mean)
+aggregate(dfall, :sample_id, median)
+
+select all except the last column
+dfall[:, 1:(size(dfall,2)-1)]
+
+
+transpose(dfall)
 
 
 # TODO: call fsApply  subset and transform to arcsinh
