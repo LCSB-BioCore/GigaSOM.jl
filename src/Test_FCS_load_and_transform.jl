@@ -13,11 +13,15 @@ using FileIO
 Pkg.add("FCSFiles")
 Pkg.add("DataFrames")
 Pkg.add("CSV")
+Pkg.add("StatPlots")
+Pkg.add("MultivariateStats")
 
 cd("/home/ohunewald/work/GigaSOM_data/test_data")
 
 using DataFrames
 using CSV
+using StatPlots
+using MultivariateStats
 include("MyFunctions.jl")
 
 
@@ -59,6 +63,12 @@ function transform_ff(flowset, method = "asinh", cofactor = 5)
     end
 end
 
+" This function is a workaround for R's match"
+# this is a helper to find which sampleid has which condition
+function matched(v1::Array, v2::Array)
+    # tb implemented
+end
+
 ####################################################
 # this is part of the original workflow in R
 ####################################################
@@ -70,10 +80,13 @@ print(md)
 panel = CSV.File("panel.csv") |> DataFrame
 print(panel.Antigen)
 
-# extrect lineage markers
+# extract lineage markers
 lineage_markers = panel.Antigen[panel.Lineage .== 1, : ]
 # remove critical characters
 lineage_markers = [replace(i, "-"=>"_") for i in lineage_markers]
+# place a '_' in front of each marker, as column names cannot start with a number
+lineage_markers = [("_$i") for i in lineage_markers]
+
 
 # TODO: remove critical characters in keys from flowrun
 # implement as core function in readflowset? or manually
@@ -97,7 +110,6 @@ file2dat = fcs["file1.fcs"]["data"] # control after transform
 for i in eachindex(md.Column1)
     df = fcs[md.file_name[i]]["data"]
     df[:sample_id] = string(md.sample_id[i])
-# Do something with i and/or A[i]
 end
 # check last columns
 file1data = fcs["file2.fcs"]["data"]
@@ -107,18 +119,42 @@ print(file1data[95:100, 32:36])
 # TODO: barplot for samplesize
 # create DF with sample ids and cells counts and conditon
 
-
-# TODO: pca plot
+####################################################################
+# PCA plot
 # create DF with sample ids as columns, median expression per sample
-dfall = vcat(fcs["file1.fcs"]["data"],fcs["file2.fcs"]["data"])
-# by(dfall, :sample_id, :1 => mean)
-aggregate(dfall, :sample_id, median)
+####################################################################
+# put all df from dict into array
+dfall = []
+for (k,v) in fcs
+    print(k)
+    push!(dfall,v["data"])
+end
+dfall = vcat(dfall...)
 
-select all except the last column
-dfall[:, 1:(size(dfall,2)-1)]
+dfall_median = aggregate(dfall, :sample_id, median)
+
+T = convert(Matrix, dfall_median)
+samples_ids = T[:,1]
+T_reshaped = permutedims(convert(Matrix{Float32}, T[:, 2:36]), [2, 1])
+
+my_pca = fit(PCA, T_reshaped)
+
+yte = MultivariateStats.transform(my_pca,T_reshaped)
+
+df_pca = DataFrame(yte')
+df_pca[:sample_id] = samples_ids
+
+# get the condition per sample id and add in DF
+v1= df_pca.sample_id; v2=md.sample_id
+idxs = indexin(v1, v2)
+df_pca[:condition] = md.condition[idxs]
+
+@df df_pca scatter(:x1, :x2, group=:condition)
 
 
-transpose(dfall)
+
+
+# names!(file1data, [Symbol("_$i") for i in 1:36])
 
 
 # TODO: call fsApply  subset and transform to arcsinh
@@ -148,3 +184,6 @@ transpose(dfall)
 
 # keys(flowrun.data) == panel.Antigen
 # all(lineage_markers .== keys(flowrun.data))
+
+
+v1 = [8,6,7,11]; v2 = -10:10

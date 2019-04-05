@@ -13,7 +13,11 @@ function readflowset(flist)
         # change the data structure into a dataframe
         df = DataFrame()
         for (k,v) in flowrun.data
-            df[Symbol(k)] = v
+            # because column names start with a number
+            # '_' has to be added to avoid conflict when
+            # using as Symbol
+            # TODO: check if first char start with a number
+            df[Symbol("_",k)] = v
         end
         flowfile["data"] = df
         flowFrame[fname] = flowfile
