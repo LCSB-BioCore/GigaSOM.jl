@@ -49,7 +49,7 @@ print(panel.Antigen)
 # extract lineage markers
 lineage_markers = panel.Antigen[panel.Lineage .== 1, : ]
 
-# for whatever reason lineage_markers are cast into 2d array,
+# for whatever reason lineage_markers are 2d array,
 # flatten this array by using vec:
 lineage_markers = vec(lineage_markers)
 cleannames!(lineage_markers)
