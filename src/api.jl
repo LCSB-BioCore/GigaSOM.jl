@@ -72,28 +72,28 @@ end
 
 
 
-"data transformation, currently only asinh"
-function transform_ff(flowset, method = "asinh", cofactor = 5)
-
-    # loop through every file in dict
-    # get the dataframe
-    # convert to matrix
-    # arcsinh transformation
-    # convert back to dataframe
-    for (k,v) in flowset
-        single_fcs = flowset[k]
-        colnames = names(single_fcs["data"]) # keep the column names
-        dMatrix = Matrix(single_fcs["data"])
-        # single_fcs["data"] = [(asinh(x)/cofactor) for x in dMatrix]
-        dMatrix = [(asinh(x)/cofactor) for x in dMatrix]
-
-        ddf = DataFrame(dMatrix)
-
-        names!(ddf, Symbol.(colnames))
-        single_fcs["data"] = ddf
-        flowset[k] = single_fcs
-    end
-end
+# "data transformation, currently only asinh"
+# function transform_ff(flowset, method = "asinh", cofactor = 5)
+#
+#     # loop through every file in dict
+#     # get the dataframe
+#     # convert to matrix
+#     # arcsinh transformation
+#     # convert back to dataframe
+#     for (k,v) in flowset
+#         single_fcs = flowset[k]
+#         colnames = names(single_fcs["data"]) # keep the column names
+#         dMatrix = Matrix(single_fcs["data"])
+#         # single_fcs["data"] = [(asinh(x)/cofactor) for x in dMatrix]
+#         dMatrix = [(asinh(x)/cofactor) for x in dMatrix]
+#
+#         ddf = DataFrame(dMatrix)
+#
+#         names!(ddf, Symbol.(colnames))
+#         single_fcs["data"] = ddf
+#         flowset[k] = single_fcs
+#     end
+# end
 
 
 function transform_ff2!(flowframe, method = "asinh", cofactor = 5)
@@ -107,7 +107,7 @@ function transform_ff2!(flowframe, method = "asinh", cofactor = 5)
         colnames = names(fcs_df) # keep the column names
         dMatrix = Matrix(fcs_df)
         # single_fcs["data"] = [(asinh(x)/cofactor) for x in dMatrix]
-        dMatrix = [(asinh(x)/cofactor) for x in dMatrix]
+        dMatrix = [asinh(x/cofactor) for x in dMatrix]
 
         ddf = DataFrame(dMatrix)
 
@@ -117,20 +117,20 @@ function transform_ff2!(flowframe, method = "asinh", cofactor = 5)
     end
 end
 
-function transform_fcs!(daf)
-
-    cofactor = 5
-
-    colnames = names(daf.fcstable)
-    df_matrix = Matrix(daf.fcstable)
-    # print(typeof(df_matrix))
-    # TODO: error because of sample id
-    [(asinh(x) / cofactor) for x in df_matrix[:, 1:end-1]]
-    # df_matrix = [(asinh(x) / cofactor) for x in df_matrix[:, 1:end-1]]
-    ddf = DataFrame(df_matrix)
-    names!(ddf, Symbol.(colnames))
-    daf.fcstable = ddf
-end
+# function transform_fcs!(daf)
+#
+#     cofactor = 5
+#
+#     colnames = names(daf.fcstable)
+#     df_matrix = Matrix(daf.fcstable)
+#     # print(typeof(df_matrix))
+#     # TODO: error because of sample id
+#     [(asinh(x) / cofactor) for x in df_matrix[:, 1:end-1]]
+#     # df_matrix = [(asinh(x) / cofactor) for x in df_matrix[:, 1:end-1]]
+#     ddf = DataFrame(df_matrix)
+#     names!(ddf, Symbol.(colnames))
+#     daf.fcstable = ddf
+# end
 
 
 "barplot of cell counts per sample"
@@ -163,7 +163,7 @@ function create_daFrame(fcs_raw, md, panel)
         push!(dfall,v)
     end
     dfall = vcat(dfall...)
-    cc = map(Symbol, lineage_markers)
+    cc = map(Symbol, vcat(lineage_markers, functional_markers))
     push!(cc, :sample_id)
     # reduce the dataset to lineage (and later) functional (state) markers
     dfall = dfall[:, cc]
