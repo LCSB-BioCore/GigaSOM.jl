@@ -46,11 +46,14 @@ print(panel.Antigen)
 
 # extract lineage markers
 lineage_markers = panel.Antigen[panel.Lineage .== 1, : ]
+functional_markers = panel.Antigen[panel.Functional .== 1, :]
 
 # for whatever reason lineage_markers are 2d array,
 # flatten this array by using vec:
 lineage_markers = vec(lineage_markers)
+functional_markers = vec(functional_markers)
 cleannames!(lineage_markers)
+cleannames!(functional_markers)
 
 # fcs = readflowset(md.file_name)
 fcs_raw = readflowset2(md.file_name)
@@ -66,7 +69,7 @@ cleannames!(fcs_raw)
 # create daFrame file
 daf = create_daFrame(fcs_raw, md, panel)
 
-
+CSV.write("daf.csv", daf.fcstable)
 ####################################################################
 # PCA plot
 ####################################################################
