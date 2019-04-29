@@ -22,9 +22,6 @@ som2 = initSOM(df_som, 10, 10, topol = :rectangular)
 som2 = trainSOM(som2, df_som, 1000)
 som2 = trainSOM(som2, df_som, 1000, r = 3.0)
 
-
-
-
 mywinners = mapToSOM(som2, df_som)
 CSV.write("cell_clustering_som.csv", mywinners)
 
@@ -37,9 +34,9 @@ CSV.write("df_codes.csv", df_codes)
 # CSV.write("mywinners.csv", mywinners)
 # CSV.write("myfreqs.csv", myfreqs)
 
-# using RCall
+using RCall
 
-# R"install.packages('/home/ohunewald/work/consensusclusterplus/consens2')"
+R"install.packages('/home/ohunewald/work/consensusclusterplus/consens2')"
 @rlibrary("consens2")
 
 mc = ConsensusClusterPlus_2(transpose(codes), maxK = 20, reps = 100,
@@ -83,7 +80,7 @@ expr_median = aggregate(xcluster, :x1, median)
 # expr_heat <- as.matrix(expr_median[, colnames(expr)])
 # rownames(expr_heat) <- expr_median$cell_clustering
 
-# pyplot()
+pyplot()
 ys = [string("y", i) for i = 1:20]
 xs=[string(i) for i in cc]
 
