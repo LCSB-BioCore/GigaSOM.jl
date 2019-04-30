@@ -1,5 +1,5 @@
 """
- Modified version of the SOM.jl package
+ Modified version of the SOM.jl package for batch update
 
 """
 
@@ -88,15 +88,155 @@ r is a parameter controlling the function and the return value is
 between 0.0 and 1.0.
 """
 function trainSOM(som::Som, train::Any, len;
-                     η = 0.2, kernelFun::Function = gaussianKernel, r = 0.0,
-                     rDecay = true, ηDecay = true)
+                     kernelFun::Function = gaussianKernel, r = 0.0,
+                     rDecay = true, epochs = 10)
 
     train = convertTrainingData(train)
     som = trainAll(som, train,
-                 len, η, kernelFun, r,
-                 rDecay, ηDecay)
+                 len, kernelFun, r,
+                 rDecay, epochs)
     return som
 end
+
+
+"""
+    function trainAll(train::Array{Float64}, xdim, ydim,
+                topology, len, η, kernelFun, r,
+                norm, toroidal, rDecay, ηDecay)
+
+Connects the high-level-API functions with
+the backend.
+
+# If `init == true` a new som is initialised with randomly sampled
+# samples from train.
+# Otherwise the som is trained.
+"""
+function trainAll(som::Som, train::Array{Float64,2},
+                len, kernelFun, r,
+                rDecay, epochs)
+
+    # normalise training data:
+    if norm != :none
+        train = normTrainData(train, som.normParams)
+    end
+
+    # set default radius:
+    if r == 0.0
+        if som.topol != :spherical
+            r = √(som.xdim^2 + som.ydim^2) / 2
+        else
+            r = π * som.ydim
+        end
+    end
+
+    if som.topol == :spherical
+        dm = distMatrixSphere(som.grid)
+    else
+        dm = distMatrix(som.grid, som.toroidal)
+    end
+
+    ### TRY with one epoch first
+
+    codes = doEpoch(train, som.codes, dm,
+                  kernelFun, len, r,
+                  som.toroidal, rDecay)
+
+    # map training samles to SOM and calc. neuron population:
+    vis = visual(codes, train)
+    population = makePopulation(som.nCodes, vis)
+
+    # create X,Y-indices for neurons:
+    #
+    if som.topol != :spherical
+        x = [mod(i-1, som.xdim)+1 for i in 1:som.nCodes]
+        y = [div(i-1, som.xdim)+1 for i in 1:som.nCodes]
+    else
+        x = y = collect(1:som.nCodes)
+    end
+    indices = DataFrame(X = x, Y = y)
+
+    # update SOM object:
+    somNew = deepcopy(som)
+    somNew.codes[:,:] = codes[:,:]
+    somNew.population[:] = population[:]
+    return somNew
+end
+
+"""
+    doEpoch(x::Array{Float64}, codes::Array{Float64},
+             dm::Array{Float64}, kernelFun::Function, len::Int, η::Float64,
+             r::Number, toroidal::Bool, rDecay::Bool, ηDecay::Bool)
+
+Train a SOM for one epoch. This implements also the batch update
+of the codebook vectors and the adjustment in radius after each
+epoch.
+
+This worker function is called by the high-level-API-functions
+`som(), somHexagonal() and somSpherical()`.
+
+# Arguments:
+- `x`: training Data
+- `dm`: distance matrix of all neurons of the SOM
+- `kernelFun`: distance kernel function of type fun(x, r)
+- `len`: number of training steps (*not* epochs)
+- `r`: training radius
+- `toroidal`: if true, the SOM is toroidal.
+- `rDecay`: if true, r decays to 0.0 during the training.
+"""
+function doEpoch(x::Array{Float64}, codes::Array{Float64},
+             dm::Array{Float64}, kernelFun::Function, len::Int,
+             r::Number, toroidal::Bool, rDecay::Bool)
+
+     # make Δs for linear decay of r:
+     r = Float64(r)
+     if rDecay
+         if r < 1.5
+             Δr = 0.0
+         else
+             Δr = (r-1.0) / len
+         end
+     else
+         Δr = 0.0
+     end
+
+     numDat = nrow(x)
+     numCodes = nrow(codes)
+
+     sum_numerator = zeros(Float64, size(codes))
+     sum_denominator = zeros(Float64, size(codes)[1])
+
+     # Training:
+     # 1) select random sample
+     # 2) find winner
+     # 3) train all neurons with gaussian kernel
+     p = Progress(len, dt=1.0, desc="Training...", barglyphs=BarGlyphs("[=> ]"),
+                  barlen=50, color=:yellow)
+     @time for s in 1:len
+
+         sampl = rowSample(x)
+         bmu_idx, bmu_vec = find_bmu(codes, sampl)
+
+         # for each row in codebook get distances to bmu and multiply it
+         # with sample row: x(i)
+         for i in 1:numCodes
+             dist = kernelFun(dm[bmu_idx, i], r)
+             temp = sampl .* dist
+             # println(temp)
+             sum_numerator[i,:] = sum_numerator[i,:] + temp
+             sum_denominator[i] = sum_denominator[i] + dist
+         end
+
+         codes = sum_numerator ./ sum_denominator
+
+         r -= Δr
+         next!(p)
+     end
+
+     return codes
+
+
+end
+
 
 #
 #
@@ -251,147 +391,6 @@ function makeClassFreqs(som, vis, classes)
     end
 
     return cfs
-end
-
-
-
-"""
-    function somAll(train::Array{Float64}, xdim, ydim,
-                topology, len, η, kernelFun, r,
-                norm, toroidal, rDecay, ηDecay)
-
-Connects the high-level-API functions with
-the backend.
-
-# If `init == true` a new som is initialised with randomly sampled
-# samples from train.
-# Otherwise the som is trained.
-"""
-function trainAll(som::Som, train::Array{Float64,2},
-                len, η, kernelFun, r,
-                rDecay, ηDecay)
-
-    # normalise training data:
-    if norm != :none
-        train = normTrainData(train, som.normParams)
-    end
-
-    # set default radius:
-    if r == 0.0
-        if som.topol != :spherical
-            r = √(som.xdim^2 + som.ydim^2) / 2
-        else
-            r = π * som.ydim
-        end
-    end
-
-    if som.topol == :spherical
-        dm = distMatrixSphere(som.grid)
-    else
-        dm = distMatrix(som.grid, som.toroidal)
-    end
-
-    # println("$(show(IOContext(STDOUT, limit=true), "text/plain", train))")
-    codes = doSom(train, som.codes, dm,
-                  kernelFun, len, η, r,
-                  som.toroidal, rDecay, ηDecay)
-
-    # map training samles to SOM and calc. neuron population:
-    vis = visual(codes, train)
-    population = makePopulation(som.nCodes, vis)
-
-    # create X,Y-indices for neurons:
-    #
-    if som.topol != :spherical
-        x = [mod(i-1, som.xdim)+1 for i in 1:som.nCodes]
-        y = [div(i-1, som.xdim)+1 for i in 1:som.nCodes]
-    else
-        x = y = collect(1:som.nCodes)
-    end
-    indices = DataFrame(X = x, Y = y)
-
-    # update SOM object:
-    somNew = deepcopy(som)
-    somNew.codes[:,:] = codes[:,:]
-    somNew.population[:] = population[:]
-    return somNew
-end
-
-
-#########################################################
-# TODO:  this function needs to be updated to batch mode
-#########################################################
-"""
-    doSom(train::Array, distMatrix, kernelFun, len, η,
-            r, toroidal, rDecay, ηDecay)
-
-Train a SOM.
-
-This worker function is called by the high-level-API-functions
-`som(), somHexagonal() and somSpherical()`.
-
-# Arguments:
-- `x`: training Data
-- `dm`: distance matrix of all neurons of the SOM
-- `kernelFun`: distance kernel function of type fun(x, r)
-- `len`: number of training steps (*not* epochs)
-- `η`: learning rate
-- `r`: training radius
-- `toroidal`: if true, the SOM is toroidal.
-- `rDecay`: if true, r decays to 0.0 during the training.
-- `ηDecay`: if true, learning rate η decays to 0.0 during the training.
-"""
-function doSom(x::Array{Float64}, codes::Array{Float64},
-             dm::Array{Float64}, kernelFun::Function, len::Int, η::Float64,
-             r::Number, toroidal::Bool, rDecay::Bool, ηDecay::Bool)
-
-    # make Δs for linear decay of r and η:
-    r = Float64(r)
-    if rDecay
-        if r < 1.5
-            Δr = 0.0
-        else
-            Δr = (r-1.0) / len
-        end
-    else
-        Δr = 0.0
-    end
-
-    if ηDecay
-        Δη = η / len
-    else
-        Δη = 0.0
-    end
-
-    numDat = nrow(x)
-    numCodes = nrow(codes)
-
-    # Training:
-    # 1) select random sample
-    # 2) find winner
-    # 3) train all neurons with gaussian kernel
-    p = Progress(len, dt=1.0, desc="Training...", barglyphs=BarGlyphs("[=> ]"),
-                 barlen=50, color=:yellow)
-    @time for s in 1:len
-
-        sampl = rowSample(x)
-        winner = findWinner(codes, sampl)
-
-        # serial version:
-        # updated all codes after each winner
-        for i in 1:numCodes # for each row in codes
-            Δi = codes[i,:] .- sampl # substract the sample array from each
-                                    # code in row
-            codes[i,:] -= Δi .* kernelFun(dm[winner,i], r) .* η
-            # v -=  @. v - sampl * kernelFun(dm[winner,i], r) * η
-        end
-
-        η -= Δη
-        r -= Δr
-        next!(p)
-    end
-
-    return codes
 end
 
 

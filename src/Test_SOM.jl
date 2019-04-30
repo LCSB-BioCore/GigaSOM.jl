@@ -7,9 +7,22 @@ Pkg.add("FreqTables")
 Pkg.add("Distances")
 Pkg.add("Plotly")
 Pkg.add("Plots")
+Pkg.add("ProgressMeter")
+Pkg.add("Distributions")
+Pkg.add("TensorToolbox")
 
 using Plots
-using SOM
+# using SOM
+using Distances
+using ProgressMeter
+using StatsBase
+using Distributions
+using TensorToolbox
+using LinearAlgebra
+include("gigasoms.jl")
+include("batch_som.jl")
+
+
 
 # df_som = daf.fcstable[1:10]
 # only use lineage_markers for clustering

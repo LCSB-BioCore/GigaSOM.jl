@@ -23,6 +23,8 @@ using StatsPlots
 using Statistics
 using MultivariateStats
 
+using JuliaInterpreter
+
 include("api.jl")
 include("Fcs_helper.jl")
 include("Plotting.jl")
@@ -32,8 +34,8 @@ include("GigaSOM.jl")
 cd("/home/ohunewald/work/GigaSOM_data/PBMC8_fcs_files")
 
 # could not load library libGR.so
-ENV["GRDIR"]=""
-Pkg.build("GR")
+# ENV["GRDIR"]=""
+# Pkg.build("GR")
 
 # md = CSV.File("metadata.csv", types=[String, String, String, String]) |> DataFrame
 md = CSV.File("PBMC8_metadata.csv") |> DataFrame
