@@ -136,10 +136,10 @@ function trainAll(som::Som, train::Array{Float64,2},
     end
 
     ### TRY with one epoch first
-
     codes = doEpoch(train, som.codes, dm,
                   kernelFun, len, r,
-                  som.toroidal, rDecay)
+                  som.toroidal, rDecay, epochs)
+
 
     # map training samles to SOM and calc. neuron population:
     vis = visual(codes, train)
@@ -185,15 +185,16 @@ This worker function is called by the high-level-API-functions
 """
 function doEpoch(x::Array{Float64}, codes::Array{Float64},
              dm::Array{Float64}, kernelFun::Function, len::Int,
-             r::Number, toroidal::Bool, rDecay::Bool)
+             r::Number, toroidal::Bool, rDecay::Bool, epochs)
 
      # make Δs for linear decay of r:
      r = Float64(r)
+
      if rDecay
          if r < 1.5
              Δr = 0.0
          else
-             Δr = (r-1.0) / len
+             Δr = (r-1.0) / epochs
          end
      else
          Δr = 0.0
@@ -202,34 +203,51 @@ function doEpoch(x::Array{Float64}, codes::Array{Float64},
      numDat = nrow(x)
      numCodes = nrow(codes)
 
-     sum_numerator = zeros(Float64, size(codes))
-     sum_denominator = zeros(Float64, size(codes)[1])
+     # For each epoch:
+     # interpolate new value for sigma(t)
+     # create a new distance matrix for each epoch?
+     ep = 1
+     for j in 1:epochs
+         println("Epoch: $ep")
+         # initialise numerator and denominator with 0's
+         sum_numerator = zeros(Float64, size(codes))
+         sum_denominator = zeros(Float64, size(codes)[1])
 
-     # Training:
-     # 1) select random sample
-     # 2) find winner
-     # 3) train all neurons with gaussian kernel
-     p = Progress(len, dt=1.0, desc="Training...", barglyphs=BarGlyphs("[=> ]"),
-                  barlen=50, color=:yellow)
-     @time for s in 1:len
+         dm = distMatrix(codes, false)
 
-         sampl = rowSample(x)
-         bmu_idx, bmu_vec = find_bmu(codes, sampl)
+         # for each sample in dataset / or trainingsset
+         for s in 1:len
 
-         # for each row in codebook get distances to bmu and multiply it
-         # with sample row: x(i)
-         for i in 1:numCodes
-             dist = kernelFun(dm[bmu_idx, i], r)
-             temp = sampl .* dist
-             # println(temp)
-             sum_numerator[i,:] = sum_numerator[i,:] + temp
-             sum_denominator[i] = sum_denominator[i] + dist
+             sampl = rowSample(x) # get random sample
+             bmu_idx, bmu_vec = find_bmu(codes, sampl)
+
+             # for each row in codebook get distances to bmu and multiply it
+             # with sample row: x(i)
+             for i in 1:numCodes
+
+                 dist = kernelFun(dm[bmu_idx, i], r)
+                 temp = sampl .* dist
+                 # println(temp)
+                 sum_numerator[i,:] = sum_numerator[i,:] + temp
+                 sum_denominator[i] = sum_denominator[i] + dist
+             end
+
          end
 
-         codes = sum_numerator ./ sum_denominator
-
+         # println(sum_numerator)
+         # println(sum_denominator)
+         codes_new = sum_numerator ./ sum_denominator
+         # println(codes)
+         codes = codes_new
          r -= Δr
-         next!(p)
+
+         if r < 0.0
+             r = 0.0
+         end
+
+         println("Radius: $r")
+
+         ep = ep + 1
      end
 
      return codes
