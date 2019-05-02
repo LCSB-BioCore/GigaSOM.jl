@@ -25,7 +25,6 @@ using MultivariateStats
 
 using JuliaInterpreter
 
-include("api.jl")
 include("Fcs_helper.jl")
 include("Plotting.jl")
 include("GigaSOM.jl")

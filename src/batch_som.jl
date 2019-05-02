@@ -187,18 +187,6 @@ function doEpoch(x::Array{Float64}, codes::Array{Float64},
              dm::Array{Float64}, kernelFun::Function, len::Int,
              r::Number, toroidal::Bool, rDecay::Bool, epochs)
 
-     # make Δs for linear decay of r:
-     r = Float64(r)
-
-     if rDecay
-         if r < 1.5
-             Δr = 0.0
-         else
-             Δr = (r-1.0) / epochs
-         end
-     else
-         Δr = 0.0
-     end
 
      numDat = nrow(x)
      numCodes = nrow(codes)
@@ -208,12 +196,27 @@ function doEpoch(x::Array{Float64}, codes::Array{Float64},
      # create a new distance matrix for each epoch?
      ep = 1
      for j in 1:epochs
+
+
+         # make Δs for linear decay of r:
+         r = Float64(r)
+
+         if rDecay
+             if r < 1.5
+                 Δr = 0.0
+             else
+                 Δr = (r-1.0) / epochs
+             end
+         else
+             Δr = 0.0
+         end
+
          println("Epoch: $ep")
          # initialise numerator and denominator with 0's
          sum_numerator = zeros(Float64, size(codes))
          sum_denominator = zeros(Float64, size(codes)[1])
 
-         dm = distMatrix(codes, false)
+         # dm = distMatrix(codes, false)
 
          # for each sample in dataset / or trainingsset
          for s in 1:len
