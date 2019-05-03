@@ -216,8 +216,6 @@ function doEpoch(x::Array{Float64}, codes::Array{Float64},
          sum_numerator = zeros(Float64, size(codes))
          sum_denominator = zeros(Float64, size(codes)[1])
 
-         # dm = distMatrix(codes, false)
-
          # for each sample in dataset / or trainingsset
          for s in 1:len
 
