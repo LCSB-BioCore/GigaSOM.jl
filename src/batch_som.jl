@@ -195,17 +195,22 @@ function doEpoch(x::Array{Float64}, codes::Array{Float64},
      # interpolate new value for sigma(t)
      # create a new distance matrix for each epoch?
      ep = 1
+
+     # make Δs for linear decay of r:
+     r = Float64(r)
+
      for j in 1:epochs
 
+         # TODO: evaluate the radius decay
 
-         # make Δs for linear decay of r:
-         r = Float64(r)
+
 
          if rDecay
              if r < 1.5
                  Δr = 0.0
              else
-                 Δr = (r-1.0) / epochs
+                 Δr = (r-1.0) / epochs # this should adapt the decay
+
              end
          else
              Δr = 0.0

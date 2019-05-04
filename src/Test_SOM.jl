@@ -23,19 +23,20 @@ using LinearAlgebra
 include("batch_som.jl")
 
 
-
-# df_som = daf.fcstable[1:10]
 # only use lineage_markers for clustering
 cc = map(Symbol, lineage_markers)
 df_som = daf.fcstable[:,cc]
 
 som2 = initSOM(df_som, 10, 10, topol = :rectangular)
-# som2 = trainSOM(som2, df_som, 50, r = 0.68, η = 0.05)
 
-som2 = trainSOM(som2, df_som, 100000, epochs = 10)
+# using classical som training without epochs
+# @time som2 = trainSOM(som2, df_som, 100000)
+
+# using batch som with epochs
+@time som2 = trainSOM(som2, df_som, size(df_som)[1], epochs = 10)
 # som2 = trainSOM(som2, df_som, 10000, r = 3.0)
 
-mywinners = mapToSOM(som2, df_som)
+@time mywinners = mapToSOM(som2, df_som)
 CSV.write("cell_clustering_som.csv", mywinners)
 
 # myfreqs = classFrequencies(som2, daf.fcstable, :sample_id)
