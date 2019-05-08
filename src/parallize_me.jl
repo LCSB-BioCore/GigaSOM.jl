@@ -22,7 +22,7 @@ dM.indices
 @spawnat 3 println(localpart(dM))
 
 X = ones(10,10)
-dX = distribute(X)
+dX = distribute(X ,workers(), [2,1])
 
 x = @spawn 2 sum(localpart(dX))
 fetch(x)
@@ -32,3 +32,15 @@ fetch(a)
 
 b = @spawnat 3 sum(localpart(dM))
 fetch(b)
+
+# split the dataset by rows
+X2 = dones((10,10), workers()[1:2], [2,1])
+@spawnat 2 println(localpart(X2))
+[@fetchfrom p localindices(X2) for p in workers()]
+
+
+
+A = ones(170000,35)
+dA = distribute(A)
+
+[@fetchfrom p localindices(dA) for p in workers()]

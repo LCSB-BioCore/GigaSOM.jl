@@ -1,28 +1,34 @@
-copy paPkg.add("SOM")
-Pkg.add("RDatasets")
-Pkg.add("RCall")
-Pkg.add("PyCall")
-Pkg.add("VegaLite")
-Pkg.add("FreqTables")
-Pkg.add("Distances")
-Pkg.add("Plotly")
-Pkg.add("Plots")
-Pkg.add("ProgressMeter")
-Pkg.add("Distributions")
-Pkg.add("TensorToolbox")
+# copy paPkg.add("SOM")
+# Pkg.add("RDatasets")
+# Pkg.add("RCall")
+# Pkg.add("PyCall")
+# Pkg.add("VegaLite")
+# Pkg.add("FreqTables")
+# Pkg.add("Distances")
+# Pkg.add("Plotly")
+# Pkg.add("Plots")
+# Pkg.add("ProgressMeter")
+# Pkg.add("Distributions")
+# Pkg.add("TensorToolbox")
 
 using Plots
 # using SOM
-using Distances
+using Distributed
+using DistributedArrays
 using ProgressMeter
 using StatsBase
 using Distributions
 using TensorToolbox
 using LinearAlgebra
-include("gigasoms.jl")
-include("batch_som.jl")
+
+
+p = addprocs()
+@everywhere using DistributedArrays
+@everywhere using DataFrames
+@everywhere using Distances
+# include("gigasoms.jl")
+# include("batch_som.jl")
 include("parallel_som.jl")
-include("parallel_som2.jl")
 
 # only use lineage_markers for clustering
 cc = map(Symbol, lineage_markers)

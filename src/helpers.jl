@@ -1,13 +1,15 @@
 import DataFrames: nrow, ncol
 
-"""
-    nrow(a::Array)
+@everywhere begin
+    """
+        nrow(a::Array)
 
-Returns size of the first dimenstion of Array a (== nrow() for Arrays).
-"""
-function nrow(a::Array)
+    Returns size of the first dimenstion of Array a (== nrow() for Arrays).
+    """
+    function nrow(a::Array)
 
-    return size(a)[1]
+        return size(a)[1]
+    end
 end
 
 """
@@ -66,29 +68,30 @@ function initCodes(num::Int, x::Array{Float64}, colNames)
     return codes
 end
 
+@everywhere begin
+    """
+        Find the best matching unit for a given vector, row_t, in the SOM
+        Returns: a (bmu, bmu_idx) tuple where bmu is the high-dimensional Best Matching Unit
+               and bmu_idx is the index of this vector in the SOM
+    """
+    function find_bmu(cod, sampl)
 
-"""
-    Find the best matching unit for a given vector, row_t, in the SOM
-    Returns: a (bmu, bmu_idx) tuple where bmu is the high-dimensional Best Matching Unit
-           and bmu_idx is the index of this vector in the SOM
-"""
-function find_bmu(cod, sampl)
+        dist = floatmax()
+        winner = 1
+        n = nrow(cod)
 
-    dist = floatmax()
-    winner = 1
-    n = nrow(cod)
+        for i in 1:n
 
-    for i in 1:n
-
-        d = euclidean(sampl, cod[i,:])
-        if (d < dist)
-            dist = d
-            winner = i
+            d = euclidean(sampl, cod[i,:])
+            if (d < dist)
+                dist = d
+                winner = i
+            end
         end
+        # get the code vector of the bmu
+        bmu_vec = cod[winner,:]
+        return winner, bmu_vec
     end
-    # get the code vector of the bmu
-    bmu_vec = cod[winner,:]
-    return winner, bmu_vec    
 end
 
 
