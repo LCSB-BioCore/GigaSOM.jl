@@ -22,13 +22,13 @@ using TensorToolbox
 using LinearAlgebra
 
 
-p = addprocs()
+p = addprocs(2)
 @everywhere using DistributedArrays
 @everywhere using DataFrames
 @everywhere using Distances
 # include("gigasoms.jl")
 # include("batch_som.jl")
-include("parallel_som.jl")
+include("../src/parallel_som.jl")
 
 # only use lineage_markers for clustering
 cc = map(Symbol, lineage_markers)

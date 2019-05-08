@@ -135,17 +135,18 @@ function trainAll(som::Som, train::Array{Float64,2},
     global_sum_numerator = zeros(Float64, size(codes))
     global_sum_denominator = zeros(Float64, size(codes)[1])
 
-    for j in 1:epochs
-
-        if rDecay
-            if r < 1.5
-                Δr = 0.0
-            else
-                Δr = (r-1.0) / epochs # this should adapt the decay
-            end
-        else
+    if rDecay
+        if r < 1.5
             Δr = 0.0
+        else
+            println("in r decay")
+            Δr = (r-1.0) / epochs # this should adapt the decay
         end
+    else
+        Δr = 0.0
+    end
+
+    for j in 1:epochs
 
         println("Epoch: $j")
 
