@@ -33,15 +33,15 @@ include("../src/parallel_som.jl")
 # only use lineage_markers for clustering
 cc = map(Symbol, lineage_markers)
 df_som = daf.fcstable[:,cc]
-
-som2 = initSOM(df_som, 10, 10, topol = :rectangular)
-
-# using classical som training without epochs
-# @time som2 = trainSOM(som2, df_som, 100000)
+df_som_large = vcat(df_som,df_som)
+df_som_large = vcat(df_som_large, df_som)
+# topology is now always rectangular
+# som2 = initSOM(df_som, 10, 10)
+som2 = initSOM(df_som_large, 10, 10)
 
 # using batch som with epochs
-@time som2 = trainSOM(som2, df_som, size(df_som)[1], epochs = 10)
-# som2 = trainSOM(som2, df_som, 10000, r = 3.0)
+# @time som2 = trainSOM(som2, df_som, size(df_som)[1], epochs = 10)
+@time som2 = trainSOM(som2, df_som_large, size(df_som_large)[1], epochs = 10)
 
 @time mywinners = mapToSOM(som2, df_som)
 CSV.write("cell_clustering_som.csv", mywinners)

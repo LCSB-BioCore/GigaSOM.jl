@@ -1,5 +1,4 @@
 include("errors.jl")
-
 include("types.jl")
 include("helpers.jl")
 include("grids.jl")
@@ -19,30 +18,43 @@ Initialises a SOM.
            Codebook vectors will be sampled from the training data.
            for spherical SOMs ydim can be omitted.
 - `norm`: optional normalisation; one of :`minmax, :zscore or :none`
-- `topol`: topology of the SOM; one of `:rectangular, :hexagonal or :spherical`.
 - `toroidal`: optional flag; if true, the SOM is toroidal.
 """
 function initSOM( train, xdim, ydim = xdim;
-             norm::Symbol = :none, topol = :hexagonal, toroidal = false)
+             norm::Symbol = :none, toroidal = false)
 
     if typeof(train) == DataFrame
         colNames = [String(x) for x in names(train)]
     else
         colNames = ["x$i" for i in 1:ncol(train)]
     end
+
     train = convertTrainingData(train)
 
+    nCodes = xdim * ydim
 
-    if topol == :spherical
-        toroidal = false
-        nCodes = xdim
-    else
-        nCodes = xdim * ydim
-    end
+    # normalise training data:
+    train, normParams = normTrainData(train, norm)
+    codes = initCodes(nCodes, train, colNames)
 
-    som = initAll(train, colNames, norm,
-                 xdim, ydim, nCodes,
-                 topol, toroidal)
+    grid = gridRectangular(xdim, ydim)
+
+    normParams = convert(DataFrame, normParams)
+    names!(normParams, Symbol.(colNames))
+
+    # create X,y-indices for neurons:
+    #
+     x = y = collect(1:nCodes)
+    indices = DataFrame(X = x, Y = y)
+
+    # make SOM object:
+    som = Som(codes = codes, colNames = colNames,
+           normParams = normParams, norm = norm,
+           xdim = xdim, ydim = ydim,
+           nCodes = nCodes,
+           grid = grid, indices = indices,
+           toroidal = toroidal,
+           population = zeros(Int, nCodes))
     return som
 end
 
@@ -52,10 +64,8 @@ end
              η = 0.2, kernelFun = gaussianKernel,
              r = 0.0, rDecay = true, ηDecay = true)
 
-Train an initialised or pre-trained SOM.
-
 # Arguments:
-- `som`: object of type Som with a trained som
+- `som`: object of type Som with an initialised som
 - `train`: training data
 - `len`: number of single training steps (*not* epochs)
 - `η`: learning rate
@@ -81,112 +91,98 @@ function trainSOM(som::Som, train::Any, len;
                      rDecay = true, epochs = 10)
 
     println(first(train, 6))
+
+    # double conversion:
+    # train was already converted during initialization
     train = convertTrainingData(train)
-    som = trainAll(som, train,
-                 len, kernelFun, r,
-                 rDecay, epochs)
-    return som
-end
 
-
-"""
-    function trainAll(train::Array{Float64}, xdim, ydim,
-                topology, len, η, kernelFun, r,
-                norm, toroidal, rDecay, ηDecay)
-
-Connects the high-level-API functions with
-the backend.
-
-# If `init == true` a new som is initialised with randomly sampled
-# samples from train.
-# Otherwise the som is trained.
-"""
-function trainAll(som::Som, train::Array{Float64,2},
-                len, kernelFun, r,
-                rDecay, epochs)
-
-                println("in function trainAll:")
-    # normalise training data:
-    if norm != :none
-        train = normTrainData(train, som.normParams)
-    end
+     if norm != :none
+         train = normTrainData(train, som.normParams)
+     end
 
     # set default radius:
     if r == 0.0
-        if som.topol != :spherical
-            r = √(som.xdim^2 + som.ydim^2) / 2
-        else
-            r = π * som.ydim
-        end
+     if som.topol != :spherical
+         r = √(som.xdim^2 + som.ydim^2) / 2
+     else
+         r = π * som.ydim
+     end
     end
 
-    if som.topol == :spherical
-        dm = distMatrixSphere(som.grid)
-    else
-        dm = distMatrix(som.grid, som.toroidal)
-    end
+    dm = distMatrix(som.grid, som.toroidal)
 
     # make Δs for linear decay of r:
-    r = Float64(r)
+    # r = Float64(r)
     dTrain = distribute(train)
 
     codes = som.codes
-
     global_sum_numerator = zeros(Float64, size(codes))
     global_sum_denominator = zeros(Float64, size(codes)[1])
 
+    # linear decay function
     if rDecay
-        if r < 1.5
-            Δr = 0.0
-        else
-            println("in r decay")
-            Δr = (r-1.0) / epochs # this should adapt the decay
-        end
+     if r < 1.5
+         Δr = 0.0
+     else
+         println("in r decay")
+         Δr = (r-1.0) / epochs
+     end
     else
-        Δr = 0.0
+     Δr = 0.0
     end
 
     for j in 1:epochs
 
-        println("Epoch: $j")
+     println("Epoch: $j")
 
-        # A = [@fetchfrom p localindices(dTrain) for p in workers()]
-        # println(A)
+     A = [@fetchfrom p localindices(dTrain) for p in workers()]
+     println(A)
 
-        # tmp = reduce(reduce_me, map(fetch, Any[@spawnat w doEpoch(localpart(dTrain), codes, dm, kernelFun, len, r,
-        # false, rDecay, epochs) for w in workers() ]))
+     # tmp = reduce(reduce_me, map(fetch, Any[@spawnat w doEpoch(localpart(dTrain), codes, dm, kernelFun, len, r,
+     # false, rDecay, epochs) for w in workers() ]))
 
-        tmp = map(fetch, Any[@spawnat w doEpoch(localpart(dTrain), codes, dm, kernelFun, len, r,
-        false, rDecay, epochs) for w in workers() ])
+     # using Any is 2x faster
+     # tmp = map(fetch, Any[@spawnat w doEpoch(localpart(dTrain), codes, dm, kernelFun, len, r,
+     # false, rDecay, epochs) for w in workers() ])
 
-        for dset in tmp
-            global_sum_numerator += dset[1]
-            global_sum_denominator += dset[2]
-        end
+     # no difference for workers or procs
+     tmp = @time map(fetch, Any[@spawnat p doEpoch(localpart(dTrain), codes, dm, kernelFun, len, r,
+                    false, rDecay, epochs) for p = procs(dTrain) ])
 
-        r -= Δr
+     #
+     # wp = WorkerPool([2, 3])
 
-        if r < 0.0
-            r = 0.0
-        end
+     # tmp = remotecall_wait(doEpoch, wp, localpart(dTrain), codes, dm, kernelFun, len, r, false, rDecay, epochs)
+     # tmp = remotecall_wait(sum, wp, [1,2,3,4,5,6,7,8,9])
 
-        println("Radius: $r")
+     for dset in tmp
+         global_sum_numerator += dset[1]
+         global_sum_denominator += dset[2]
+     end
 
-        codes = global_sum_numerator ./ global_sum_denominator
+     r -= Δr
+
+     if r < 0.0
+         r = 0.0
+     end
+
+     println("Radius: $r")
+
+     codes = global_sum_numerator ./ global_sum_denominator
 
     end
 
-    # map training samles to SOM and calc. neuron population:
+    # map training samples to SOM and calc. neuron population:
     vis = visual(codes, train)
     population = makePopulation(som.nCodes, vis)
 
     # create X,Y-indices for neurons:
     #
     if som.topol != :spherical
-        x = [mod(i-1, som.xdim)+1 for i in 1:som.nCodes]
-        y = [div(i-1, som.xdim)+1 for i in 1:som.nCodes]
+     x = [mod(i-1, som.xdim)+1 for i in 1:som.nCodes]
+     y = [div(i-1, som.xdim)+1 for i in 1:som.nCodes]
     else
-        x = y = collect(1:som.nCodes)
+     x = y = collect(1:som.nCodes)
     end
     indices = DataFrame(X = x, Y = y)
 
@@ -195,19 +191,7 @@ function trainAll(som::Som, train::Array{Float64,2},
     somNew.codes[:,:] = codes[:,:]
     somNew.population[:] = population[:]
     return somNew
-end
-
-# This function gets called per local process, per epoch
-# return numerator and denominator value
-# x is empty, don't know why
-# sum up values y1 and y2 and return tuple
-
-@everywhere function reduce_me(x,y)
-
-    num = sum(y[1], dims=1)
-    den = sum(y[2])
-
-    return num, den
+    # return som
 end
 
 
@@ -221,8 +205,6 @@ end
     of the codebook vectors and the adjustment in radius after each
     epoch.
 
-    This worker function is called by the high-level-API-functions
-    `som(), somHexagonal() and somSpherical()`.
 
     # Arguments:
     - `x`: training Data
@@ -244,6 +226,8 @@ end
          sum_numerator = zeros(Float64, size(codes))
          sum_denominator = zeros(Float64, size(codes)[1])
 
+         # sum_numerator = Matrix{Float64}[size(codes)]
+
          # for each sample in dataset / or trainingsset
          for s in 1:len
 
@@ -254,16 +238,23 @@ end
              # with sample row: x(i)
              for i in 1:numCodes
 
+                 # cost of this dist function is around 2 sec.
                  dist = kernelFun(dm[bmu_idx, i], r)
-                 temp = sampl .* dist
-                 # println(temp)
-                 sum_numerator[i,:] = sum_numerator[i,:] + temp
-                 sum_denominator[i] = sum_denominator[i] + dist
+                 # temp = sampl .* dist
+
+                 # very slow assignment !!!
+                 # just by commenting out, time decreases from
+                 # 34 sec to 11 sec
+                 sum_numerator[i,:] += sampl .* dist
+                 sum_denominator[i] += dist
+
+                 # this one is no difference
+                 # sum_numerator[i,:] = sum_numerator[i,:] + temp
+                 # sum_denominator[i] = sum_denominator[i] + dist
              end
          end
 
          return sum_numerator, sum_denominator
-         # return sum_denominator
     end
 end
 
@@ -423,59 +414,6 @@ function makeClassFreqs(som, vis, classes)
     return cfs
 end
 
-
-
-"""
-    initAll( train::Array{Float64,2}, colNames::Array{String,1},
-                norm::Symbol,
-                xdim::Int, ydim::Int, nCodes::Int,
-                topology::Symbol, toroidal::Bool)
-
-Initialise a new Self-Organising Map.
-"""
-function initAll( train::Array{Float64,2}, colNames::Array{String,1},
-                norm::Symbol,
-                xdim::Int, ydim::Int, nCodes::Int,
-                topology::Symbol, toroidal::Bool)
-
-    # normalise training data:
-    train, normParams = normTrainData(train, norm)
-    codes = initCodes(nCodes, train, colNames)
-
-    if topology == :rectangular
-        grid = gridRectangular(xdim, ydim)
-    elseif topology == :hexagonal
-        grid = gridHexagonal(xdim, ydim)
-    elseif topology == :spherical
-        grid = gridSpherical(nCodes)
-    else
-        error("Topology $topology is not supported!")
-    end
-
-    normParams = convert(DataFrame, normParams)
-    names!(normParams, Symbol.(colNames))
-
-    # create X,y-indices for neurons:
-    #
-    if topology != :spherical
-        x = [mod(i-1, xdim)+1 for i in 1:nCodes]
-        y = [div(i-1, xdim)+1 for i in 1:nCodes]
-    else
-        x = y = collect(1:nCodes)
-    end
-    indices = DataFrame(X = x, Y = y)
-
-    # make SOM object:
-    som = Som(codes = codes, colNames = colNames,
-              normParams = normParams, norm = norm,
-              xdim = xdim, ydim = ydim,
-              nCodes = nCodes,
-              grid = grid, indices = indices,
-              topol = topology,
-              toroidal = toroidal,
-              population = zeros(Int, nCodes))
-    return som
-end
 
 #
 #

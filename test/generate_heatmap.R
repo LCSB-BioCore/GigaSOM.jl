@@ -116,7 +116,7 @@ daf_lineage <- c("CD3.110.114.Dd", "CD45.In115.Dd", "CD4.Nd145.Dd", "CD20.Sm147.
                  "HLA_DR.Yb174.Dd", "CD7.Yb176.Dd")
 
 library(ConsensusClusterPlus)
-codes <- som$map$codes
+
 plot_outdir <- "consensus_plots"
 nmc <- 20
 mc <- ConsensusClusterPlus(t(codes), maxK = nmc, reps = 100,

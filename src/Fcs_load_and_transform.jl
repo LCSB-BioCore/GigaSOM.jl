@@ -37,7 +37,8 @@ cd("/home/ohunewald/work/GigaSOM_data/PBMC8_fcs_files")
 # Pkg.build("GR")
 
 # md = CSV.File("metadata.csv", types=[String, String, String, String]) |> DataFrame
-md = CSV.File("PBMC8_metadata.csv") |> DataFrame
+# md = CSV.File("PBMC8_metadata.csv") |> DataFrame
+md = CSV.File("PBMC8_metadata_large.csv") |> DataFrame
 print(md)
 
 # load panel data
