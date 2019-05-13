@@ -5,3 +5,7 @@
 *.cov
 /docs/build/
 /docs/Manifest.toml
+*.ipynb
+*.csv
+*.py
+__pycache__
