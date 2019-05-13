@@ -28,6 +28,11 @@ after_success:
 
     # deploy documentation
     - if [[ "$ARCH" == "Linux" && "$JENKINS_PULL_REQUEST" != "True" ]]; then
+        export TRAVIS_BRANCH=$GIT_BRANCH;
+        export TRAVIS_PULL_REQUEST=false;
+        var=$GIT_URL; export TRAVIS_REPO_SLUG=${var:7:${#var}};
+        export TRAVIS_OS_NAME=$label;
+        export TRAVIS_JULIA_VERSION=$JULIA_VER;
         cd docs/src;
         mkdir assets && cd assets;
         curl -O https://prince.lcsb.uni.lu/GigaSOM.jl/img/logo-GigaSOM.jl.png && mv logo-GigaSOM.jl.png logo.png;
