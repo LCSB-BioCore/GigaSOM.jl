@@ -20,8 +20,20 @@ script:
     - bash .artenolis/runtests.sh
 
 after_success:
+
+    # submit coverage report
     - if [ "$ARCH" == "Linux" ]; then
         $ARTENOLIS_SOFT_PATH/julia/$JULIA_VER/bin/julia --color=yes -e 'using Coverage; Codecov.submit(process_folder())';
+      fi
+
+    # deploy documentation
+    - if [[ "$ARCH" == "Linux" && "$JENKINS_PULL_REQUEST" != "True" ]]; then
+        cd docs/src
+        mkdir assets && cd assets
+        curl -O https://prince.lcsb.uni.lu/GigaSOM.jl/img/logo-GigaSOM.jl.png && mv logo-GigaSOM.jl.png logo.png
+        cd $CURRENT_DIR
+        $ARTENOLIS_SOFT_PATH/julia/$JULIA_VER/bin/julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+        $ARTENOLIS_SOFT_PATH/julia/$JULIA_VER/bin/julia --project=docs/ docs/make.jl
       fi
 
 after_script:
