@@ -28,7 +28,7 @@ after_success:
 
     # deploy documentation
     - if [[ "$ARCH" == "Linux" && "$JENKINS_PULL_REQUEST" != "True" ]]; then
-        export TRAVIS_BRANCH=develop;
+        export TRAVIS_BRANCH=$GIT_BRANCH;
         export TRAVIS_PULL_REQUEST=false;
         var=$GIT_URL; export TRAVIS_REPO_SLUG=${var:8:${#var}};
         export TRAVIS_OS_NAME=$label;
