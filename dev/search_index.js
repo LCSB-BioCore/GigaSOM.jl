@@ -1,19 +1,3 @@
-var documenterSearchIndex = {"docs": [
-
-{
-    "location": "#",
-    "page": "GigaSOM.jl",
-    "title": "GigaSOM.jl",
-    "category": "page",
-    "text": "(Image: GigaSOM.jl)"
-},
-
-{
-    "location": "#GigaSOM.jl-1",
-    "page": "GigaSOM.jl",
-    "title": "GigaSOM.jl",
-    "category": "section",
-    "text": "Huge-scale, high-performance flow cytometry clustering"
-},
-
-]}
+var documenterSearchIndex = {"docs":
+[{"location":"#","page":"GigaSOM.jl","title":"GigaSOM.jl","text":"(Image: GigaSOM.jl)","category":"page"},{"location":"#GigaSOM.jl-1","page":"GigaSOM.jl","title":"GigaSOM.jl","text":"","category":"section"},{"location":"#","page":"GigaSOM.jl","title":"GigaSOM.jl","text":"Huge-scale, high-performance flow cytometry clustering","category":"page"}]
+}
