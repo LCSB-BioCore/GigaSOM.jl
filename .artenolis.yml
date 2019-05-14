@@ -33,6 +33,7 @@ after_success:
         var=$GIT_URL; export TRAVIS_REPO_SLUG=${var:8:${#var}};
         export TRAVIS_OS_NAME=$label;
         export TRAVIS_JULIA_VERSION=$JULIA_VER;
+        cd $CURRENT_DIR;
         cd docs/src;
         mkdir assets && cd assets;
         curl -O https://prince.lcsb.uni.lu/GigaSOM.jl/img/logo-GigaSOM.jl.png && mv logo-GigaSOM.jl.png logo.png;
