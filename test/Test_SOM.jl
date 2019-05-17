@@ -1,4 +1,4 @@
-copy paPkg.add("SOM")
+Pkg.add("SOM")
 Pkg.add("RDatasets")
 Pkg.add("RCall")
 Pkg.add("PyCall")
@@ -10,19 +10,20 @@ Pkg.add("Plots")
 Pkg.add("ProgressMeter")
 Pkg.add("Distributions")
 Pkg.add("TensorToolbox")
+Pkg.add("StatsBase")
 
 using Plots
-# using SOM
+using SOM
 using Distances
 using ProgressMeter
 using StatsBase
 using Distributions
 using TensorToolbox
 using LinearAlgebra
-include("gigasoms.jl")
-include("batch_som.jl")
-include("parallel_som.jl")
-include("parallel_som2.jl")
+include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/gigasoms.jl")
+include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/batch_som.jl")
+include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/parallel_som.jl")
+# include("parallel_som2.jl")
 
 # only use lineage_markers for clustering
 cc = map(Symbol, lineage_markers)
@@ -51,8 +52,8 @@ CSV.write("df_codes.csv", df_codes)
 
 using RCall
 
-R"install.packages('/home/ohunewald/work/consensusclusterplus/consens2')"
-@rlibrary("consens2")
+R"install.packages('C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/ConsensusClusterPlus')"
+@rlibrary("consensusclusterplus")
 
 mc = ConsensusClusterPlus_2(transpose(codes), maxK = 20, reps = 100,
                            pItem = 0.9, pFeature = 1, title = "plot_outdir", plot = "png",
@@ -94,6 +95,8 @@ expr_median = aggregate(xcluster, :x1, median)
 # cluster_rows <- hclust(d, method = "average")
 # expr_heat <- as.matrix(expr_median[, colnames(expr)])
 # rownames(expr_heat) <- expr_median$cell_clustering
+Pkg.add("PyPlot")
+using PyPlot
 
 pyplot()
 ys = [string("y", i) for i = 1:20]
@@ -104,9 +107,9 @@ Plots.heatmap(xs,ys,Matrix(expr_median[:, 2:11]), xtickfont = font(4, "Courier")
 
 
 
-# Pkg.add("Plotly")
-# using Plotly
-# my_plot = plot([scatter(x=[1,2], y=[3,4])], Layout(title="My plot"))
+Pkg.add("Plotly")
+using Plotly
+my_plot = plot([scatter(x=[1,2], y=[3,4])], Layout(title="My plot"))
 
 
 
