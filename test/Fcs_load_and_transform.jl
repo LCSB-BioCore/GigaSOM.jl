@@ -7,13 +7,17 @@ as this function is only the basic parsing of the binary
 FCS, we need to see what functionality is missing and
 extend this in the original package
 =#
+# cd("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl")
 
-# Pkg.add("FCSFiles")
-# Pkg.add("DataFrames")
-# Pkg.add("CSV")
-# Pkg.add("StatsPlots")
-# Pkg.add("Statistics")
-# Pkg.add("MultivariateStats")
+using Pkg
+Pkg.add("FCSFiles")
+Pkg.add("DataFrames")
+Pkg.add("CSV")
+Pkg.add("StatsPlots")
+Pkg.add("Statistics")
+Pkg.add("MultivariateStats")
+Pkg.add("FileIO")
+Pkg.add("JuliaInterpreter")
 
 using FileIO
 using FCSFiles
@@ -25,20 +29,21 @@ using MultivariateStats
 
 using JuliaInterpreter
 
-include("Fcs_helper.jl")
-include("Plotting.jl")
-include("GigaSOM.jl")
+include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/io/Fcs_helper.jl")
+include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/visualization/Plotting.jl")
+include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/GigaSOM.jl")
 
 # cd("/home/ohunewald/work/GigaSOM_data/test_data")
-cd("/home/ohunewald/work/GigaSOM_data/PBMC8_fcs_files")
+# cd("/home/ohunewald/work/GigaSOM_data/PBMC8_fcs_files")
+cd("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/CyTOF Data")
 
 # could not load library libGR.so
 # ENV["GRDIR"]=""
 # Pkg.build("GR")
 
 # md = CSV.File("metadata.csv", types=[String, String, String, String]) |> DataFrame
-# md = CSV.File("PBMC8_metadata.csv") |> DataFrame
-md = CSV.File("PBMC8_metadata_large.csv") |> DataFrame
+md = CSV.File("PBMC8_metadata.csv") |> DataFrame
+# md = CSV.File("PBMC8_metadata_large.csv") |> DataFrame
 print(md)
 
 # load panel data
@@ -58,7 +63,7 @@ cleannames!(lineage_markers)
 cleannames!(functional_markers)
 
 fcs_raw = readflowset(md.file_name)
-cleannames!(fcs_raw)
+# cleannames!(fcs_raw)
 
 ####################################
 # barplot of cell counts per sample
