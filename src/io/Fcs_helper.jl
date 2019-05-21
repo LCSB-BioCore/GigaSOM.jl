@@ -6,6 +6,7 @@ Create a dictionary with filenames as keys and daFrame as values
 # Arguments:
 - `filenames`: Array of type string
 """
+
 function readflowset(filenames)
     flowFrame = Dict()
 
@@ -120,7 +121,6 @@ end
     daFrame
 
 """
-using DataFrames
 struct daFrame
     fcstable
     md::DataFrame
