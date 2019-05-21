@@ -7,18 +7,7 @@ as this function is only the basic parsing of the binary
 FCS, we need to see what functionality is missing and
 extend this in the original package
 =#
-# cd("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl")
-
-using Pkg
-Pkg.add("FCSFiles")
-Pkg.add("DataFrames")
-Pkg.add("CSV")
-Pkg.add("StatsPlots")
-Pkg.add("Statistics")
-Pkg.add("MultivariateStats")
-Pkg.add("FileIO")
-Pkg.add("JuliaInterpreter")
-
+using DataFrames
 using FileIO
 using FCSFiles
 using CSV
@@ -26,15 +15,14 @@ using DataFrames
 using StatsPlots
 using Statistics
 using MultivariateStats
-
 using JuliaInterpreter
 
-include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/io/Fcs_helper.jl")
-include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/visualization/Plotting.jl")
-include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/GigaSOM.jl")
 
-# cd("/home/ohunewald/work/GigaSOM_data/test_data")
-# cd("/home/ohunewald/work/GigaSOM_data/PBMC8_fcs_files")
+include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/io/Fcs_helper.jl")
+include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/visualization/Plotting.jl")
+include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/GigaSOM.jl")
+
+
 cd("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/CyTOF Data")
 
 # could not load library libGR.so
