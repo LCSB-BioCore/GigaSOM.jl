@@ -1,5 +1,5 @@
 import DataFrames: nrow, ncol
-Pkg.add("Distributed")
+
 using Distributed
 @everywhere begin
     """
