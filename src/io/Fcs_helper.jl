@@ -120,6 +120,7 @@ end
     daFrame
 
 """
+using DataFrames
 struct daFrame
     fcstable
     md::DataFrame
