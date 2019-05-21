@@ -1,8 +1,11 @@
-include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/errors.jl")
-include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/types.jl")
-include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/helpers.jl")
-include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/grids.jl")
-include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/kernels.jl")
+
+
+
+include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/errors.jl")
+include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/types.jl")
+include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/helpers.jl")
+include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/grids.jl")
+include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/kernels.jl")
 
 
 """
