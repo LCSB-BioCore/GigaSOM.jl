@@ -1,4 +1,3 @@
-Pkg.add("Distributed")
 using Distributed
 
 @everywhere using Distributions
