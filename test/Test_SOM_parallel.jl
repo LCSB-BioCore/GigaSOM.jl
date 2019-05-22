@@ -1,18 +1,3 @@
-using Pkg
-
-Pkg.add("SOM")
-Pkg.add("RDatasets")
-Pkg.add("RCall")
-Pkg.add("PyCall")
-Pkg.add("VegaLite")
-Pkg.add("FreqTables")
-Pkg.add("Distances")
-Pkg.add("Plotly")
-Pkg.add("Plots")
-Pkg.add("ProgressMeter")
-Pkg.add("Distributions")
-Pkg.add("TensorToolbox")
-Pkg.add("DistributedArrays")
 
 using Plots
 using SOM
@@ -55,10 +40,9 @@ codes = som2.codes
 df_codes = DataFrame(codes)
 names!(df_codes, Symbol.(som2.colNames))
 CSV.write("df_codes.csv", df_codes)
-# CSV.write("mywinners.csv", mywinners)
+CSV.write("mywinners.csv", mywinners)
 # CSV.write("myfreqs.csv", myfreqs)
-Pkg.add("RCall")
-Pkg.build("RCall")
+
 using RCall
 
 R"install.packages('C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/ConsensusClusterPlus')"
