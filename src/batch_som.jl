@@ -2,14 +2,6 @@
  Modified version of the SOM.jl package for batch update
 """
 
-
-
-include("../src/errors.jl")
-include("../src/types.jl")
-include("../src/helpers.jl")
-include("../src/grids.jl")
-include("../src/kernels.jl")
-
 """
     initSOM(train, xdim, ydim = xdim;  norm = :zscore, topol = :hexagonal,
             toroidal = false)
