@@ -1,7 +1,3 @@
-using Distributed
-
-@everywhere using Distributions
-
 
 """
     bubbleKernel(x::Float64, r::Float64)::Float64

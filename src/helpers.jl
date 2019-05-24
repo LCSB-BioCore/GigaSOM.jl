@@ -1,6 +1,5 @@
 import DataFrames: nrow, ncol
 
-using Distributed
 @everywhere begin
     """
         nrow(a::Array)
