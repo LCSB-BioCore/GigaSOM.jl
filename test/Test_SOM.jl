@@ -10,9 +10,9 @@ using TensorToolbox
 using LinearAlgebra
 
 
-include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/gigasoms.jl")
-include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/batch_som.jl")
-include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/parallel_som.jl")
+include("../src/gigasoms.jl")
+# include("../src/batch_som.jl")
+# include("../src/parallel_som.jl")
 
 
 # only use lineage_markers for clustering
@@ -39,11 +39,13 @@ names!(df_codes, Symbol.(som2.colNames))
 CSV.write("df_codes.csv", df_codes)
 CSV.write("mywinners.csv", mywinners)
 # CSV.write("myfreqs.csv", myfreqs)
-
+using Pkg
 using RCall
+Pkg.build("RCall")
 
-R"install.packages('C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/ConsensusClusterPlus')"
-@rlibrary("consensusclusterplus")
+R"install.packages('BiocManager','https://CRAN.R-project.org/package=BiocManager')"
+@rlibrary("BiocManager")
+@rlibrary("ConsensusClusterPlus")
 
 mc = ConsensusClusterPlus_2(transpose(codes), maxK = 20, reps = 100,
                            pItem = 0.9, pFeature = 1, title = "plot_outdir", plot = "png",
