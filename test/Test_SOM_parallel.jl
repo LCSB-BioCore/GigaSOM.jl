@@ -1,22 +1,6 @@
-
-using Plots
-using SOM
-using Distributed
-using DistributedArrays
-using ProgressMeter
-using StatsBase
-using Distributions
-using TensorToolbox
-using LinearAlgebra
-
-
 p = addprocs(2)
-@everywhere using DistributedArrays
-@everywhere using DataFrames
-@everywhere using Distances
-include("../src/gigasoms.jl")
-include("../src/batch_som.jl")
-include("../src/parallel_som.jl")
+
+@everywhere using GigaSOM
 
 # only use lineage_markers for clustering
 cc = map(Symbol, lineage_markers)
