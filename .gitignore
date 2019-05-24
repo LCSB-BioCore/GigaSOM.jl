@@ -1,9 +1,11 @@
+Manifest.toml
 .DS_Store
 *.jl.cov
 *.jl.*.cov
 *.jl.mem
 *.cov
 /docs/build/
+docs/site/
 /docs/Manifest.toml
 *.ipynb
 *.csv
