@@ -14,9 +14,9 @@ p = addprocs(2)
 @everywhere using DistributedArrays
 @everywhere using DataFrames
 @everywhere using Distances
-include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/gigasoms.jl")
-include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/batch_som.jl")
-include("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/GigaSOM.jl/src/parallel_som.jl")
+include("../src/gigasoms.jl")
+include("../src/batch_som.jl")
+include("../src/parallel_som.jl")
 
 # only use lineage_markers for clustering
 cc = map(Symbol, lineage_markers)
