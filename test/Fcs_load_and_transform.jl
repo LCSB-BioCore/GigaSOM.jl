@@ -18,24 +18,18 @@ using MultivariateStats
 using JuliaInterpreter
 
 
-include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/io/Fcs_helper.jl")
-include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/visualization/Plotting.jl")
-include("C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/src/GigaSOM.jl")
+include("../src/io/Fcs_helper.jl")
+include("../src/visualization/Plotting.jl")
+include("../src/GigaSOM.jl")
 
 
 cd("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/CyTOF Data")
 
-# could not load library libGR.so
-# ENV["GRDIR"]=""
-# Pkg.build("GR")
-
-# md = CSV.File("metadata.csv", types=[String, String, String, String]) |> DataFrame
 md = CSV.File("PBMC8_metadata.csv") |> DataFrame
 # md = CSV.File("PBMC8_metadata_large.csv") |> DataFrame
 print(md)
 
 # load panel data
-# panel = CSV.File("panel.csv") |> DataFrame
 panel = CSV.File("PBMC8_panel.csv") |> DataFrame
 print(panel.Antigen)
 
