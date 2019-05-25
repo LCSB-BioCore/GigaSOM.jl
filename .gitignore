@@ -11,3 +11,5 @@ docs/site/
 *.csv
 *.py
 __pycache__
+data/
+*.fcs
