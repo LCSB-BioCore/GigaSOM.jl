@@ -1,29 +1,19 @@
 """
  Modified version of the SOM.jl package for batch update
-
 """
 
 
 
-include("errors.jl")
-
-include("types.jl")
-include("helpers.jl")
-include("grids.jl")
-include("kernels.jl")
-# include("soms.jl")
-# include("api.jl")
-
-#
-# the API
-#
+include("../src/errors.jl")
+include("../src/types.jl")
+include("../src/helpers.jl")
+include("../src/grids.jl")
+include("../src/kernels.jl")
 
 """
     initSOM(train, xdim, ydim = xdim;  norm = :zscore, topol = :hexagonal,
             toroidal = false)
-
 Initialises a SOM.
-
 # Arguments:
 - `train`: training data
 - `xdim, ydim`: geometry of the SOM
@@ -62,9 +52,7 @@ end
     trainSOM(som::Som, train::Any, len;
              η = 0.2, kernelFun = gaussianKernel,
              r = 0.0, rDecay = true, ηDecay = true)
-
 Train an initialised or pre-trained SOM.
-
 # Arguments:
 - `som`: object of type Som with a trained som
 - `train`: training data
@@ -77,10 +65,8 @@ Train an initialised or pre-trained SOM.
 - `rDecay`: optional flag; if true, r decays to 0.0 during the training.
 - `ηDecay`: optional flag; if true, learning rate η decays to 0.0
             during the training.
-
 Training data must be convertable to Array{Float64,2} with
 `convert()`. Training samples are row-wise; one sample per row.
-
 An alternative kernel function can be provided to modify the distance-dependent
 training. The function must fit to the signature fun(x, r) where
 x is an arbitrary distance and
@@ -103,10 +89,8 @@ end
     function trainAll(train::Array{Float64}, xdim, ydim,
                 topology, len, η, kernelFun, r,
                 norm, toroidal, rDecay, ηDecay)
-
 Connects the high-level-API functions with
 the backend.
-
 # If `init == true` a new som is initialised with randomly sampled
 # samples from train.
 # Otherwise the som is trained.
@@ -166,14 +150,11 @@ end
     doEpoch(x::Array{Float64}, codes::Array{Float64},
              dm::Array{Float64}, kernelFun::Function, len::Int, η::Float64,
              r::Number, toroidal::Bool, rDecay::Bool, ηDecay::Bool)
-
 Train a SOM for one epoch. This implements also the batch update
 of the codebook vectors and the adjustment in radius after each
 epoch.
-
 This worker function is called by the high-level-API-functions
 `som(), somHexagonal() and somSpherical()`.
-
 # Arguments:
 - `x`: training Data
 - `dm`: distance matrix of all neurons of the SOM
@@ -269,14 +250,11 @@ end
 #
 """
     mapToSOM(som::Som, data)
-
 Return a DataFrame with X-, Y-indices and index of winner neuron for
 every row in data.
-
 # Arguments
 - `som`: a trained SOM
 - `data`: Array or DataFrame with training data.
-
 Data must have the same number of dimensions as the training dataset
 and will be normalised with the same parameters.
 """
@@ -300,14 +278,11 @@ end
 
 """
     classFrequencies(som::Som, data, classes)
-
 Return a DataFrame with class frequencies for all neurons.
-
 # Arguments:
 - `som`: a trained SOM
 - `data`: data with row-wise samples and class information in each row
 - `classes`: Name of column with class information.
-
 Data must have the same number of dimensions as the training dataset.
 The column with class labels is given as `classes` (name or index).
 Returned DataFrame has the columns:
@@ -334,7 +309,6 @@ end
 
 """
     function visual(codes, x)
-
 Return the index of the winner neuron for each training pattern
 in x (row-wise).
 """
@@ -351,7 +325,6 @@ end
 
 """
     makePopulation(nCodes, vis)
-
 Return a vector of neuron populations.
 """
 function makePopulation(nCodes, vis)
@@ -367,7 +340,6 @@ end
 
 """
     makeClassFreqs(som, vis, classes)
-
 Return a DataFrame with class frequencies for all neurons.
 """
 function makeClassFreqs(som, vis, classes)
@@ -424,7 +396,6 @@ end
                 norm::Symbol,
                 xdim::Int, ydim::Int, nCodes::Int,
                 topology::Symbol, toroidal::Bool)
-
 Initialise a new Self-Organising Map.
 """
 function initAll( train::Array{Float64,2}, colNames::Array{String,1},
@@ -483,9 +454,7 @@ end
                 colormap = "autumn_r",
                 detail = 45,
                 device = :display, fileName = "somplot")
-
 Plot the population of neurons as colours.
-
 # Arguments:
 - `som`: the som of type `Som`; som is the only mandatory argument
 - `predict`: DataFrame of mappings as outputed by `mapToSOM()`
@@ -540,9 +509,7 @@ end
                 colors = "brg",
                 detail = 45,
                 device = :display, fileName = "somplot")
-
 Plot the population of neurons as colours.
-
 # Arguments:
 - `som`: the som of type `Som`
 - `frequencies`: DataFrame of frequencies as outputed by classFrequencies()

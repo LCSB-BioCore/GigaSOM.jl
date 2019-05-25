@@ -1,15 +1,15 @@
-## Script  to visualize the test dataset 
+## Script  to visualize the test dataset
 ## In order to get the same layout as in the original described
 ## workflow, we use their heatmap processing
 
-# install.packages("readxl")
+install.packages("readxl")
 library(readxl)
 library(flowCore)
 
 rm(list=ls())
-setwd("/home/ohunewald/work/GigaSOM_data/PBMC8_fcs_files")
+setwd("C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/CyTOF Data")
 
-metadata_filename <- "PBMC8_metadata.xlsx"
+metadata_filename <- "PBMC8_metadata.csv"
 
 md <- read_excel(metadata_filename)
 
@@ -25,7 +25,7 @@ fcs_raw <- read.flowSet(md$file_name, transformation = FALSE,
                         truncate_max_range = FALSE)
 fcs_raw
 
-panel_filename <- "PBMC8_panel.xlsx"
+panel_filename <- "PBMC8_panel.csv"
 panel <- read_excel(panel_filename)
 head(data.frame(panel))
 
@@ -145,10 +145,10 @@ plot_clustering_heatmap_wrapper <- function(expr, expr01,
     group_by(cell_clustering) %>% summarize_all(funs(median))
   expr01_median <- data.frame(expr01, cell_clustering = cell_clustering) %>%
     group_by(cell_clustering) %>% summarize_all(funs(median))
-  
+
   colnames(expr_median) <- gsub('^X', '', colnames(expr_median))
   colnames(expr01_median) <- gsub('^X', '', colnames(expr01_median))
-  
+
   # Calculate cluster frequencies
   clustering_table <- as.numeric(table(cell_clustering))
   clustering_prop <- round(clustering_table / sum(clustering_table) * 100, 2)
@@ -175,7 +175,7 @@ plot_clustering_heatmap_wrapper <- function(expr, expr01,
     names(color_clusters2) <- levels(cluster_merging$new_cluster)
     annotation_colors$Cluster_merging <- color_clusters2
   }
-  
+
   pheatmap(expr_heat, color = color_heat, cluster_cols = FALSE,
            cluster_rows = cluster_rows, labels_row = labels_row,
            display_numbers = TRUE, number_color = "black",
@@ -186,11 +186,3 @@ plot_clustering_heatmap_wrapper <- function(expr, expr01,
 plot_clustering_heatmap_wrapper(expr = daf[, daf_lineage],
                                 expr01 = daf[, daf_lineage],
                                 cell_clustering = cell_clustering1, color_clusters = color_clusters)
-
-
-
-
-
-
-
-

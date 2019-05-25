@@ -1,18 +1,6 @@
-# copy paPkg.add("SOM")
-# Pkg.add("RDatasets")
-# Pkg.add("RCall")
-# Pkg.add("PyCall")
-# Pkg.add("VegaLite")
-# Pkg.add("FreqTables")
-# Pkg.add("Distances")
-# Pkg.add("Plotly")
-# Pkg.add("Plots")
-# Pkg.add("ProgressMeter")
-# Pkg.add("Distributions")
-# Pkg.add("TensorToolbox")
 
 using Plots
-# using SOM
+using SOM
 using Distributed
 using DistributedArrays
 using ProgressMeter
@@ -26,8 +14,8 @@ p = addprocs(2)
 @everywhere using DistributedArrays
 @everywhere using DataFrames
 @everywhere using Distances
-# include("gigasoms.jl")
-# include("batch_som.jl")
+include("../src/gigasoms.jl")
+include("../src/batch_som.jl")
 include("../src/parallel_som.jl")
 
 # only use lineage_markers for clustering
@@ -52,13 +40,13 @@ codes = som2.codes
 df_codes = DataFrame(codes)
 names!(df_codes, Symbol.(som2.colNames))
 CSV.write("df_codes.csv", df_codes)
-# CSV.write("mywinners.csv", mywinners)
+CSV.write("mywinners.csv", mywinners)
 # CSV.write("myfreqs.csv", myfreqs)
 
 using RCall
 
-R"install.packages('/home/ohunewald/work/consensusclusterplus/consens2')"
-@rlibrary("consens2")
+R"install.packages('C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/ConsensusClusterPlus')"
+@rlibrary("ConsensusClusterPlus")
 
 mc = ConsensusClusterPlus_2(transpose(codes), maxK = 20, reps = 100,
                            pItem = 0.9, pFeature = 1, title = "plot_outdir", plot = "png",
