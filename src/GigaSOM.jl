@@ -37,7 +37,9 @@ module GigaSOM
     export # Fcs_helper
         cleannames!,
         readflowset,
-        create_daFrame
+        create_daFrame,
+        getMarkers,
+        daFrame
 
     export # Plotting
         plotcounts,
