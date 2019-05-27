@@ -98,6 +98,17 @@ Read in the fcs raw, add sample id, subset the columns and transform
 """
 function create_daFrame(fcs_raw, md, panel)
 
+    # extract lineage markers
+    lineage_markers = panel.Antigen[panel.Lineage .== 1, : ]
+    functional_markers = panel.Antigen[panel.Functional .== 1, :]
+
+    # lineage_markers are 2d array,
+    # flatten this array by using vec:
+    lineage_markers = vec(lineage_markers)
+    functional_markers = vec(functional_markers)
+    cleannames!(lineage_markers)
+    cleannames!(functional_markers)
+
     transform_data(fcs_raw)
 
     for i in eachindex(md.file_name)
