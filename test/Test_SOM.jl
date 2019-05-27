@@ -1,6 +1,9 @@
+using SOM
+
+
 include("Fcs_load_and_transform.jl")
 
-lineage_markers = getMarkers(panel)
+(lineage_markers,)= getMarkers(panel)
 
 # only use lineage_markers for clustering
 cc = map(Symbol, lineage_markers)
