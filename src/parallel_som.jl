@@ -140,7 +140,7 @@ function trainSOM_paralell(som::Som, train::Any, len;
      #
      # wp = WorkerPool([2, 3])
 
-     # tmp = remotecall_wait(doEpoch, wp, localpart(dTrain), codes, dm, kernelFun, len, r, false, rDecay, epochs)
+     # tmp = remotecall_wait(doEpoch_parallel, wp, localpart(dTrain), codes, dm, kernelFun, len, r, false, rDecay, epochs)
      # tmp = remotecall_wait(sum, wp, [1,2,3,4,5,6,7,8,9])
 
      for dset in tmp
