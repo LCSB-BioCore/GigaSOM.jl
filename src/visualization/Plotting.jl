@@ -23,7 +23,7 @@ Plotting the PCA of all median marker expression
 - `daFrame`: daFrame containing the fcs data, metadata and panel
 """
 
-function plotPCA(daf)
+function plotPCA(daf, md)
     dfall_median = aggregate(daf.fcstable, :sample_id, median)
 
     T = convert(Matrix, dfall_median)
