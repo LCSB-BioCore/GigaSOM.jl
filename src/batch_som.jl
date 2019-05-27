@@ -1,8 +1,4 @@
 """
- Modified version of the SOM.jl package for batch update
-"""
-
-"""
     trainSOM_batch(som::Som, train::Any, len;
              η = 0.2, kernelFun = gaussianKernel,
              r = 0.0, rDecay = true, ηDecay = true)
@@ -59,7 +55,7 @@ function trainAll_batch(som::Som, train::Array{Float64,2},
 
     # normalise training data:
     if norm != :none
-        train = normTrainData(train, som.normParams)
+        train = SOM.normTrainData(train, som.normParams)
     end
 
     # set default radius:
@@ -72,7 +68,7 @@ function trainAll_batch(som::Som, train::Array{Float64,2},
     end
 
     if som.topol == :spherical
-        dm = distMatrixSphere(som.grid)
+        dm = SOM.distMatrixSphere(som.grid)
     else
         dm = distMatrix(som.grid, som.toroidal)
     end
@@ -84,8 +80,8 @@ function trainAll_batch(som::Som, train::Array{Float64,2},
 
 
     # map training samles to SOM and calc. neuron population:
-    vis = visual(codes, train)
-    population = makePopulation(som.nCodes, vis)
+    vis = SOM.visual(codes, train)
+    population = SOM.makePopulation(som.nCodes, vis)
 
     # create X,Y-indices for neurons:
     #
