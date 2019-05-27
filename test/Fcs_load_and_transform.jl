@@ -12,7 +12,7 @@ using FCSFiles
 using CSV
 using DataFrames
 
-dataPath = "data/"
+dataPath = "../data/"
 
 cd(dataPath)
 
@@ -26,18 +26,8 @@ print(panel.Antigen)
 fcs_raw = readflowset(md.file_name)
 # cleannames!(fcs_raw)
 
-####################################
-# barplot of cell counts per sample
-####################################
-plotcounts(fcs_raw, md)
-
 # subset the data
 # transform the data
 # create daFrame file
 daf = create_daFrame(fcs_raw, md, panel)
-
 CSV.write("daf.csv", daf.fcstable)
-####################################################################
-# PCA plot
-####################################################################
-plotPCA(daf, md)
