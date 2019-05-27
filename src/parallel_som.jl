@@ -25,7 +25,7 @@ function initSOM_parallel( train, xdim, ydim = xdim;
     nCodes = xdim * ydim
 
     # normalise training data:
-    train, normParams = normTrainData(train, norm)
+    train, normParams = SOM.normTrainData(train, norm)
     codes = initCodes(nCodes, train, colNames)
 
     grid = gridRectangular(xdim, ydim)
@@ -85,7 +85,7 @@ function trainSOM_paralell(som::Som, train::Any, len;
     train = convertTrainingData(train)
 
      if norm != :none
-         train = normTrainData(train, som.normParams)
+         train = SOM.normTrainData(train, som.normParams)
      end
 
     # set default radius:
@@ -161,8 +161,8 @@ function trainSOM_paralell(som::Som, train::Any, len;
     end
 
     # map training samples to SOM and calc. neuron population:
-    vis = visual(codes, train)
-    population = makePopulation(som.nCodes, vis)
+    vis = SOM.visual(codes, train)
+    population = SOM.makePopulation(som.nCodes, vis)
 
     # create X,Y-indices for neurons:
     #
