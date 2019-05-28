@@ -22,7 +22,7 @@ function readflowset(filenames)
 
     # read all FCS files into flowFrame
     for name in filenames # file list
-        flowrun = load(name) # FCS file
+        flowrun = FileIO.load(name) # FCS file
         flowDF = DataFrame(flowrun.data)
         flowFrame[name] = flowDF
     end
