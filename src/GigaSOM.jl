@@ -11,11 +11,11 @@ module GigaSOM
     using DataFrames
     using Distributed
     using FileIO
-    using MultivariateStats
+    # using MultivariateStats
     using SOM
-    using Statistics
-    using StatsBase
-    using StatsPlots
+    # using Statistics
+    # using StatsBase
+    # using StatsPlots
 
     # using Distances
     # using DistributedArrays
@@ -33,7 +33,7 @@ module GigaSOM
     include("io/Fcs_helper.jl")
 
     # include visualization files
-    include("visualization/Plotting.jl")
+    # include("visualization/Plotting.jl")
 
     export # Fcs_helper
         cleannames!,
