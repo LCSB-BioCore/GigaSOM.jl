@@ -28,6 +28,8 @@ CSV.write("df_codes.csv", df_codes)
 CSV.write("mywinners.csv", mywinners)
 # CSV.write("myfreqs.csv", myfreqs)
 
+
+#=
 R"install.packages('BiocManager','https://CRAN.R-project.org/package=BiocManager')"
 @rlibrary("BiocManager")
 @rlibrary("ConsensusClusterPlus")
@@ -106,3 +108,4 @@ rownames(expr_heat) <- expr_median$cell_clustering
 
 code_clustering1 <- mc[[nmc]]$consensusClass
 cell_clustering1 <- code_clustering1[cell_clustering_som]
+=#

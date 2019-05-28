@@ -27,6 +27,8 @@ CSV.write("df_codes.csv", df_codes)
 CSV.write("mywinners.csv", mywinners)
 # CSV.write("myfreqs.csv", myfreqs)
 
+
+#=
 using RCall
 
 R"install.packages('C:/Users/vasco.verissimo/ownCloud/PhD Vasco/CyTOF Project/github/ConsensusClusterPlus')"
@@ -105,3 +107,4 @@ rownames(expr_heat) <- expr_median$cell_clustering
 
 code_clustering1 <- mc[[nmc]]$consensusClass
 cell_clustering1 <- code_clustering1[cell_clustering_som]
+=#
