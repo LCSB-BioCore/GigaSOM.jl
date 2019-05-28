@@ -9,13 +9,13 @@ module GigaSOM
 
     using CSV
     using DataFrames
-    using FileIO
     using Distributed
-    using SOM
-    using StatsPlots
-    using StatsBase
-    using Statistics
+    using FileIO
     using MultivariateStats
+    using SOM
+    using Statistics
+    using StatsBase
+    using StatsPlots
 
     # using Distances
     # using DistributedArrays
