@@ -9,21 +9,22 @@ module GigaSOM
 
     using CSV
     using DataFrames
-    using Distances
-    using Distributed
-    using DistributedArrays
-    using Distributions
     using FileIO
-    using FCSFiles
-    using JuliaInterpreter
-    using LinearAlgebra
-    using MultivariateStats
-    using ProgressMeter
+    using Distributed
     using SOM
-    using StatsBase
     using StatsPlots
+    using StatsBase
     using Statistics
-    using TensorToolbox
+    using MultivariateStats
+
+    # using Distances
+    # using DistributedArrays
+    # using Distributions
+    # using FCSFiles
+    # using JuliaInterpreter
+    # using LinearAlgebra
+    # using ProgressMeter
+    # using TensorToolbox
 
     include("batch_som.jl")
     include("parallel_som.jl")
