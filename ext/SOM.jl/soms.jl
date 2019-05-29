@@ -47,8 +47,8 @@ function doSom(x::Array{Float64}, codes::Array{Float64},
     # 1) select random sample
     # 2) find winner
     # 3) train all neurons with gaussian kernel
-    p = Progress(len, dt=1.0, desc="Training...", barglyphs=BarGlyphs("[=> ]"),
-                 barlen=50, color=:yellow)
+    #p = Progress(len, dt=1.0, desc="Training...", barglyphs=BarGlyphs("[=> ]"),
+    #             barlen=50, color=:yellow)
     @time for s in 1:len
 
         sampl = rowSample(x)
@@ -63,7 +63,7 @@ function doSom(x::Array{Float64}, codes::Array{Float64},
 
         η -= Δη
         r -= Δr
-        next!(p)
+       # next!(p)
     end
 
     return codes
@@ -174,7 +174,7 @@ function trainAll(som::Som, train::Array{Float64,2},
                 rDecay, ηDecay)
 
     # normalise training data:
-    if norm != :none
+    if som.norm != :none
         train = normTrainData(train, som.normParams)
     end
 
