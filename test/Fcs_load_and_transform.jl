@@ -12,7 +12,7 @@ using GigaSOM
 using CSV
 using DataFrames
 
-dataPath = "../data/"
+dataPath = "data/"
 
 cd(dataPath)
 
