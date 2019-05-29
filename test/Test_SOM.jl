@@ -1,6 +1,3 @@
-using SOM
-
-
 include("Fcs_load_and_transform.jl")
 
 (lineage_markers,)= getMarkers(panel)
@@ -9,14 +6,14 @@ include("Fcs_load_and_transform.jl")
 cc = map(Symbol, lineage_markers)
 df_som = daf.fcstable[:,cc]
 
-som2 = SOM.initSOM(df_som, 10, 10, topol = :rectangular)
+som2 = initSOM(df_som, 10, 10, topol = :rectangular)
 
 # using classical som training without epochs
-@time som2 = SOM.trainSOM(som2, df_som, 100000)
+@time som2 = trainSOM(som2, df_som, 100000)
 
 
 
-@time mywinners = SOM.mapToSOM(som2, df_som)
+@time mywinners = mapToSOM(som2, df_som)
 CSV.write("cell_clustering_som.csv", mywinners)
 
 # myfreqs = SOM.classFrequencies(som2, daf.fcstable, :sample_id)
