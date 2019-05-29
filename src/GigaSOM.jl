@@ -25,7 +25,9 @@ module GigaSOM
     # using ProgressMeter
     # using TensorToolbox
 
-    include("../ext/som/types.jl")
+    include("../ext/SOM.jl/types.jl")
+    include("../ext/SOM.jl/api.jl")
+    include("../ext/SOM.jl/helpers.jl")
     include("batch_som.jl")
     include("parallel_som.jl")
 
@@ -34,6 +36,11 @@ module GigaSOM
 
     # include visualization files
     # include("visualization/Plotting.jl")
+
+    export # ext/som
+        initSOM,
+        trainSOM,
+        mapToSOM
 
     export # Fcs_helper
         cleannames!,
