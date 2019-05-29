@@ -25,7 +25,7 @@ module GigaSOM
     # using ProgressMeter
     # using TensorToolbox
 
-    include("../external/som/types.jl")
+    include("../ext/som/types.jl")
     include("batch_som.jl")
     include("parallel_som.jl")
 
