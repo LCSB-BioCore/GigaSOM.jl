@@ -1,19 +1,18 @@
 import DataFrames: nrow, ncol
 
-using Distributed
-@everywhere begin
-    """
-        nrow(a::Array)
-    Returns size of the first dimenstion of Array a (== nrow() for Arrays).
-    """
-    function nrow(a::Array)
+"""
+    nrow(a::Array)
 
-        return size(a)[1]
-    end
+Returns size of the first dimenstion of Array a (== nrow() for Arrays).
+"""
+function nrow(a::Array)
+
+    return size(a)[1]
 end
 
 """
     ncol(a::Array)
+
 Returns size of the second dimenstion of Array a (== ncol() for Arrays).
 """
 function ncol(a::Array)
@@ -24,6 +23,7 @@ end
 
 """
     rowSample(df::DataFrame, n::Int)
+
 Take n random rows from a DataFrame with replacement.
 """
 function rowSample(df::DataFrame, n::Int)
@@ -34,6 +34,7 @@ end
 
 """
     rowSample(df::Array, n::Int)
+
 Take n random rows from an Array with replacement and return it as a row vector.
 """
 function rowSample(a::Array, n::Int)
@@ -43,6 +44,7 @@ end
 
 """
     rowSample(df::Array)
+
 Take 1 random row from an Array and return it as a 1-d-vector (== column vector).
 """
 function rowSample(a::Array)
@@ -55,6 +57,7 @@ end
 
 """
     initCodes(num::Int, x::Array)
+
 Return num rows from Array x as initial codes.
 """
 function initCodes(num::Int, x::Array{Float64}, colNames)
@@ -63,35 +66,10 @@ function initCodes(num::Int, x::Array{Float64}, colNames)
     return codes
 end
 
-@everywhere begin
-    """
-        Find the best matching unit for a given vector, row_t, in the SOM
-        Returns: a (bmu, bmu_idx) tuple where bmu is the high-dimensional Best Matching Unit
-               and bmu_idx is the index of this vector in the SOM
-    """
-    function find_bmu(cod, sampl)
-
-        dist = floatmax()
-        winner = 1
-        n = nrow(cod)
-
-        for i in 1:n
-
-            d = euclidean(sampl, cod[i,:])
-            if (d < dist)
-                dist = d
-                winner = i
-            end
-        end
-        # get the code vector of the bmu
-        bmu_vec = cod[winner,:]
-        return winner, bmu_vec
-    end
-end
-
 
 """
     findWinner(cod, sampl)
+
 Return index of the winner neuron for sample sampl.
 """
 function findWinner(cod, sampl)
@@ -115,7 +93,9 @@ end
 
 """
     normTrainData(train::DataFrame, normParams::DataFrame)
+
 Normalise every column of training data with the params.
+
 # Arguments
 - `train`: DataFrame with training Data
 - `normParams`: Shift and scale parameters for each attribute column.
@@ -132,7 +112,9 @@ end
 
 """
     normTrainData(train::DataFrame, norm::Symbol)
+
 Normalise every column of training data.
+
 # Arguments
 - `train`: DataFrame with training Data
 - `norm`: type of normalisation; one of `minmax, zscore, none`
@@ -168,8 +150,7 @@ function normTrainData(train::Array{Float64,2}, norm::Symbol)
     return x, normParams
 end
 
-# converts to Float64
-# TODO: reduce to Float32 to save memory
+
 function convertTrainingData(data)::Array{Float64,2}
 
     if typeof(data) == DataFrame

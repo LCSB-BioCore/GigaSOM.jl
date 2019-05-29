@@ -23,14 +23,14 @@ Plotting the PCA of all median marker expression
 - `daFrame`: daFrame containing the fcs data, metadata and panel
 """
 
-function plotPCA(daf)
-    dfall_median = aggregate(daf.fcstable, :sample_id, median)
+function plotPCA(daf, md)
+    dfall_median = aggregate(daf.fcstable, :sample_id, Statistics.median)
 
     T = convert(Matrix, dfall_median)
     samples_ids = T[:,1]
     T_reshaped = permutedims(convert(Matrix{Float32}, T[:, 2:10]), [2, 1])
 
-    my_pca = fit(PCA, T_reshaped)
+    my_pca = StatsBase.fit(MultivariateStats.PCA, T_reshaped)
 
     yte = MultivariateStats.transform(my_pca,T_reshaped)
 

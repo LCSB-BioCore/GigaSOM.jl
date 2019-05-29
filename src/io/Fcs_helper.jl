@@ -1,4 +1,14 @@
 """
+    daFrame
+
+"""
+struct daFrame
+    fcstable
+    md::DataFrame
+    panel::DataFrame
+end
+
+"""
     readflowset(filenames)
 
 Create a dictionary with filenames as keys and daFrame as values
@@ -12,7 +22,7 @@ function readflowset(filenames)
 
     # read all FCS files into flowFrame
     for name in filenames # file list
-        flowrun = load(name) # FCS file
+        flowrun = FileIO.load(name) # FCS file
         flowDF = DataFrame(flowrun.data)
         flowFrame[name] = flowDF
     end
@@ -98,6 +108,9 @@ Read in the fcs raw, add sample id, subset the columns and transform
 """
 function create_daFrame(fcs_raw, md, panel)
 
+    # extract lineage markers
+    lineage_markers, functional_markers = getMarkers(panel)
+
     transform_data(fcs_raw)
 
     for i in eachindex(md.file_name)
@@ -117,12 +130,24 @@ function create_daFrame(fcs_raw, md, panel)
     daf = daFrame(dfall, md, panel)
 end
 
-"""
-    daFrame
 
 """
-struct daFrame
-    fcstable
-    md::DataFrame
-    panel::DataFrame
+    getMarkers(panel)
+
+"""
+function getMarkers(panel)
+
+    # extract lineage markers
+    lineage_markers = panel.Antigen[panel.Lineage .== 1, : ]
+    functional_markers = panel.Antigen[panel.Functional .== 1, :]
+
+    # lineage_markers are 2d array,
+    # flatten this array by using vec:
+    lineage_markers = vec(lineage_markers)
+    functional_markers = vec(functional_markers)
+    cleannames!(lineage_markers)
+    cleannames!(functional_markers)
+
+    return lineage_markers, functional_markers
+
 end
