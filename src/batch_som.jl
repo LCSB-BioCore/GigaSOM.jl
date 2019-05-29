@@ -54,7 +54,7 @@ function trainAll_batch(som::Som, train::Array{Float64,2},
                 rDecay, epochs)
 
     # normalise training data:
-    if norm != :none
+    if som.norm != :none
         train = SOM.normTrainData(train, som.normParams)
     end
 
