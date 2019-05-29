@@ -14,6 +14,8 @@ using DataFrames
 
 dataPath = "data/"
 
+# get the current directory and change to the data path
+cwd = pwd()
 cd(dataPath)
 
 md = CSV.File("PBMC8_metadata.csv") |> DataFrame
@@ -31,3 +33,6 @@ fcs_raw = readflowset(md.file_name)
 # create daFrame file
 daf = create_daFrame(fcs_raw, md, panel)
 CSV.write("daf.csv", daf.fcstable)
+
+# change the directory back to the current directory
+cd(cwd)
