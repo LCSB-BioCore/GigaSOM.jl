@@ -9,16 +9,16 @@ module GigaSOM
 
     using CSV
     using DataFrames
+    using Distances
     using Distributed
+    using Distributions
     using FileIO
+
     # using MultivariateStats
     # using Statistics
     # using StatsBase
     # using StatsPlots
-
-    using Distances
     # using DistributedArrays
-    using Distributions
     # using FCSFiles
     # using JuliaInterpreter
     # using LinearAlgebra
