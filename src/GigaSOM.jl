@@ -16,9 +16,9 @@ module GigaSOM
     # using StatsBase
     # using StatsPlots
 
-    # using Distances
+    using Distances
     # using DistributedArrays
-    # using Distributions
+    using Distributions
     # using FCSFiles
     # using JuliaInterpreter
     # using LinearAlgebra
@@ -26,8 +26,12 @@ module GigaSOM
     # using TensorToolbox
 
     include("../ext/SOM.jl/types.jl")
-    include("../ext/SOM.jl/api.jl")
     include("../ext/SOM.jl/helpers.jl")
+    include("../ext/SOM.jl/grids.jl")
+    include("../ext/SOM.jl/kernels.jl")
+    include("../ext/SOM.jl/api.jl")
+    include("../ext/SOM.jl/soms.jl")
+
     include("batch_som.jl")
     include("parallel_som.jl")
 
@@ -41,6 +45,7 @@ module GigaSOM
         initSOM,
         trainSOM,
         mapToSOM
+
 
     export # Fcs_helper
         cleannames!,
