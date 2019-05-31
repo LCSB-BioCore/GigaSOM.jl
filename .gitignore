@@ -12,4 +12,6 @@ docs/site/
 *.py
 __pycache__
 test/data/
+test/refdata/
+test/gendata/
 *.fcs
