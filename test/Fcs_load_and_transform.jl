@@ -7,7 +7,7 @@ as this function is only the basic parsing of the binary
 FCS, we need to see what functionality is missing and
 extend this in the original package
 =#
-
+#=
 using Distributed
 
 # p = addprocs(2)
@@ -30,6 +30,32 @@ print(md)
 # load panel data
 panel = CSV.File("PBMC8_panel.csv") |> DataFrame
 print(panel.Antigen)
+=#
+using GigaSOM
+using DataFrames
+using XLSX
+using CSV
+
+dataPath = "data"
+
+# create a test folder
+mkdir(dataPath)
+cd(dataPath)
+
+# fetch the required data for testing
+download("http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/PBMC8_metadata.xlsx", "PBMC8_metadata.xlsx")
+download("http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/PBMC8_panel.xlsx", "PBMC8_panel.xlsx")
+
+# download the zip archive and unzip it
+download("http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/PBMC8_fcs_files.zip", "PBMC8_fcs_files.zip")
+run(`unzip PBMC8_fcs_files.zip`)
+
+md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1")...)
+panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1")...)
+panel[:Isotope] = map(string, panel[:Isotope])
+panel.Metal[1]=""
+insertcols!(panel,4,:fcs_colname => map((x,y,z)->x.*"(".*y.*z.*")".*"Dd",panel[:Antigen],panel[:Metal],panel[:Isotope]))
+
 
 lineage_markers, functional_markers = getMarkers(panel)
 
@@ -40,7 +66,7 @@ cleannames!(fcs_raw)
 # transform the data
 # create daFrame file
 daf = create_daFrame(fcs_raw, md, panel)
-# CSV.write("daf.csv", daf.fcstable)
+CSV.write("../gendata/daf.csv", daf.fcstable)
 
 # change the directory back to the current directory
 cd(cwd)
