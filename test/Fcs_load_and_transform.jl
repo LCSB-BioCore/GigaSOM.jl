@@ -18,7 +18,7 @@ using GigaSOM
 using CSV
 using DataFrames
 
-dataPath = "/home/ohunewald/work/GigaSOM_data/PBMC8_fcs_files"
+dataPath = "data/"
 
 # get the current directory and change to the data path
 cwd = pwd()
