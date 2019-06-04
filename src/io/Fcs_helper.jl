@@ -1,12 +1,3 @@
-"""
-    daFrame
-
-"""
-struct daFrame
-    fcstable
-    md::DataFrame
-    panel::DataFrame
-end
 
 """
     readflowset(filenames)
@@ -69,7 +60,6 @@ Replaces problematic characters in column names
 - `mydata`: dict fcs_raw or array of string
 """
 function cleannames!(mydata)
-
     # replace chritical characters
     # put "_" in front of colname in case it starts with a number
     # println(typeof(mydata))
@@ -84,7 +74,7 @@ function cleannames!(mydata)
             end
             names!(v, colnames)
         end
-    elseif mydata isa Array
+    else
         for j in eachindex(mydata)
             mydata[j] = replace(mydata[j], "-"=>"_")
             if isnumeric(first(mydata[j]))

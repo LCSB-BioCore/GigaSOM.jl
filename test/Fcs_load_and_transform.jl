@@ -8,6 +8,12 @@ FCS, we need to see what functionality is missing and
 extend this in the original package
 =#
 
+using Distributed
+
+# p = addprocs(2)
+#
+# @everywhere using GigaSOM
+
 using GigaSOM
 using CSV
 using DataFrames
@@ -25,14 +31,16 @@ print(md)
 panel = CSV.File("PBMC8_panel.csv") |> DataFrame
 print(panel.Antigen)
 
+lineage_markers, functional_markers = getMarkers(panel)
+
 fcs_raw = readflowset(md.file_name)
-# cleannames!(fcs_raw)
+cleannames!(fcs_raw)
 
 # subset the data
 # transform the data
 # create daFrame file
 daf = create_daFrame(fcs_raw, md, panel)
-CSV.write("daf.csv", daf.fcstable)
+# CSV.write("daf.csv", daf.fcstable)
 
 # change the directory back to the current directory
 cd(cwd)
