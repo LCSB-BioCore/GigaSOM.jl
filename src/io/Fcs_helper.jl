@@ -1,15 +1,5 @@
 
 """
-    daFrame
-
-"""
-struct daFrame
-    fcstable
-    md::DataFrame
-    panel::DataFrame
-end
-
-"""
     readflowset(filenames)
 
 Create a dictionary with filenames as keys and daFrame as values

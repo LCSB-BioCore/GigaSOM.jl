@@ -1,8 +1,4 @@
-using Distributed
 
-# p = addprocs(2)
-
-@everywhere using GigaSOM
 
 # only use lineage_markers for clustering
 cc = map(Symbol, lineage_markers)
