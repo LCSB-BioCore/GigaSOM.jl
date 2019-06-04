@@ -25,7 +25,7 @@ function initSOM_parallel( train, xdim, ydim = xdim;
     nCodes = xdim * ydim
 
     # normalise training data:
-    train, normParams = SOM.normTrainData(train, norm)
+    train, normParams = normTrainData(train, norm)
     codes = initCodes(nCodes, train, colNames)
 
     grid = gridRectangular(xdim, ydim)
@@ -74,7 +74,7 @@ x is an arbitrary distance and
 r is a parameter controlling the function and the return value is
 between 0.0 and 1.0.
 """
-function trainSOM_paralell(som::Som, train::Any, len;
+function trainSOM_parallel(som::Som, train::Any, len;
                      kernelFun::Function = gaussianKernel, r = 0.0,
                      rDecay = true, epochs = 10)
 
@@ -84,9 +84,9 @@ function trainSOM_paralell(som::Som, train::Any, len;
     # train was already converted during initialization
     train = convertTrainingData(train)
 
-     if norm != :none
-         train = SOM.normTrainData(train, som.normParams)
-     end
+     # if norm != :none
+     #     train = SOM.normTrainData(train, som.normParams)
+     # end
 
     # set default radius:
     if r == 0.0
@@ -123,29 +123,31 @@ function trainSOM_paralell(som::Som, train::Any, len;
 
      println("Epoch: $j")
 
-     A = [@fetchfrom p localindices(dTrain) for p in workers()]
-     println(A)
 
-     # tmp = reduce(reduce_me, map(fetch, Any[@spawnat w doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, len, r,
-     # false, rDecay, epochs) for w in workers() ]))
+     if nprocs() > 1
 
-     # using Any is 2x faster
-     # tmp = map(fetch, Any[@spawnat w doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, len, r,
-     # false, rDecay, epochs) for w in workers() ])
+         A = [@fetchfrom p localindices(dTrain) for p in workers()]
+         println(A)
 
-     # no difference for workers or procs
-     tmp = @time map(fetch, Any[@spawnat p doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, len, r,
-                    false, rDecay, epochs) for p = procs(dTrain) ])
+         try
+             tmp = @time map(fetch, Any[@spawnat p doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, len, r,
+                            false, rDecay, epochs) for p = procs(dTrain) ])
+         catch e
+             @show e
+         end
 
-     #
-     # wp = WorkerPool([2, 3])
+         for dset in tmp
+             global_sum_numerator += dset[1]
+             global_sum_denominator += dset[2]
+         end
+     else
+         # only batch mode
+         println("In batch mode: ")
+         sum_numerator, sum_denominator = doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, len, r,
+                                                            false, rDecay, epochs)
 
-     # tmp = remotecall_wait(doEpoch_parallel, wp, localpart(dTrain), codes, dm, kernelFun, len, r, false, rDecay, epochs)
-     # tmp = remotecall_wait(sum, wp, [1,2,3,4,5,6,7,8,9])
-
-     for dset in tmp
-         global_sum_numerator += dset[1]
-         global_sum_denominator += dset[2]
+        global_sum_numerator += sum_numerator
+        global_sum_denominator += sum_denominator
      end
 
      r -= Δr
@@ -161,8 +163,8 @@ function trainSOM_paralell(som::Som, train::Any, len;
     end
 
     # map training samples to SOM and calc. neuron population:
-    vis = SOM.visual(codes, train)
-    population = SOM.makePopulation(som.nCodes, vis)
+    vis = visual(codes, train)
+    population = makePopulation(som.nCodes, vis)
 
     # create X,Y-indices for neurons:
     #

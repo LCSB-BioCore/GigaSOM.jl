@@ -12,7 +12,7 @@ using GigaSOM
 using CSV
 using DataFrames
 
-dataPath = "data/"
+dataPath = "/home/ohunewald/work/GigaSOM_data/PBMC8_fcs_files"
 
 # get the current directory and change to the data path
 cwd = pwd()
@@ -25,14 +25,16 @@ print(md)
 panel = CSV.File("PBMC8_panel.csv") |> DataFrame
 print(panel.Antigen)
 
+lineage_markers, functional_markers = getMarkers(panel)
+
 fcs_raw = readflowset(md.file_name)
-# cleannames!(fcs_raw)
+cleannames!(fcs_raw)
 
 # subset the data
 # transform the data
 # create daFrame file
 daf = create_daFrame(fcs_raw, md, panel)
-CSV.write("daf.csv", daf.fcstable)
+# CSV.write("daf.csv", daf.fcstable)
 
 # change the directory back to the current directory
 cd(cwd)

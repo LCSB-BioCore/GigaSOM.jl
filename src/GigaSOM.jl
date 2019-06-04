@@ -18,7 +18,7 @@ module GigaSOM
     # using Statistics
     # using StatsBase
     # using StatsPlots
-    # using DistributedArrays
+    using DistributedArrays
     # using FCSFiles
     # using JuliaInterpreter
     # using LinearAlgebra
@@ -44,7 +44,10 @@ module GigaSOM
     export # ext/som
         initSOM,
         trainSOM,
-        mapToSOM
+        mapToSOM,
+        initSOM_parallel,
+        trainSOM_parallel,
+        trainSOM_batch
 
 
     export # Fcs_helper
