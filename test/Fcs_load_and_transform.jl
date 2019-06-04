@@ -7,35 +7,19 @@ as this function is only the basic parsing of the binary
 FCS, we need to see what functionality is missing and
 extend this in the original package
 =#
-#=
 using Distributed
 
 # p = addprocs(2)
 #
 # @everywhere using GigaSOM
 
-using GigaSOM
-using CSV
-using DataFrames
 
-dataPath = "data/"
-
-# get the current directory and change to the data path
-cwd = pwd()
-cd(dataPath)
-
-md = CSV.File("PBMC8_metadata.csv") |> DataFrame
-print(md)
-
-# load panel data
-panel = CSV.File("PBMC8_panel.csv") |> DataFrame
-print(panel.Antigen)
-=#
 using GigaSOM
 using DataFrames
 using XLSX
 using CSV
 
+cwd = pwd()
 dataPath = "data"
 
 # create a test folder
@@ -53,9 +37,11 @@ run(`unzip PBMC8_fcs_files.zip`)
 md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1")...)
 panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1")...)
 panel[:Isotope] = map(string, panel[:Isotope])
+panel[:Metal] = map(string, panel[:Metal])
+panel[:Antigen] = map(string, panel[:Antigen])
 panel.Metal[1]=""
 insertcols!(panel,4,:fcs_colname => map((x,y,z)->x.*"(".*y.*z.*")".*"Dd",panel[:Antigen],panel[:Metal],panel[:Isotope]))
-
+print(panel.fcs_colname)
 
 lineage_markers, functional_markers = getMarkers(panel)
 
