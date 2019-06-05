@@ -28,7 +28,6 @@ module GigaSOM
     include("types.jl")
     include("helpers.jl")
     include("parallel_som.jl")
-    include("classical_som.jl")
     # include IO files
     include("io/Fcs_helper.jl")
 
@@ -37,10 +36,7 @@ module GigaSOM
 
     export # ext/som
         initSOM,
-        initAll,
         trainSOM,
-        trainAll,
-        doSom,
         mapToSOM,
         initSOM_parallel,
         trainSOM_parallel
