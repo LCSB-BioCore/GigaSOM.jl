@@ -20,8 +20,6 @@ using XLSX
 using CSV
 
 # create a test folder a and change dir to it
-testdir = "test"
-cd(testdir)
 cwd = pwd()
 
 #create gendata folder
