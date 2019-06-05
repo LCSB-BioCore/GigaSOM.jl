@@ -24,11 +24,11 @@ cwd = pwd()
 
 #create gendata folder
 gendatapath = "gendata"
-mkdir(gendatapath)
+mktempdir(gendatapath)
 
 #create data folder and change dir to it
 dataPath = "data"
-mkdir(dataPath)
+mktempdir(dataPath)
 cd(dataPath)
 
 # fetch the required data for testing
