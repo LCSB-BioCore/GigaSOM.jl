@@ -19,10 +19,17 @@ using DataFrames
 using XLSX
 using CSV
 
+# create a test folder a and change dir to it
+testdir = "test"
+cd(testdir)
 cwd = pwd()
-dataPath = "data"
 
-# create a test folder
+#create gendata folder
+gendatapath = "gendata"
+mkdir(gendatapath)
+
+#create data folder and change dir to it
+dataPath = "data"
 mkdir(dataPath)
 cd(dataPath)
 
