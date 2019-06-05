@@ -19,16 +19,18 @@ using DataFrames
 using XLSX
 using CSV
 
-# create a test folder a and change dir to it
+# change dir to test folder
+cd("../test")
 cwd = pwd()
 
 #create gendata folder
-gendatapath = "gendata"
-mktempdir(gendatapath)
+# gendatapath = "gendata"
+gendatapath = mktempdir()
 
 #create data folder and change dir to it
-dataPath = "data"
-mktempdir(dataPath)
+# dataPath = "data"
+dataPath = mktempdir()
+
 cd(dataPath)
 
 # fetch the required data for testing
@@ -57,7 +59,7 @@ cleannames!(fcs_raw)
 # transform the data
 # create daFrame file
 daf = create_daFrame(fcs_raw, md, panel)
-CSV.write("../gendata/daf.csv", daf.fcstable)
+CSV.write(gendatapath.*"/daf.csv", daf.fcstable)
 
 # change the directory back to the current directory
 cd(cwd)
