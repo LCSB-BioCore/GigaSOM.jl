@@ -57,5 +57,5 @@ batch_mywinners_test = CSV.File("../test/gendata/batch_mywinners.csv") |> DataFr
 # @test ref_batch_df_codes == batch_df_codes_test
 # @test ref_batch_mywinners == batch_mywinners_test
 
-rm("../test/data", recursive=true, force=true)
-rm("../test/gendata", recursive=true, force=true)
+# rm("../test/data", recursive=true, force=true)
+# rm("../test/gendata", recursive=true, force=true)
