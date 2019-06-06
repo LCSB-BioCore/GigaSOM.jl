@@ -40,12 +40,14 @@ names!(df_codes, Symbol.(som2.colNames))
 CSV.write(gendatapath*"/batch_df_codes.csv", df_codes)
 CSV.write(gendatapath*"/batch_mywinners.csv", mywinners)
 
-#Create the refData files when needed
-# CSV.write("test/refData/ref_batch_df_codes.csv", first(df_codes, 10))
-# CSV.write("test/refData/ref_batch_mywinners.csv", first(mywinners, 10))
+refDatapath = "C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/test/refData"
 
-ref_batch_df_codes = CSV.File("test/refData/ref_batch_df_codes.csv") |> DataFrame
-ref_batch_mywinners = CSV.File("test/refData/ref_batch_mywinners.csv") |> DataFrame
+#Create the refData files when needed
+# CSV.write(refDatapath*"/ref_batch_df_codes.csv", first(df_codes, 10))
+# CSV.write(refDatapath*"/ref_batch_mywinners.csv"/ref_batch_mywinners.csv", first(mywinners, 10))
+
+ref_batch_df_codes = CSV.File(refDatapath*"/ref_batch_df_codes.csv") |> DataFrame
+ref_batch_mywinners = CSV.File(refDatapath*"/ref_batch_mywinners.csv") |> DataFrame
 batch_df_codes_test = CSV.File(gendatapath*"/batch_df_codes.csv") |> DataFrame
 batch_df_codes_test = first(batch_df_codes_test, 10)
 batch_mywinners_test = CSV.File(gendatapath*"/batch_mywinners.csv") |> DataFrame
