@@ -40,7 +40,7 @@ names!(df_codes, Symbol.(som2.colNames))
 CSV.write(gendatapath*"/batch_df_codes.csv", df_codes)
 CSV.write(gendatapath*"/batch_mywinners.csv", mywinners)
 
-refDatapath = cwd*"/test/refData"
+refDatapath = cwd*"/refData"
 
 #Create the refData files when needed
 # CSV.write(refDatapath*"/ref_batch_df_codes.csv", first(df_codes, 10))
