@@ -40,7 +40,7 @@ names!(df_codes, Symbol.(som2.colNames))
 CSV.write(gendatapath*"/batch_df_codes.csv", df_codes)
 CSV.write(gendatapath*"/batch_mywinners.csv", mywinners)
 
-refDatapath = "C:/Users/vasco.verissimo/work/git/hub/GigaSOM.jl/test/refData"
+refDatapath = cwd*"/test/refData"
 
 #Create the refData files when needed
 # CSV.write(refDatapath*"/ref_batch_df_codes.csv", first(df_codes, 10))
