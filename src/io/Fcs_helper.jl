@@ -41,7 +41,7 @@ function transform_data(flowframe, method = "asinh", cofactor = 5)
         colnames = names(fcs_df) # keep the column names
         dMatrix = Matrix(fcs_df)
         # single_fcs["data"] = [(asinh(x)/cofactor) for x in dMatrix]
-        dMatrix = [(Base.asinh(x)/cofactor) for x in dMatrix]
+        dMatrix = [(asinh(x)/cofactor) for x in dMatrix]
 
         ddf = DataFrame(dMatrix)
 
