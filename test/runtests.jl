@@ -7,12 +7,6 @@ Random.seed!(1)
 
 include("Fcs_load_and_transform.jl")
 
-# #test cleannames
-# for i in eachindex(lineage_markers)
-#         test_clean = @test !in("-",i)
-#         return test_clean
-# end
-
 #BATCH & PARALLEL
 
 # only use lineage_markers for clustering
