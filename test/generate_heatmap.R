@@ -30,7 +30,7 @@ panel <- read_excel(panel_filename)
 head(data.frame(panel))
 
 # Replace problematic characters
-panel$Antigen <- gsub("-", "_", panel$Antigen_old)
+panel$fcs_colname <- gsub("-", "_", panel$Antigen)
 
 panel_fcs <- pData(parameters(fcs_raw[[1]]))
 head(panel_fcs)
@@ -39,10 +39,10 @@ head(panel_fcs)
 panel_fcs$desc <- gsub("-", "_", panel_fcs$desc)
 
 # Lineage markers
-(lineage_markers <- panel$Antigen[panel$Lineage == 1])
+(lineage_markers <- panel$fcs_colname[panel$Lineage == 1])
 
 # Functional markers
-(functional_markers <- panel$Antigen[panel$Functional == 1])
+(functional_markers <- panel$fcs_colname[panel$Functional == 1])
 
 # Spot checks
 all(lineage_markers %in% panel_fcs$desc)

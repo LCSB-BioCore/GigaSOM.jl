@@ -41,7 +41,7 @@ function transform_data(flowframe, method = "asinh", cofactor = 5)
         colnames = names(fcs_df) # keep the column names
         dMatrix = Matrix(fcs_df)
         # single_fcs["data"] = [(asinh(x)/cofactor) for x in dMatrix]
-        dMatrix = [asinh(x/cofactor) for x in dMatrix]
+        dMatrix = [(asinh(x)/cofactor) for x in dMatrix]
 
         ddf = DataFrame(dMatrix)
 
@@ -128,8 +128,8 @@ end
 function getMarkers(panel)
 
     # extract lineage markers
-    lineage_markers = panel.Antigen[panel.Lineage .== 1, : ]
-    functional_markers = panel.Antigen[panel.Functional .== 1, :]
+    lineage_markers = panel.fcs_colname[panel.Lineage .== 1, : ]
+    functional_markers = panel.fcs_colname[panel.Functional .== 1, :]
 
     # lineage_markers are 2d array,
     # flatten this array by using vec:
