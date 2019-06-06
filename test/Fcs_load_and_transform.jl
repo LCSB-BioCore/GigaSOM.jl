@@ -7,6 +7,7 @@ as this function is only the basic parsing of the binary
 FCS, we need to see what functionality is missing and
 extend this in the original package
 =#
+
 using Distributed
 
 # p = addprocs(2)
@@ -14,23 +15,15 @@ using Distributed
 # @everywhere using GigaSOM
 
 
-using GigaSOM
-using DataFrames
-using XLSX
-using CSV
+using GigaSOM, DataFrames, XLSX, CSV
 
-# change dir to test folder
-cd("../test")
 cwd = pwd()
 
 #create gendata folder
-# gendatapath = "gendata"
 gendatapath = mktempdir()
 
 #create data folder and change dir to it
-# dataPath = "data"
 dataPath = mktempdir()
-
 cd(dataPath)
 
 # fetch the required data for testing
@@ -59,7 +52,7 @@ cleannames!(fcs_raw)
 # transform the data
 # create daFrame file
 daf = create_daFrame(fcs_raw, md, panel)
-CSV.write(gendatapath.*"/daf.csv", daf.fcstable)
+CSV.write(gendatapath*"/daf.csv", daf.fcstable)
 
 # change the directory back to the current directory
 cd(cwd)
