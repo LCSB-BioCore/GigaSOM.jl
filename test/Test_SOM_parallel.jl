@@ -16,8 +16,14 @@ p = addprocs(2)
 # only use lineage_markers for clustering
 cc = map(Symbol, lineage_markers)
 df_som = daf.fcstable[:,cc]
-df_som = vcat(df_som, df_som)
-df_som = vcat(df_som, df_som)
+
+# concatenate the dataset for performance testing
+# df_som = vcat(df_som, df_som)
+# n = 5
+# for i in 1:n
+#     # df_som = vcat(df_som, df_som)
+# end
+
 
 som2 = initSOM_parallel(df_som, 10, 10)
 
