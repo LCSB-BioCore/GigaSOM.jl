@@ -8,12 +8,6 @@ FCS, we need to see what functionality is missing and
 extend this in the original package
 =#
 
-using Distributed
-
-# p = addprocs(2)
-#
-# @everywhere using GigaSOM
-
 
 using GigaSOM, DataFrames, XLSX, CSV
 
