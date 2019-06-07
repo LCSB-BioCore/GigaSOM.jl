@@ -216,7 +216,7 @@ function doEpoch_parallel(x::Array{Float64}, codes::Array{Float64},
      sum_numerator = zeros(Float64, size(codes))
      sum_denominator = zeros(Float64, size(codes)[1])
      # for each sample in dataset / trainingsset
-     for s in 1:len
+     for s in 1:numDat
 
          sampl = vec(x[rand(1:nrow(x), 1),:])
          bmu_idx, bmu_vec = find_bmu(codes, sampl)
