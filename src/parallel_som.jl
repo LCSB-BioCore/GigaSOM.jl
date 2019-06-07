@@ -89,15 +89,9 @@ function trainSOM_parallel(som::Som, train::Any, len;
                      kernelFun::Function = gaussianKernel, r = 0.0,
                      rDecay = true, epochs = 10)
 
-    println(first(train, 6))
-
     # double conversion:
     # train was already converted during initialization
     train = convertTrainingData(train)
-
-     # if norm != :none
-     #     train = SOM.normTrainData(train, som.normParams)
-     # end
 
     # set default radius:
     if r == 0.0
@@ -110,47 +104,46 @@ function trainSOM_parallel(som::Som, train::Any, len;
 
     dm = distMatrix(som.grid, som.toroidal)
 
-    # make Δs for linear decay of r:
-    # r = Float64(r)
-    dTrain = distribute(train)
-
     codes = som.codes
     global_sum_numerator = zeros(Float64, size(codes))
     global_sum_denominator = zeros(Float64, size(codes)[1])
 
     # linear decay function
     if rDecay
-     if r < 1.5
-         Δr = 0.0
-     else
-         println("in r decay")
-         Δr = (r-1.0) / epochs
-     end
+        if r < 1.5
+            Δr = 0.0
+        else
+            Δr = (r-1.0) / epochs
+        end
     else
-     Δr = 0.0
+        Δr = 0.0
     end
+
+    nWorkers = nprocs()
+    dTrain = distribute(train)
 
     for j in 1:epochs
 
      println("Epoch: $j")
 
+     if nWorkers > 1
 
-     if nprocs() > 1
+         # distribution across workers
+         R = Array{Future}(undef,nWorkers, 1)
+          @sync for p in workers()
 
-         A = [@fetchfrom p localindices(dTrain) for p in workers()]
-         println(A)
+              println("worker: $p")
+              @async R[p] = @spawnat p begin
+                 doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, len, r,
+                                                    false, rDecay, epochs)
+              end
+          end
 
-         try
-             tmp = @time map(fetch, Any[@spawnat p doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, len, r,
-                            false, rDecay, epochs) for p = procs(dTrain) ])
-         catch e
-             @show e
-         end
-
-         for dset in tmp
-             global_sum_numerator += dset[1]
-             global_sum_denominator += dset[2]
-         end
+          @sync for p in workers()
+              tmp = fetch(R[p])
+              global_sum_numerator += tmp[1]
+              global_sum_denominator += tmp[2]
+          end
      else
          # only batch mode
          println("In batch mode: ")
@@ -220,25 +213,24 @@ function doEpoch_parallel(x::Array{Float64}, codes::Array{Float64},
      # initialise numerator and denominator with 0's
      sum_numerator = zeros(Float64, size(codes))
      sum_denominator = zeros(Float64, size(codes)[1])
-     # sum_numerator = Matrix{Float64}[size(codes)]
-     # for each sample in dataset / or trainingsset
-     for s in 1:len
+     # for each sample in dataset / trainingsset
+     for s in 1:numDat
+
          sampl = vec(x[rand(1:nrow(x), 1),:])
          bmu_idx, bmu_vec = find_bmu(codes, sampl)
+
          # for each node in codebook get distances to bmu and multiply it
          # with sample row: x(i)
          for i in 1:numCodes
-             # cost of this dist function is around 2 sec.
+
              dist = kernelFun(dm[bmu_idx, i], r)
-             # temp = sampl .* dist
+
              # very slow assignment !!!
              # just by commenting out, time decreases from
              # 34 sec to 11 sec
              sum_numerator[i,:] += sampl .* dist
              sum_denominator[i] += dist
-             # this one is no difference
-             # sum_numerator[i,:] = sum_numerator[i,:] + temp
-             # sum_denominator[i] = sum_denominator[i] + dist
+
          end
      end
      return sum_numerator, sum_denominator
@@ -443,33 +435,6 @@ function find_bmu(cod, sampl)
 end
 
 
-# @everywhere begin
-#     """
-#         Find the best matching unit for a given vector, row_t, in the SOM
-#         Returns: a (bmu, bmu_idx) tuple where bmu is the high-dimensional Best Matching Unit
-#                and bmu_idx is the index of this vector in the SOM
-#     """
-#     function find_bmu(cod, sampl)
-#
-#         dist = floatmax()
-#         winner = 1
-#         n = nrow(cod)
-#
-#         for i in 1:n
-#
-#             d = euclidean(sampl, cod[i,:])
-#             if (d < dist)
-#                 dist = d
-#                 winner = i
-#             end
-#         end
-#         # get the code vector of the bmu
-#         bmu_vec = cod[winner,:]
-#         return winner, bmu_vec
-#     end
-# end
-
-
 """
     normTrainData(train::DataFrame, normParams::DataFrame)
 
@@ -548,6 +513,5 @@ function convertTrainingData(data)::Array{Float64,2}
 
     return train
 end
-
 
 prettyPrintArray(arr) = println("$(show(IOContext(STDOUT, limit=true), "text/plain", arr))")

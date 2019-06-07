@@ -13,6 +13,7 @@ docs/site/
 !ref_batch_mywinners.csv
 *.py
 __pycache__
+data/
 *.fcs
 data/
 test/data/
