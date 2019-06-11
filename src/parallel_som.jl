@@ -389,29 +389,6 @@ function makeClassFreqs(som, vis, classes)
     return cfs
 end
 
-"""
-    findWinner(cod, sampl)
-
-Return index of the winner neuron for sample sampl.
-"""
-function findWinner(cod, sampl)
-
-    dist = floatmax()
-    winner = 1
-    n = nrow(cod)
-
-    for i in 1:n
-
-        d = euclidean(sampl, cod[i,:])
-        if (d < dist)
-            dist = d
-            winner = i
-        end
-    end
-
-    return winner
-end
-
 
 """
     Find the best matching unit for a given vector, row_t, in the SOM
