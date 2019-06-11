@@ -18,7 +18,21 @@ df_som = daf.fcstable[:,cc]
 # end
 
 som2 = initSOM_parallel(df_som, 10, 10)
-@test typeof(som2) == GigaSOM.Som
+
+@testset "Som test" begin
+    @testset "Type test" begin
+        @test typeof(som2) == GigaSOM.Som
+        @test som2.toroidal == false
+        @test typeof(som2.grid) == Array{Float64,2}
+    end
+    @testset "Dimensions Test" begin
+        @test size(som2.codes) == (100,10)
+        @test som2.xdim == 10
+        @test som2.ydim == 10
+        @test som2.nCodes == 100
+    end
+
+end
 
 @time som2 = trainSOM_parallel(som2, df_som, size(df_som)[1], epochs = 10)
 
