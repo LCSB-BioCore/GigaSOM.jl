@@ -37,7 +37,8 @@ function initSOM_parallel( train, xdim, ydim = xdim;
 
     # normalise training data:
     train, normParams = normTrainData(train, norm)
-    codes = initCodes(nCodes, train, colNames)
+    # codes = initCodes(nCodes, train, colNames)
+    codes = rowSample(train, nCodes)
 
     grid = gridRectangular(xdim, ydim)
 
