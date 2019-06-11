@@ -79,8 +79,6 @@ function trainSOM_parallel(som::Som, train::Any, len;
                      kernelFun::Function = gaussianKernel, r = 0.0,
                      rDecay = true, epochs = 10)
 
-    # println(first(train, 6))
-
     # double conversion:
     # train was already converted during initialization
     train = convertTrainingData(train)
@@ -206,6 +204,7 @@ function doEpoch_parallel(x::Array{Float64}, codes::Array{Float64},
      sum_numerator = zeros(Float64, size(codes))
      sum_denominator = zeros(Float64, size(codes)[1])
      # for each sample in dataset / trainingsset
+
      for s in 1:nRows
 
          # sampl = vec(x[rand(1:nRows, 1),:])
@@ -505,41 +504,5 @@ function convertTrainingData(data)::Array{Float64,2}
 
     return train
 end
-
-function splitMatrix(matrix_train, nWorkers)
-
-    # Dummy test !
-    # Give each process p a own matrix of size: len_matrix / nWorkers
-
-    len_matrix = size(matrix_train, 1)
-
-    prt_size = ceil(len_matrix / nWorkers)
-
-    prt_matrix = Dict()
-    for (p, pid) in enumerate(workers())
-        prt_matrix[pid] = matrix_train[1:prt_size, : ]
-    end
-
-
-    #
-    # w = workers()
-    #
-    # n=Int(ceil(size(d,1)/length(w)))
-    #
-    #
-    # d=ones(10,5)
-    # nsampl=10
-    # my_array = []
-    # println("--------------------------")
-    # for i in 0:n:nsampl-1
-    #     window = i+n < nsampl ? d[i+1:i+n,:] : d[i+1:end,:]
-    #
-    #     prt_matrix[w[i+1]] = window
-    # end
-    # my_array[1]
-    # [prt_matrix[w[i]] = my_array[i] for i in 1:length(w)]
-
-end
-
 
 prettyPrintArray(arr) = println("$(show(IOContext(STDOUT, limit=true), "text/plain", arr))")
