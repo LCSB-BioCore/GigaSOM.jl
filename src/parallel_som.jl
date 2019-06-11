@@ -1,15 +1,4 @@
 """
-    initCodes(num::Int, x::Array)
-
-Return num rows from Array x as initial codes.
-"""
-function initCodes(num::Int, x::Array{Float64}, colNames)
-
-    codes = rowSample(x, num)
-    return codes
-end
-
-"""
         initSOM_parallel(train, xdim, ydim = xdim;  norm = :zscore, topol = :hexagonal,
             toroidal = false)
 Initialises a SOM.
@@ -388,6 +377,28 @@ function makeClassFreqs(som, vis, classes)
     end
 
     return cfs
+end
+
+"""
+    findWinner(cod, sampl)
+Return index of the winner neuron for sample sampl.
+"""
+function findWinner(cod, sampl)
+
+    dist = floatmax()
+    winner = 1
+    n = nrow(cod)
+
+    for i in 1:n
+
+        d = euclidean(sampl, cod[i,:])
+        if (d < dist)
+            dist = d
+            winner = i
+        end
+    end
+
+    return winner
 end
 
 
