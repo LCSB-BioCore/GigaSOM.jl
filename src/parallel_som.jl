@@ -1,15 +1,4 @@
 """
-    initCodes(num::Int, x::Array)
-
-Return num rows from Array x as initial codes.
-"""
-function initCodes(num::Int, x::Array{Float64}, colNames)
-
-    codes = rowSample(x, num)
-    return codes
-end
-
-"""
         initSOM_parallel(train, xdim, ydim = xdim;  norm = :zscore, topol = :hexagonal,
             toroidal = false)
 Initialises a SOM.
@@ -37,7 +26,8 @@ function initSOM_parallel( train, xdim, ydim = xdim;
 
     # normalise training data:
     train, normParams = normTrainData(train, norm)
-    codes = initCodes(nCodes, train, colNames)
+    # codes = initCodes(nCodes, train, colNames)
+    codes = rowSample(train, nCodes)
 
     grid = gridRectangular(xdim, ydim)
 
@@ -127,7 +117,6 @@ function trainSOM_parallel(som::Som, train::Any, len;
      println("Epoch: $j")
 
      if nWorkers > 1
-
          # distribution across workers
          R = Array{Future}(undef,nWorkers, 1)
           @sync for p in workers()
@@ -181,11 +170,9 @@ function trainSOM_parallel(som::Som, train::Any, len;
     indices = DataFrame(X = x, Y = y)
 
     # update SOM object:
-    somNew = deepcopy(som)
-    somNew.codes[:,:] = codes[:,:]
-    somNew.population[:] = population[:]
-    return somNew
-    # return som
+    som.codes[:,:] = codes[:,:]
+    som.population[:] = population[:]
+    return som
 end
 
 
@@ -208,29 +195,31 @@ epoch.
 function doEpoch_parallel(x::Array{Float64}, codes::Array{Float64},
                  dm::Array{Float64}, kernelFun::Function, len::Int,
                  r::Number, toroidal::Bool, rDecay::Bool, epochs)
-     numDat = nrow(x)
-     numCodes = nrow(codes)
+
+     nRows = nrow(x)
+     nCodes = nrow(codes)
      # initialise numerator and denominator with 0's
      sum_numerator = zeros(Float64, size(codes))
      sum_denominator = zeros(Float64, size(codes)[1])
      # for each sample in dataset / trainingsset
-     for s in 1:numDat
 
-         sampl = vec(x[rand(1:nrow(x), 1),:])
+     for s in 1:nRows
+
+         sampl = vec(x[s, : ])
          bmu_idx, bmu_vec = find_bmu(codes, sampl)
 
          # for each node in codebook get distances to bmu and multiply it
          # with sample row: x(i)
-         for i in 1:numCodes
+         for i in 1:nCodes
 
              dist = kernelFun(dm[bmu_idx, i], r)
 
              # very slow assignment !!!
              # just by commenting out, time decreases from
              # 34 sec to 11 sec
+
              sum_numerator[i,:] += sampl .* dist
              sum_denominator[i] += dist
-
          end
      end
      return sum_numerator, sum_denominator
@@ -388,7 +377,6 @@ end
 
 """
     findWinner(cod, sampl)
-
 Return index of the winner neuron for sample sampl.
 """
 function findWinner(cod, sampl)
