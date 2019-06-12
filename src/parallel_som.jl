@@ -214,11 +214,10 @@ function doEpoch_parallel(x::Array{Float64}, codes::Array{Float64},
 
              dist = kernelFun(dm[bmu_idx, i], r)
 
-             # very slow assignment !!!
-             # just by commenting out, time decreases from
-             # 34 sec to 11 sec
-
-             sum_numerator[i,:] += sampl .* dist
+             @inbounds @views begin
+                 sum_numerator[i,:] .+= sampl .* dist
+             end
+             # sum_numerator[i,:] += sampl .* dist
              sum_denominator[i] += dist
          end
      end
