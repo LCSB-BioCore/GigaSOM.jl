@@ -36,6 +36,9 @@ CSV.write(gendatapath*"/batch_mywinners.csv", mywinners)
 
 refDatapath = cwd*"/refData"
 
+@info gendatapath
+@info refDatapath
+
 ref_batch_df_codes = CSV.File(refDatapath*"/ref_batch_df_codes.csv") |> DataFrame
 ref_batch_mywinners = CSV.File(refDatapath*"/ref_batch_mywinners.csv") |> DataFrame
 batch_df_codes_test = CSV.File(gendatapath*"/batch_df_codes.csv") |> DataFrame
