@@ -170,10 +170,8 @@ function trainSOM_parallel(som::Som, train::Any, len;
     indices = DataFrame(X = x, Y = y)
 
     # update SOM object:
-    # somNew = deepcopy(som)
-    # somNew.codes[:,:] = codes[:,:]
-    # somNew.population[:] = population[:]
-    # return somNew
+    som.codes[:,:] = codes[:,:]
+    som.population[:] = population[:]
     return som
 end
 
