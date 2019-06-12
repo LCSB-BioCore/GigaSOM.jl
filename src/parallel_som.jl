@@ -205,7 +205,6 @@ function doEpoch_parallel(x::Array{Float64}, codes::Array{Float64},
 
      for s in 1:nRows
 
-         # sampl = vec(x[rand(1:nRows, 1),:])
          sampl = vec(x[s, : ])
          bmu_idx, bmu_vec = find_bmu(codes, sampl)
 
