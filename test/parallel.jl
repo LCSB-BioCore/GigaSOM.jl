@@ -30,7 +30,7 @@ som2 = initGigaSOM(df_som, 10, 10)
         @test size(som2.codes) == (100,10)
         @test som2.xdim == 10
         @test som2.ydim == 10
-        @test som2.nCodes == 100
+        @test som2.numCodes == 100
     end
 
 end
