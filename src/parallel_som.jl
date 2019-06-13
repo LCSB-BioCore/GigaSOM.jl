@@ -75,7 +75,7 @@ x is an arbitrary distance and
 r is a parameter controlling the function and the return value is
 between 0.0 and 1.0.
 """
-function trainSOM_parallel(som::Som, train::Any, len;
+function trainSOM_parallel(som::Som, train::Any;
                      kernelFun::Function = gaussianKernel, r = 0.0, epochs = 10)
 
     train = convertTrainingData(train)
@@ -113,8 +113,8 @@ function trainSOM_parallel(som::Som, train::Any, len;
 
               println("worker: $p")
               @async R[p] = @spawnat p begin
-                 doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, len, r,
-                                                    false, rDecay, epochs)
+                 doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, r,
+                                                    false, epochs)
               end
           end
 
@@ -126,8 +126,8 @@ function trainSOM_parallel(som::Som, train::Any, len;
      else
          # only batch mode
          println("In batch mode: ")
-         sum_numerator, sum_denominator = doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, len, r,
-                                                            false, rDecay, epochs)
+         sum_numerator, sum_denominator = doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, r,
+                                                            false, epochs)
 
         global_sum_numerator += sum_numerator
         global_sum_denominator += sum_denominator
@@ -183,8 +183,8 @@ epoch.
 - `rDecay`: if true, r decays to 0.0 during the training.
 """
 function doEpoch_parallel(x::Array{Float64}, codes::Array{Float64},
-                 dm::Array{Float64}, kernelFun::Function, len::Int,
-                 r::Number, toroidal::Bool, rDecay::Bool, epochs)
+                 dm::Array{Float64}, kernelFun::Function,
+                 r::Number, toroidal::Bool, epochs)
 
      nRows = nrow(x)
      nCodes = nrow(codes)
