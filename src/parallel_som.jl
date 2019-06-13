@@ -26,9 +26,9 @@ function initGigaSOM( train, xdim, ydim = xdim;
 
     # normalise training data:
     train, normParams = normTrainData(train, norm)
-    # codes = initCodes(nCodes, train, colNames)
-    codes = rowSample(train, nCodes)
 
+    # initialise the codes with random samples
+    codes = rowSample(train, nCodes)
     grid = gridRectangular(xdim, ydim)
 
     normParams = convert(DataFrame, normParams)
@@ -98,7 +98,6 @@ function trainGigaSOM(som::Som, train::Any;
         Δr = (r-1.0) / epochs
     end
 
-
     nWorkers = nprocs()
     dTrain = distribute(train)
 
@@ -151,12 +150,7 @@ function trainGigaSOM(som::Som, train::Any;
 
     # create X,Y-indices for neurons:
     #
-    if som.topol != :spherical
-     x = [mod(i-1, som.xdim)+1 for i in 1:som.nCodes]
-     y = [div(i-1, som.xdim)+1 for i in 1:som.nCodes]
-    else
-     x = y = collect(1:som.nCodes)
-    end
+    x = y = collect(1:som.nCodes)
     indices = DataFrame(X = x, Y = y)
 
     # update SOM object:
