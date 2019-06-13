@@ -85,11 +85,7 @@ function trainSOM_parallel(som::Som, train::Any, len;
 
     # set default radius:
     if r == 0.0
-     if som.topol != :spherical
-         r = √(som.xdim^2 + som.ydim^2) / 2
-     else
-         r = π * som.ydim
-     end
+        r = π * som.ydim
     end
 
     dm = distMatrix(som.grid, som.toroidal)
