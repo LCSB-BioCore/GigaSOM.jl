@@ -17,7 +17,7 @@ function initGigaSOM( train, xdim, ydim = xdim;
     if typeof(train) == DataFrame
         colNames = [String(x) for x in names(train)]
     else
-        colNames = ["x$i" for i in 1:ncol(train)]
+        colNames = ["x$i" for i in 1:size(train,2)]
     end
 
     train = convertTrainingData(train)
@@ -175,15 +175,16 @@ epoch.
 function doEpoch(x::Array{Float64}, codes::Array{Float64},
                  dm::Array{Float64}, kernelFun::Function,
                  r::Number, toroidal::Bool, epochs)
-
-     nRows = nrow(x)
+     numDat = size(x,1)
+     numCodes = size(codes,1)
      nCodes = nrow(codes)
      # initialise numerator and denominator with 0's
      sum_numerator = zeros(Float64, size(codes))
      sum_denominator = zeros(Float64, size(codes)[1])
      # for each sample in dataset / trainingsset
+     for s in 1:numDat
 
-     for s in 1:nRows
+         sampl = vec(x[rand(1:size(x,1), 1),:])
 
          sampl = vec(x[s, : ])
          bmu_idx, bmu_vec = find_bmu(codes, sampl)
@@ -221,8 +222,8 @@ function mapToSOM(som::Som, data)
 
     data = convertTrainingData(data)
 
-    if ncol(data) != ncol(som.codes)
-        println("    data: $(ncol(data)), codes: $(ncol(som.codes))")
+    if size(data,2) != size(som.codes,2)
+        println("    data: $(size(data,2)), codes: $(size(som.codes,2))")
         error(SOM_ERRORS[:ERR_COL_NUM])
     end
 
@@ -254,8 +255,8 @@ Returned DataFrame has the columns:
 """
 function classFrequencies(som::Som, data, classes)
 
-    if ncol(data) != ncol(som.codes) + 1
-        println("    data: $(ncol(data)-1), codes: $(ncol(som.codes))")
+    if size(data,2) != size(som.codes,2) + 1
+        println("    data: $(size(data,2)-1), codes: $(size(som.codes,2))")
         error(SOM_ERRORS[:ERR_COL_NUM])
     end
 
@@ -277,8 +278,8 @@ in x (row-wise).
 """
 function visual(codes, x)
 
-    vis = zeros(Int, nrow(x))
-    for i in 1:nrow(x)
+    vis = zeros(Int, size(x,1))
+    for i in 1:size(x,1)
         vis[i] = findWinner(codes, [x[i, col] for col in 1:size(x, 2)])
     end
 
@@ -294,7 +295,7 @@ Return a vector of neuron populations.
 function makePopulation(nCodes, vis)
 
     population = zeros(Int, nCodes)
-    for i in 1:nrow(vis)
+    for i in 1:size(vis,1)
         population[vis[i]] += 1
     end
 
@@ -312,7 +313,7 @@ function makeClassFreqs(som, vis, classes)
     # count classes and construct DataFrame:
     #
     classLabels = sort(unique(classes))
-    classNum = nrow(classLabels)
+    classNum = size(classLabels,1)
 
     cfs = DataFrame(index = 1:som.nCodes)
     cfs[:X] = som.indices[:X]
@@ -326,7 +327,7 @@ function makeClassFreqs(som, vis, classes)
 
     # loop vis and count:
     #
-    for i in 1:nrow(vis)
+    for i in 1:size(vis,1)
 
         cfs[vis[i], :Population] += 1
         class = Symbol(classes[i])
@@ -335,7 +336,7 @@ function makeClassFreqs(som, vis, classes)
 
     # make frequencies from counts:
     #
-    for i in 1:nrow(cfs)
+    for i in 1:size(cfs,1)
 
         counts = [cfs[i, col] for col in 5:size(cfs, 2)]
         total = cfs[i,:Population]
@@ -362,7 +363,7 @@ function findWinner(cod, sampl)
 
     dist = floatmax()
     winner = 1
-    n = nrow(cod)
+    n = size(cod,1)
 
     for i in 1:n
 
@@ -386,7 +387,7 @@ function find_bmu(cod, sampl)
 
     dist = floatmax()
     winner = 1
-    n = nrow(cod)
+    n = size(cod,1)
 
     for i in 1:n
 
@@ -413,7 +414,7 @@ Normalise every column of training data with the params.
 """
 function normTrainData(x::Array{Float64,2}, normParams)
 
-    for i in 1:ncol(x)
+    for i in 1:size(x,2)
         x[:,i] = (x[:,i] .- normParams[1,i]) ./ normParams[2,i]
     end
 
@@ -432,20 +433,20 @@ Normalise every column of training data.
 """
 function normTrainData(train::Array{Float64,2}, norm::Symbol)
 
-    normParams = zeros(2, ncol(train))
+    normParams = zeros(2, size(train,2))
 
     if  norm == :minmax
-        for i in 1:ncol(train)
+        for i in 1:size(train,2)
             normParams[1,i] = minimum(train[:,i])
             normParams[2,i] = maximum(train[:,i]) - minimum(train[:,i])
         end
     elseif norm == :zscore
-        for i in 1:ncol(train)
+        for i in 1:size(train,2)
             normParams[1,i] = mean(train[:,i])
             normParams[2,i] = std(train[:,i])
         end
     else
-        for i in 1:ncol(train)
+        for i in 1:size(train,2)
             normParams[1,i] = 0.0  # shift
             normParams[2,i] = 1.0  # scale
         end
