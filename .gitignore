@@ -15,5 +15,7 @@ docs/site/
 __pycache__
 data/
 *.fcs
+*.orig
 data/
 test/data/
+test/genData/
