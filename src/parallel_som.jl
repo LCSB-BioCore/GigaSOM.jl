@@ -82,7 +82,7 @@ function trainGigaSOM(som::Som, train::Any;
 
     # set default radius:
     if r == 0.0
-        r = π * som.ydim
+        r = √(som.xdim^2 + som.ydim^2) / 2
     end
 
     dm = distMatrix(som.grid, som.toroidal)
