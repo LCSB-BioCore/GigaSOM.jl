@@ -22,13 +22,13 @@ function initGigaSOM( train, xdim, ydim = xdim;
 
     train = convertTrainingData(train)
 
-    nCodes = xdim * ydim
+    numCodes = xdim * ydim
 
     # normalise training data:
     train, normParams = normTrainData(train, norm)
 
     # initialise the codes with random samples
-    codes = rowSample(train, nCodes)
+    codes = rowSample(train, numCodes)
     grid = gridRectangular(xdim, ydim)
 
     normParams = convert(DataFrame, normParams)
@@ -36,17 +36,17 @@ function initGigaSOM( train, xdim, ydim = xdim;
 
     # create X,y-indices for neurons:
     #
-     x = y = collect(1:nCodes)
+     x = y = collect(1:numCodes)
     indices = DataFrame(X = x, Y = y)
 
     # make SOM object:
     som = Som(codes = codes, colNames = colNames,
            normParams = normParams, norm = norm,
            xdim = xdim, ydim = ydim,
-           nCodes = nCodes,
+           numCodes = numCodes,
            grid = grid, indices = indices,
            toroidal = toroidal,
-           population = zeros(Int, nCodes))
+           population = zeros(Int, numCodes))
     return som
 end
 
@@ -146,7 +146,7 @@ function trainGigaSOM(som::Som, train::Any;
 
     # map training samples to SOM and calc. neuron population:
     vis = visual(codes, train)
-    population = makePopulation(som.nCodes, vis)
+    population = makePopulation(som.numCodes, vis)
 
 
     # update SOM object:
@@ -190,7 +190,7 @@ function doEpoch(x::Array{Float64}, codes::Array{Float64},
 
          # for each node in codebook get distances to bmu and multiply it
          # with sample row: x(i)
-         for i in 1:nCodes
+         for i in 1:numCodes
 
              dist = kernelFun(dm[bmu_idx, i], r)
 
@@ -287,13 +287,13 @@ end
 
 
 """
-    makePopulation(nCodes, vis)
+    makePopulation(numCodes, vis)
 
 Return a vector of neuron populations.
 """
-function makePopulation(nCodes, vis)
+function makePopulation(numCodes, vis)
 
-    population = zeros(Int, nCodes)
+    population = zeros(Int, numCodes)
     for i in 1:size(vis,1)
         population[vis[i]] += 1
     end
@@ -314,14 +314,14 @@ function makeClassFreqs(som, vis, classes)
     classLabels = sort(unique(classes))
     classNum = size(classLabels,1)
 
-    cfs = DataFrame(index = 1:som.nCodes)
+    cfs = DataFrame(index = 1:som.numCodes)
     cfs[:X] = som.indices[:X]
     cfs[:Y] = som.indices[:Y]
 
-    cfs[:Population] = zeros(Int, som.nCodes)
+    cfs[:Population] = zeros(Int, som.numCodes)
 
     for class in classLabels
-        cfs[Symbol(class)] = zeros(Float64, som.nCodes)
+        cfs[Symbol(class)] = zeros(Float64, som.numCodes)
     end
 
     # loop vis and count:
