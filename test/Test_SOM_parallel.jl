@@ -20,7 +20,7 @@ end
 
 som2 = initGigaSOM(df_som, 10, 10)
 
-@testset "Som test" begin
+@testset "GigaSOM initialisation" begin
     @testset "Type test" begin
         @test typeof(som2) == GigaSOM.Som
         @test som2.toroidal == false
