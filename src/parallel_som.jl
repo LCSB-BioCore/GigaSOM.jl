@@ -76,11 +76,8 @@ r is a parameter controlling the function and the return value is
 between 0.0 and 1.0.
 """
 function trainSOM_parallel(som::Som, train::Any, len;
-                     kernelFun::Function = gaussianKernel, r = 0.0,
-                     rDecay = true, epochs = 10)
+                     kernelFun::Function = gaussianKernel, r = 0.0, epochs = 10)
 
-    # double conversion:
-    # train was already converted during initialization
     train = convertTrainingData(train)
 
     # set default radius:
@@ -94,16 +91,13 @@ function trainSOM_parallel(som::Som, train::Any, len;
     global_sum_numerator = zeros(Float64, size(codes))
     global_sum_denominator = zeros(Float64, size(codes)[1])
 
-    # linear decay function
-    if rDecay
-        if r < 1.5
-            Δr = 0.0
-        else
-            Δr = (r-1.0) / epochs
-        end
-    else
+    # linear decay
+    if r < 1.5
         Δr = 0.0
+    else
+        Δr = (r-1.0) / epochs
     end
+
 
     nWorkers = nprocs()
     dTrain = distribute(train)
