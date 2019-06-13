@@ -148,10 +148,6 @@ function trainGigaSOM(som::Som, train::Any;
     vis = visual(codes, train)
     population = makePopulation(som.nCodes, vis)
 
-    # create X,Y-indices for neurons:
-    #
-    x = y = collect(1:som.nCodes)
-    indices = DataFrame(X = x, Y = y)
 
     # update SOM object:
     som.codes[:,:] = codes[:,:]
