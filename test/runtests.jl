@@ -48,4 +48,4 @@ batch_mywinners_test = first(batch_mywinners_test, 10)
 @test ref_batch_mywinners == batch_mywinners_test
 
 
-include("Test_SOM_parallel.jl")
+include("parallel.jl")
