@@ -5,7 +5,7 @@ using Random
 #fix the seed
 Random.seed!(1)
 
-include("Fcs_load_and_transform.jl")
+include("io.jl")
 
 #BATCH & PARALLEL
 
