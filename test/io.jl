@@ -11,22 +11,38 @@ extend this in the original package
 
 using GigaSOM, DataFrames, XLSX, CSV
 
-cwd = pwd()
+#create genData and data folder and change dir to dataPath
+if occursin("jenkins", homedir()) || "TRAVIS" in keys(ENV)
+    cwd = pwd()
+    genDataPath = mktempdir()
+    dataPath = mktempdir()
+    cd(dataPath)
+else
+    cd("test")
+    cwd = pwd()
+    if !isdir("genData")
+        genDataPath = mkdir("genData")
+    else
+    end
+    if !isdir("data")
+        dataPath = mkdir("data")
+    else
+    end
+    cd(dataPath)
+end
 
-#create gendata folder
-gendatapath = mktempdir()
-
-#create data folder and change dir to it
-dataPath = mktempdir()
-cd(dataPath)
-
-# fetch the required data for testing
-download("http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/PBMC8_metadata.xlsx", "PBMC8_metadata.xlsx")
-download("http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/PBMC8_panel.xlsx", "PBMC8_panel.xlsx")
-
-# download the zip archive and unzip it
-download("http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/PBMC8_fcs_files.zip", "PBMC8_fcs_files.zip")
-run(`unzip PBMC8_fcs_files.zip`)
+# fetch the required data for testing and download the zip archive and unzip it
+dataFiles = ["PBMC8_metadata.xlsx", "PBMC8_panel.xlsx", "PBMC8_fcs_files.zip"]
+for f in dataFiles
+    if !isfile(f)
+        download("http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/"*f, f)
+        if occursin(".zip", f)
+            run(`unzip PBMC8_fcs_files.zip`)
+        else
+        end
+    else
+    end
+end
 
 md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1")...)
 panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1")...)
@@ -46,7 +62,8 @@ cleannames!(fcs_raw)
 # transform the data
 # create daFrame file
 daf = create_daFrame(fcs_raw, md, panel)
-CSV.write(gendatapath*"/daf.csv", daf.fcstable)
 
 # change the directory back to the current directory
 cd(cwd)
+
+CSV.write(genDataPath*"/daf.csv", daf.fcstable)
