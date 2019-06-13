@@ -38,7 +38,7 @@ end
 @time som2 = trainGigaSOM(som2, df_som, epochs = 10, r = 6.0)
 
 mywinners = mapToSOM(som2, df_som)
-CSV.write("cell_clustering_som.csv", mywinners)
+CSV.write(genDataPath*"/cell_clustering_som.csv", mywinners)
 
 # myfreqs = SOM.classFrequencies(som2, daf.fcstable, :sample_id)
 
@@ -47,6 +47,6 @@ codes = som2.codes
 
 df_codes = DataFrame(codes)
 names!(df_codes, Symbol.(som2.colNames))
-CSV.write("df_codes.csv", df_codes)
-CSV.write("mywinners.csv", mywinners)
+CSV.write(genDataPath*"/df_codes.csv", df_codes)
+CSV.write(genDataPath*"/mywinners.csv", mywinners)
 # CSV.write("myfreqs.csv", myfreqs)
