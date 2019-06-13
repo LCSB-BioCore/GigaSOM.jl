@@ -57,12 +57,13 @@ CSV.write(genDataPath*"/batch_mywinners.csv", mywinners)
 
 refDataPath = cwd*"/refData"
 
-@info gendatapath
-@info refDatapath
+@info genDataPath
+@info refDataPath
 
-batch_df_codes_test = first(batch_df_codes_test, 10)
-batch_mywinners_test = CSV.File(genDataPath*"/batch_mywinners.csv") |> DataFrame
-batch_mywinners_test = first(batch_mywinners_test, 10)
+batch_df_codes = CSV.File(genDataPath*"/batch_df_codes.csv") |> DataFrame
+batch_df_codes_test = first(batch_df_codes, 10)
+batch_mywinners = CSV.File(genDataPath*"/batch_mywinners.csv") |> DataFrame
+batch_mywinners_test = first(batch_mywinners, 10)
 
 @test ref_batch_df_codes == batch_df_codes_test
 @test ref_batch_mywinners == batch_mywinners_test
