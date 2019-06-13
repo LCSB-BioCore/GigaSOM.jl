@@ -39,7 +39,7 @@ module GigaSOM
         trainSOM,
         mapToSOM,
         initGigaSOM,
-        trainSOM_parallel
+        trainGigaSOM
 
     export # Fcs_helper
         cleannames!,

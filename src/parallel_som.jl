@@ -75,7 +75,7 @@ x is an arbitrary distance and
 r is a parameter controlling the function and the return value is
 between 0.0 and 1.0.
 """
-function trainSOM_parallel(som::Som, train::Any;
+function trainGigaSOM(som::Som, train::Any;
                      kernelFun::Function = gaussianKernel, r = 0.0, epochs = 10)
 
     train = convertTrainingData(train)
