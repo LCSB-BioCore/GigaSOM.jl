@@ -23,10 +23,12 @@ else
     if !isdir("genData")
         genDataPath = mkdir("genData")
     else
+        genDataPath = "genData"
     end
     if !isdir("data")
         dataPath = mkdir("data")
     else
+        dataPath = "data"
     end
     cd(dataPath)
 end
