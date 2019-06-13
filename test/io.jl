@@ -18,7 +18,7 @@ if occursin("jenkins", homedir()) || "TRAVIS" in keys(ENV)
     dataPath = mktempdir()
     cd(dataPath)
 else
-    cd("test")
+    # cd("test")
     cwd = pwd()
     if !isdir("genData")
         genDataPath = mkdir("genData")
