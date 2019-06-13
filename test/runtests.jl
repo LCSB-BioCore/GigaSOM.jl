@@ -60,6 +60,8 @@ refDataPath = cwd*"/refData"
 @info genDataPath
 @info refDataPath
 
+ref_batch_df_codes = CSV.File(refDataPath*"/ref_batch_df_codes.csv") |> DataFrame
+ref_batch_mywinners = CSV.File(refDataPath*"/ref_batch_mywinners.csv") |> DataFrame
 batch_df_codes = CSV.File(genDataPath*"/batch_df_codes.csv") |> DataFrame
 batch_df_codes_test = first(batch_df_codes, 10)
 batch_mywinners = CSV.File(genDataPath*"/batch_mywinners.csv") |> DataFrame
