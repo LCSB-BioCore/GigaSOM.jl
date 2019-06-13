@@ -177,7 +177,6 @@ function doEpoch(x::Array{Float64}, codes::Array{Float64},
                  r::Number, toroidal::Bool, epochs)
      numDat = size(x,1)
      numCodes = size(codes,1)
-     nCodes = nrow(codes)
      # initialise numerator and denominator with 0's
      sum_numerator = zeros(Float64, size(codes))
      sum_denominator = zeros(Float64, size(codes)[1])
