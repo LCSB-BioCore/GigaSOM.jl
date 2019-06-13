@@ -134,7 +134,7 @@ function distMatrix(grid::Array, toroidal::Bool)
     xdim = maximum(grid[:,X]) - minimum(grid[:,X]) + 1.0
     ydim = maximum(grid[:,Y]) - minimum(grid[:,Y]) + 1.0
 
-    numNeurons = nrow(grid)
+    numNeurons = size(grid,1)
 
     dm = zeros(Float64, (numNeurons,numNeurons))
     for i in 1:numNeurons
