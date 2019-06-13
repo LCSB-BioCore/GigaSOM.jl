@@ -7,6 +7,29 @@ Random.seed!(1)
 
 include("io.jl")
 
+#test cleannames
+@testset "cleannames" begin
+    for i in eachindex(lineage_markers)
+            test_clean = @test !in("-",i)
+            return test_clean
+    end
+
+    for i in eachindex(functional_markers)
+            test_clean = @test !in("-",i)
+            return test_clean
+    end
+
+    for (k,v) in fcs_raw
+        colnames = names(v)
+        for i in eachindex(colnames)
+            test_clean = @test !in("-",i)
+            return test_clean
+        end
+    end
+end
+
+
+
 #BATCH & PARALLEL
 
 # only use lineage_markers for clustering
@@ -29,19 +52,16 @@ som2 = initGigaSOM(df_som, 10, 10)
 codes = som2.codes
 df_codes = DataFrame(codes)
 names!(df_codes, Symbol.(som2.colNames))
-CSV.write(gendatapath*"/batch_df_codes.csv", df_codes)
-CSV.write(gendatapath*"/batch_mywinners.csv", mywinners)
+CSV.write(genDataPath*"/batch_df_codes.csv", df_codes)
+CSV.write(genDataPath*"/batch_mywinners.csv", mywinners)
 
-refDatapath = cwd*"/refData"
+refDataPath = cwd*"/refData"
 
 @info gendatapath
 @info refDatapath
 
-ref_batch_df_codes = CSV.File(refDatapath*"/ref_batch_df_codes.csv") |> DataFrame
-ref_batch_mywinners = CSV.File(refDatapath*"/ref_batch_mywinners.csv") |> DataFrame
-batch_df_codes_test = CSV.File(gendatapath*"/batch_df_codes.csv") |> DataFrame
 batch_df_codes_test = first(batch_df_codes_test, 10)
-batch_mywinners_test = CSV.File(gendatapath*"/batch_mywinners.csv") |> DataFrame
+batch_mywinners_test = CSV.File(genDataPath*"/batch_mywinners.csv") |> DataFrame
 batch_mywinners_test = first(batch_mywinners_test, 10)
 
 @test ref_batch_df_codes == batch_df_codes_test
