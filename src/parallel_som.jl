@@ -112,7 +112,7 @@ function trainGigaSOM(som::Som, train::Any;
 
               println("worker: $p")
               @async R[p] = @spawnat p begin
-                 doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, r,
+                 doEpoch(localpart(dTrain), codes, dm, kernelFun, r,
                                                     false, epochs)
               end
           end
@@ -125,7 +125,7 @@ function trainGigaSOM(som::Som, train::Any;
      else
          # only batch mode
          println("In batch mode: ")
-         sum_numerator, sum_denominator = doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, r,
+         sum_numerator, sum_denominator = doEpoch(localpart(dTrain), codes, dm, kernelFun, r,
                                                             false, epochs)
 
         global_sum_numerator += sum_numerator
@@ -161,7 +161,7 @@ end
 
 
 """
-    doEpoch_parallel(x::Array{Float64}, codes::Array{Float64},
+    doEpoch(x::Array{Float64}, codes::Array{Float64},
              dm::Array{Float64}, kernelFun::Function, len::Int, η::Float64,
              r::Number, toroidal::Bool, rDecay::Bool, ηDecay::Bool)
 Train a SOM for one epoch. This implements also the batch update
@@ -176,7 +176,7 @@ epoch.
 - `toroidal`: if true, the SOM is toroidal.
 - `rDecay`: if true, r decays to 0.0 during the training.
 """
-function doEpoch_parallel(x::Array{Float64}, codes::Array{Float64},
+function doEpoch(x::Array{Float64}, codes::Array{Float64},
                  dm::Array{Float64}, kernelFun::Function,
                  r::Number, toroidal::Bool, epochs)
 
