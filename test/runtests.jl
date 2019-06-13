@@ -20,11 +20,9 @@ df_som_large = vcat(df_som_large, df_som)
 # topology is now always rectangular
 
 som2 = initGigaSOM(df_som, 10, 10)
-# som2 = initSOM_parallel(df_som_large, 10, 10)
 
 # using batch som with epochs
-# @time som2 = trainSOM_parallel(som2, df_som, size(df_som)[1], epochs = 1)
-@time som2 = trainGigaSOM(som2, df_som_large, size(df_som_large)[1], epochs = 1)
+@time som2 = trainGigaSOM(som2, df_som_large, epochs = 1)
 
 @time mywinners = mapToSOM(som2, df_som)
 
