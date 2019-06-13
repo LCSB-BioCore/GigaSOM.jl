@@ -2,9 +2,6 @@ name = "GigaSOM"
 uuid = "a03a9c34-069e-5582-a11c-5c984cab887c"
 version = "0.0.5"
 
-[compat]
-julia = "1"
-
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -17,6 +14,9 @@ FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
+
+[compat]
+julia = "1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

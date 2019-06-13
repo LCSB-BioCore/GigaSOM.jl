@@ -18,9 +18,9 @@ for i in 1:n
     df_som = vcat(df_som, df_som)
 end
 
-som2 = initSOM_parallel(df_som, 10, 10)
+som2 = initGigaSOM(df_som, 10, 10)
 
-@testset "Som test" begin
+@testset "GigaSOM initialisation" begin
     @testset "Type test" begin
         @test typeof(som2) == GigaSOM.Som
         @test som2.toroidal == false
@@ -35,7 +35,7 @@ som2 = initSOM_parallel(df_som, 10, 10)
 
 end
 
-@time som2 = trainSOM_parallel(som2, df_som, size(df_som)[1], epochs = 10)
+@time som2 = trainGigaSOM(som2, df_som, epochs = 10, r = 6.0)
 
 mywinners = mapToSOM(som2, df_som)
 CSV.write("cell_clustering_som.csv", mywinners)

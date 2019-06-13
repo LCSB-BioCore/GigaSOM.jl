@@ -11,7 +11,7 @@ Initialises a SOM.
 - `norm`: optional normalisation; one of :`minmax, :zscore or :none`
 - `toroidal`: optional flag; if true, the SOM is toroidal.
 """
-function initSOM_parallel( train, xdim, ydim = xdim;
+function initGigaSOM( train, xdim, ydim = xdim;
              norm::Symbol = :none, toroidal = false)
 
     if typeof(train) == DataFrame
@@ -26,9 +26,9 @@ function initSOM_parallel( train, xdim, ydim = xdim;
 
     # normalise training data:
     train, normParams = normTrainData(train, norm)
-    # codes = initCodes(nCodes, train, colNames)
-    codes = rowSample(train, nCodes)
 
+    # initialise the codes with random samples
+    codes = rowSample(train, nCodes)
     grid = gridRectangular(xdim, ydim)
 
     normParams = convert(DataFrame, normParams)
@@ -75,21 +75,14 @@ x is an arbitrary distance and
 r is a parameter controlling the function and the return value is
 between 0.0 and 1.0.
 """
-function trainSOM_parallel(som::Som, train::Any, len;
-                     kernelFun::Function = gaussianKernel, r = 0.0,
-                     rDecay = true, epochs = 10)
+function trainGigaSOM(som::Som, train::Any;
+                     kernelFun::Function = gaussianKernel, r = 0.0, epochs = 10)
 
-    # double conversion:
-    # train was already converted during initialization
     train = convertTrainingData(train)
 
     # set default radius:
     if r == 0.0
-     if som.topol != :spherical
-         r = √(som.xdim^2 + som.ydim^2) / 2
-     else
-         r = π * som.ydim
-     end
+        r = √(som.xdim^2 + som.ydim^2) / 2
     end
 
     dm = distMatrix(som.grid, som.toroidal)
@@ -98,15 +91,11 @@ function trainSOM_parallel(som::Som, train::Any, len;
     global_sum_numerator = zeros(Float64, size(codes))
     global_sum_denominator = zeros(Float64, size(codes)[1])
 
-    # linear decay function
-    if rDecay
-        if r < 1.5
-            Δr = 0.0
-        else
-            Δr = (r-1.0) / epochs
-        end
-    else
+    # linear decay
+    if r < 1.5
         Δr = 0.0
+    else
+        Δr = (r-1.0) / epochs
     end
 
     nWorkers = nprocs()
@@ -123,8 +112,8 @@ function trainSOM_parallel(som::Som, train::Any, len;
 
               println("worker: $p")
               @async R[p] = @spawnat p begin
-                 doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, len, r,
-                                                    false, rDecay, epochs)
+                 doEpoch(localpart(dTrain), codes, dm, kernelFun, r,
+                                                    false, epochs)
               end
           end
 
@@ -136,8 +125,8 @@ function trainSOM_parallel(som::Som, train::Any, len;
      else
          # only batch mode
          println("In batch mode: ")
-         sum_numerator, sum_denominator = doEpoch_parallel(localpart(dTrain), codes, dm, kernelFun, len, r,
-                                                            false, rDecay, epochs)
+         sum_numerator, sum_denominator = doEpoch(localpart(dTrain), codes, dm, kernelFun, r,
+                                                            false, epochs)
 
         global_sum_numerator += sum_numerator
         global_sum_denominator += sum_denominator
@@ -159,15 +148,6 @@ function trainSOM_parallel(som::Som, train::Any, len;
     vis = visual(codes, train)
     population = makePopulation(som.nCodes, vis)
 
-    # create X,Y-indices for neurons:
-    #
-    if som.topol != :spherical
-     x = [mod(i-1, som.xdim)+1 for i in 1:som.nCodes]
-     y = [div(i-1, som.xdim)+1 for i in 1:som.nCodes]
-    else
-     x = y = collect(1:som.nCodes)
-    end
-    indices = DataFrame(X = x, Y = y)
 
     # update SOM object:
     som.codes[:,:] = codes[:,:]
@@ -177,7 +157,7 @@ end
 
 
 """
-    doEpoch_parallel(x::Array{Float64}, codes::Array{Float64},
+    doEpoch(x::Array{Float64}, codes::Array{Float64},
              dm::Array{Float64}, kernelFun::Function, len::Int, η::Float64,
              r::Number, toroidal::Bool, rDecay::Bool, ηDecay::Bool)
 Train a SOM for one epoch. This implements also the batch update
@@ -192,9 +172,9 @@ epoch.
 - `toroidal`: if true, the SOM is toroidal.
 - `rDecay`: if true, r decays to 0.0 during the training.
 """
-function doEpoch_parallel(x::Array{Float64}, codes::Array{Float64},
-                 dm::Array{Float64}, kernelFun::Function, len::Int,
-                 r::Number, toroidal::Bool, rDecay::Bool, epochs)
+function doEpoch(x::Array{Float64}, codes::Array{Float64},
+                 dm::Array{Float64}, kernelFun::Function,
+                 r::Number, toroidal::Bool, epochs)
 
      nRows = nrow(x)
      nCodes = nrow(codes)
