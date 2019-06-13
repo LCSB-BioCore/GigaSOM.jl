@@ -38,7 +38,7 @@ module GigaSOM
         initSOM,
         trainSOM,
         mapToSOM,
-        initSOM_parallel,
+        initGigaSOM,
         trainSOM_parallel
 
     export # Fcs_helper

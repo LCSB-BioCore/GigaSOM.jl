@@ -11,7 +11,7 @@ Initialises a SOM.
 - `norm`: optional normalisation; one of :`minmax, :zscore or :none`
 - `toroidal`: optional flag; if true, the SOM is toroidal.
 """
-function initSOM_parallel( train, xdim, ydim = xdim;
+function initGigaSOM( train, xdim, ydim = xdim;
              norm::Symbol = :none, toroidal = false)
 
     if typeof(train) == DataFrame
