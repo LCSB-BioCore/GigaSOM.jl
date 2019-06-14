@@ -32,16 +32,19 @@ end
 
         codes = GigaSOM.rowSample(x, xdim * ydim)
         @test size(codes) == (100, 10)
-        @test typeof(codes) == Array{Float64, 2}
+        @test typeof(codes) == Array{Float32, 2}
 
         grid = GigaSOM.gridRectangular(xdim, ydim)
         @test size(grid) == (100, 2)
-        @test typeof(grid) == Array{Float64, 2}
+        @test typeof(grid) == Array{Float32, 2}
 
         dm = GigaSOM.distMatrix(grid, false)
         @test size(dm) == (100, 100)
-        @test typeof(dm) == Array{Float64, 2}
+        @test typeof(dm) == Array{Float32, 2}
+
     end
+
+
 end
 
 #PARALLEL
@@ -52,7 +55,7 @@ som2 = initGigaSOM(df_som, 10, 10)
     @testset "Type test" begin
         @test typeof(som2) == GigaSOM.Som
         @test som2.toroidal == false
-        @test typeof(som2.grid) == Array{Float64,2}
+        @test typeof(som2.grid) == Array{Float32,2}
     end
     @testset "Dimensions Test" begin
         @test size(som2.codes) == (100,10)

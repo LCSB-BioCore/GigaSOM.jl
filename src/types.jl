@@ -40,27 +40,37 @@ Structure to hold all data of a trained SOM.
                 each neuron.
 """
 struct Som
-    codes::Array{Float64,2}
+    codes::Array{Float32,2}
     colNames::Array{String}
     normParams::DataFrame
     norm::Symbol        # one of :none :minmax :zscore
     xdim::Int
     ydim::Int
+<<<<<<< HEAD
     numCodes::Int
     grid::Array{Float64,2}
+=======
+    nCodes::Int
+    grid::Array{Float32,2}
+>>>>>>> changed struct Som codes and grid to Float32
     indices::DataFrame
     topol::Symbol       # one of :rectangular :hexagonal :spherical
     toroidal::Bool
     population::Array{Int,1}
 
-    Som(;codes::Array{Float64} = Array{Float64}(0),
+    Som(;codes::Array{Float32} = Array{Float32}(0),
         colNames::Array{String,1} = Array{String}(0),
         normParams::DataFrame = DataFrame(),
         norm::Symbol = :none,
         xdim::Int = 1,
         ydim::Int = 1,
+<<<<<<< HEAD
         numCodes::Int = 1,
         grid::Array{Float64,2} = zeros(1,1),
+=======
+        nCodes::Int = 1,
+        grid::Array{Float32,2} = zeros(1,1),
+>>>>>>> changed struct Som codes and grid to Float32
         indices::DataFrame = DataFrame(),
         topol::Symbol = :hexagonal,
         toroidal::Bool = false,
