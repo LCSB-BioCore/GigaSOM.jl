@@ -46,13 +46,8 @@ struct Som
     norm::Symbol        # one of :none :minmax :zscore
     xdim::Int
     ydim::Int
-<<<<<<< HEAD
     numCodes::Int
-    grid::Array{Float64,2}
-=======
-    nCodes::Int
     grid::Array{Float32,2}
->>>>>>> changed struct Som codes and grid to Float32
     indices::DataFrame
     topol::Symbol       # one of :rectangular :hexagonal :spherical
     toroidal::Bool
@@ -64,13 +59,8 @@ struct Som
         norm::Symbol = :none,
         xdim::Int = 1,
         ydim::Int = 1,
-<<<<<<< HEAD
         numCodes::Int = 1,
-        grid::Array{Float64,2} = zeros(1,1),
-=======
-        nCodes::Int = 1,
         grid::Array{Float32,2} = zeros(1,1),
->>>>>>> changed struct Som codes and grid to Float32
         indices::DataFrame = DataFrame(),
         topol::Symbol = :hexagonal,
         toroidal::Bool = false,
