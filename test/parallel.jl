@@ -46,7 +46,7 @@ end
 
     @testset "gaussianKernel" begin
 
-        y = GigaSOM.gaussianKernel(10.0, 6.0)
+        y = GigaSOM.gaussianKernel(Float32(10.0), Float32(6.0))
         @test typeof(y) == Float32
     end
 
