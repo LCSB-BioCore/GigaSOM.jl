@@ -38,18 +38,32 @@ end
 cc = map(Symbol, lineage_markers)
 
 df_som = daf.fcstable[:,cc]
-df_som_large = vcat(df_som,df_som)
-df_som_large = vcat(df_som_large, df_som)
-# topology is now always rectangular
 
 som2 = initGigaSOM(df_som, 10, 10)
 
+@testset "GigaSOM initialisation" begin
+    @testset "Type test" begin
+        @test typeof(som2) == GigaSOM.Som
+        @test som2.toroidal == false
+        @test typeof(som2.grid) == Array{Float64,2}
+    end
+    @testset "Dimensions Test" begin
+        @test size(som2.codes) == (100,10)
+        @test som2.xdim == 10
+        @test som2.ydim == 10
+        @test som2.numCodes == 100
+    end
+
+end
+
 # using batch som with epochs
-@time som2 = trainGigaSOM(som2, df_som_large, epochs = 1)
+@time som2 = trainGigaSOM(som2, df_som, epochs = 1)
 
 @time mywinners = mapToSOM(som2, df_som)
 
 codes = som2.codes
+@test size(codes) == (100,10)
+
 df_codes = DataFrame(codes)
 names!(df_codes, Symbol.(som2.colNames))
 CSV.write(genDataPath*"/batch_df_codes.csv", df_codes)
@@ -67,8 +81,12 @@ batch_df_codes_test = first(batch_df_codes, 10)
 batch_mywinners = CSV.File(genDataPath*"/batch_mywinners.csv") |> DataFrame
 batch_mywinners_test = first(batch_mywinners, 10)
 
-@test ref_batch_df_codes == batch_df_codes_test
-@test ref_batch_mywinners == batch_mywinners_test
-
+@testset "refData_batch" begin
+    for (i, j) in zip(batch_df_codes_test[:,1], ref_batch_df_codes[:,1])
+        test_batch_df = @test isapprox(i, j; atol = 0.000001)
+        return test_batch_df
+    end
+    @test ref_batch_mywinners == batch_mywinners_test
+end
 
 include("parallel.jl")
