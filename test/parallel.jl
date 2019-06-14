@@ -10,10 +10,18 @@ p = addprocs(2)
 cc = map(Symbol, lineage_markers)
 df_som = daf.fcstable[:,cc]
 
+# concatenate the dataset for performance testing
+# df_som = vcat(df_som, df_som)
+n = 0
+for i in 1:n
+    global df_som
+    df_som = vcat(df_som, df_som)
+end
+
 @testset "Test Data conversion" begin
     @testset "Function convertTrainingData" begin
         x = GigaSOM.convertTrainingData(df_som)
-        @test typeof(x) == Array{Float64, 2}
+        @test typeof(x) == Array{Float32, 2}
     end
 
     @testset "Function distMatrix" begin
@@ -32,18 +40,8 @@ df_som = daf.fcstable[:,cc]
 
         dm = GigaSOM.distMatrix(grid, false)
         @test size(dm) == (100, 100)
-        @test typeof(dm) == Array{Float64, 2}        
+        @test typeof(dm) == Array{Float64, 2}
     end
-end
-
-
-
-
-# concatenate the dataset for performance testing
-n = 0
-for i in 1:n
-    global df_som
-    df_som = vcat(df_som, df_som)
 end
 
 #PARALLEL

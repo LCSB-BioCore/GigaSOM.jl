@@ -462,14 +462,14 @@ function normTrainData(train::Array{Float64,2}, norm::Symbol)
 end
 
 
-function convertTrainingData(data)::Array{Float64,2}
+function convertTrainingData(data)::Array{Float32,2}
 
     if typeof(data) == DataFrame
-        train = convert(Matrix{Float64}, data)
+        train = convert(Matrix{Float32}, data)
 
-    elseif typeof(data) != Matrix{Float64}
+    elseif typeof(data) != Matrix{Float32}
         try
-            train = convert(Matrix{Float64}, data)
+            train = convert(Matrix{Float32}, data)
         catch ex
             Base.showerror(STDERR, ex, backtrace())
             error("Unable to convert training data to Array{Float64,2}!")
