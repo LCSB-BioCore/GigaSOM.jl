@@ -11,6 +11,8 @@ docs/site/
 *.csv
 !ref_batch_df_codes.csv
 !ref_batch_mywinners.csv
+!ref_parallel_df_codes.csv
+!ref_parallel_mywinners.csv
 *.py
 __pycache__
 data/
