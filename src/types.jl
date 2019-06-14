@@ -121,7 +121,10 @@ Return Gaussian(x) for μ=0.0 and σ = r/3.
 (a value of σ = r/3 makes the training results comparable between different kernels
 for same values of r).
 """
-function gaussianKernel(x::Float64, r::Float64)::Float64
+function gaussianKernel(x::Float32, r::Float32)::Float32
+    # dist = Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
+    # return convert(Float32, dist)
+
     return Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
 end
 
