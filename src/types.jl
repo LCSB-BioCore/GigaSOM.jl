@@ -102,7 +102,7 @@ The first neuron sits at (0,0).
 """
 function gridRectangular(xdim, ydim)
 
-    grid = zeros(Float64, (xdim*ydim, 2))
+    grid = zeros(Float32, (xdim*ydim, 2))
     for ix in 1:xdim
         for iy in 1:ydim
 
@@ -146,7 +146,7 @@ function distMatrix(grid::Array, toroidal::Bool)
 
     numNeurons = size(grid,1)
 
-    dm = zeros(Float64, (numNeurons,numNeurons))
+    dm = zeros(Float32, (numNeurons,numNeurons))
     for i in 1:numNeurons
         for j in 1:numNeurons
             Δx = abs(grid[i,X] - grid[j,X])
