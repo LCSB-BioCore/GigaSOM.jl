@@ -6,12 +6,14 @@ p = addprocs(2)
 @everywhere using DistributedArrays
 @everywhere using GigaSOM
 
+#fix the seed
+Random.seed!(1)
+
 # only use lineage_markers for clustering
 cc = map(Symbol, lineage_markers)
-df_som = daf.fcstable[:,cc]
 
+df_som = daf.fcstable[:,cc]
 # concatenate the dataset for performance testing
-# df_som = vcat(df_som, df_som)
 n = 0
 for i in 1:n
     global df_som
@@ -37,16 +39,33 @@ end
 
 @time som2 = trainGigaSOM(som2, df_som, epochs = 10, r = 6.0)
 
-mywinners = mapToSOM(som2, df_som)
-CSV.write(genDataPath*"/cell_clustering_som.csv", mywinners)
-
-# myfreqs = SOM.classFrequencies(som2, daf.fcstable, :sample_id)
+@time mywinners = mapToSOM(som2, df_som)
 
 codes = som2.codes
 @test size(codes) == (100,10)
 
 df_codes = DataFrame(codes)
 names!(df_codes, Symbol.(som2.colNames))
-CSV.write(genDataPath*"/df_codes.csv", df_codes)
-CSV.write(genDataPath*"/mywinners.csv", mywinners)
-# CSV.write("myfreqs.csv", myfreqs)
+CSV.write(genDataPath*"/parallel_df_codes.csv", df_codes)
+CSV.write(genDataPath*"/parallel_mywinners.csv", mywinners)
+
+refDataPath = cwd*"/refData"
+
+@info genDataPath
+@info refDataPath
+
+
+ref_parallel_df_codes = CSV.File(refDataPath*"/ref_parallel_df_codes.csv") |> DataFrame
+ref_paralel_mywinners = CSV.File(refDataPath*"/ref_parallel_mywinners.csv") |> DataFrame
+parallel_df_codes = CSV.File(genDataPath*"/parallel_df_codes.csv") |> DataFrame
+parallel_df_codes_test = first(parallel_df_codes, 10)
+parallel_mywinners = CSV.File(genDataPath*"/parallel_mywinners.csv") |> DataFrame
+parallel_mywinners_test = first(parallel_mywinners, 10)
+
+@testset "refData_parallel" begin
+    for (i, j) in zip(parallel_df_codes_test[:,1], ref_parallel_df_codes[:,1])
+        test_parallel_df = @test isapprox(i, j; atol = 0.000001)
+        return test_parallel_df
+    end
+    @test ref_parallel_mywinners == parallel_mywinners_test
+end
