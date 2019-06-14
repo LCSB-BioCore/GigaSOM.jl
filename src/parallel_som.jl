@@ -75,8 +75,8 @@ x is an arbitrary distance and
 r is a parameter controlling the function and the return value is
 between 0.0 and 1.0.
 """
-function trainGigaSOM(som::Som, train::Any;
-                     kernelFun::Function = gaussianKernel, r = 0.0, epochs = 10)
+function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel,
+                    r = 0.0, epochs = 10)
 
     train = convertTrainingData(train)
 
@@ -88,8 +88,8 @@ function trainGigaSOM(som::Som, train::Any;
     dm = distMatrix(som.grid, som.toroidal)
 
     codes = som.codes
-    global_sum_numerator = zeros(Float64, size(codes))
-    global_sum_denominator = zeros(Float64, size(codes)[1])
+    global_sum_numerator = zeros(Float32, size(codes))
+    global_sum_denominator = zeros(Float32, size(codes)[1])
 
     # linear decay
     if r < 1.5
@@ -112,8 +112,7 @@ function trainGigaSOM(som::Som, train::Any;
 
               println("worker: $p")
               @async R[p] = @spawnat p begin
-                 doEpoch(localpart(dTrain), codes, dm, kernelFun, r,
-                                                    false, epochs)
+                 doEpoch(localpart(dTrain), codes, dm, kernelFun, r, false, epochs)
               end
           end
 
@@ -174,12 +173,20 @@ epoch.
 """
 function doEpoch(x::Array{Float32}, codes::Array{Float32},
                  dm::Array{Float32}, kernelFun::Function,
+<<<<<<< HEAD
                  r::Number, toroidal::Bool, epochs)
      numDat = size(x,1)
      numCodes = size(codes,1)
+=======
+                 r, toroidal::Bool, epochs)
+
+     r = convert(Float32, r)
+     nRows = nrow(x)
+     nCodes = nrow(codes)
+>>>>>>> numerator and denominator to Float32, cast r to Float32 in doEpoch
      # initialise numerator and denominator with 0's
-     sum_numerator = zeros(Float64, size(codes))
-     sum_denominator = zeros(Float64, size(codes)[1])
+     sum_numerator = zeros(Float32, size(codes))
+     sum_denominator = zeros(Float32, size(codes)[1])
      # for each sample in dataset / trainingsset
      for s in 1:numDat
 
