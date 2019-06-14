@@ -44,6 +44,12 @@ end
 
     end
 
+    @testset "gaussianKernel" begin
+
+        y = GigaSOM.gaussianKernel(10.0, 6.0)
+        @test typeof(y) == Float32
+    end
+
 
 end
 
@@ -66,7 +72,14 @@ som2 = initGigaSOM(df_som, 10, 10)
 
 end
 
+<<<<<<< HEAD
 @time som2 = trainGigaSOM(som2, df_som, epochs = 2, r = 6.0)
+=======
+@time som2 = trainGigaSOM(som2, df_som, epochs = 10)
+
+mywinners = mapToSOM(som2, df_som)
+CSV.write("cell_clustering_som.csv", mywinners)
+>>>>>>> add test for gaussianKernel
 
 @time mywinners = mapToGigaSOM(som2, df_som)
 
