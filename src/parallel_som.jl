@@ -172,8 +172,8 @@ epoch.
 - `toroidal`: if true, the SOM is toroidal.
 - `rDecay`: if true, r decays to 0.0 during the training.
 """
-function doEpoch(x::Array{Float64}, codes::Array{Float64},
-                 dm::Array{Float64}, kernelFun::Function,
+function doEpoch(x::Array{Float32}, codes::Array{Float32},
+                 dm::Array{Float32}, kernelFun::Function,
                  r::Number, toroidal::Bool, epochs)
      numDat = size(x,1)
      numCodes = size(codes,1)
