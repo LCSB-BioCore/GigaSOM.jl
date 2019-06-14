@@ -10,6 +10,12 @@ p = addprocs(2)
 cc = map(Symbol, lineage_markers)
 df_som = daf.fcstable[:,cc]
 
+@testset "Test convertTrainingData" begin
+    x = GigaSOM.convertTrainingData(df_som)
+    @test typeof(x) == Array{Float64, 2}
+end
+
+
 # concatenate the dataset for performance testing
 n = 0
 for i in 1:n
