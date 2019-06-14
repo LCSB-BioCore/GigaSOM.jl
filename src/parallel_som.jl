@@ -430,7 +430,7 @@ Normalise every column of training data.
 - `train`: DataFrame with training Data
 - `norm`: type of normalisation; one of `minmax, zscore, none`
 """
-function normTrainData(train::Array{Float64,2}, norm::Symbol)
+function normTrainData(train::Array{Float32, 2}, norm::Symbol)
 
     normParams = zeros(2, size(train,2))
 
