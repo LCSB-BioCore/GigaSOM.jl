@@ -1,5 +1,5 @@
 """
-        initSOM_parallel(train, xdim, ydim = xdim;  norm = :zscore, topol = :hexagonal,
+        initGigaSOM_parallel(train, xdim, ydim = xdim;  norm = :zscore, topol = :hexagonal,
             toroidal = false)
 Initialises a SOM.
 # Arguments:
@@ -52,7 +52,7 @@ end
 
 
 """
-    trainSOM_parallel(som::Som, train::Any, len;
+    trainGigaSOM_parallel(som::Som, train::Any, len;
              η = 0.2, kernelFun = gaussianKernel,
              r = 0.0, rDecay = true, ηDecay = true)
 # Arguments:
@@ -205,7 +205,7 @@ function doEpoch(x::Array{Float64}, codes::Array{Float64},
 end
 
 """
-    mapToSOM(som::Som, data)
+    mapToGigaSOM(som::Som, data)
 
 Return a DataFrame with X-, Y-indices and index of winner neuron for
 every row in data.
@@ -217,7 +217,7 @@ every row in data.
 Data must have the same number of dimensions as the training dataset
 and will be normalised with the same parameters.
 """
-function mapToSOM(som::Som, data)
+function mapToGigaSOM(som::Som, data)
 
     data = convertTrainingData(data)
 
