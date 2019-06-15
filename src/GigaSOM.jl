@@ -35,9 +35,7 @@ module GigaSOM
     # include("visualization/Plotting.jl")
 
     export # ext/som
-        initSOM,
-        trainSOM,
-        mapToSOM,
+        mapToGigaSOM,
         initGigaSOM,
         trainGigaSOM
 
