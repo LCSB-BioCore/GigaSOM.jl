@@ -74,7 +74,7 @@ end
 
 @time som2 = trainGigaSOM(som2, df_som, epochs = 10)
 
-mywinners = mapToSOM(som2, df_som)
+mywinners = mapToGigaSOM(som2, df_som)
 CSV.write("cell_clustering_som.csv", mywinners)
 
 @time mywinners = mapToGigaSOM(som2, df_som)
