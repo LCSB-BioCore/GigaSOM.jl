@@ -29,7 +29,7 @@ Structure to hold all data of a trained SOM.
 - `norm::Symbol`: normalisation type; one of `:none, :minmax, :zscore`
 - `xdim::Int`: number of neurons in x-direction
 - `ydim::Int`: number of neurons in y-direction
-- `nCodes::Int`: total number of neurons
+- `numCodes::Int`: total number of neurons
 - `grid::Array{Float64,2}`: 2D-array of coordinates of neurons on the map
           (2 columns (x,y)] for rectangular and hexagonal maps
            3 columns (x,y,z) for spherical maps)
@@ -46,7 +46,7 @@ struct Som
     norm::Symbol        # one of :none :minmax :zscore
     xdim::Int
     ydim::Int
-    nCodes::Int
+    numCodes::Int
     grid::Array{Float64,2}
     indices::DataFrame
     topol::Symbol       # one of :rectangular :hexagonal :spherical
@@ -59,7 +59,7 @@ struct Som
         norm::Symbol = :none,
         xdim::Int = 1,
         ydim::Int = 1,
-        nCodes::Int = 1,
+        numCodes::Int = 1,
         grid::Array{Float64,2} = zeros(1,1),
         indices::DataFrame = DataFrame(),
         topol::Symbol = :hexagonal,
@@ -70,7 +70,7 @@ struct Som
                                               norm,
                                               xdim,
                                               ydim,
-                                              nCodes,
+                                              numCodes,
                                               grid,
                                               indices,
                                               topol,
@@ -134,7 +134,7 @@ function distMatrix(grid::Array, toroidal::Bool)
     xdim = maximum(grid[:,X]) - minimum(grid[:,X]) + 1.0
     ydim = maximum(grid[:,Y]) - minimum(grid[:,Y]) + 1.0
 
-    numNeurons = nrow(grid)
+    numNeurons = size(grid,1)
 
     dm = zeros(Float64, (numNeurons,numNeurons))
     for i in 1:numNeurons
