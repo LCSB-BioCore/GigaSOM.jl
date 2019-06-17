@@ -75,8 +75,8 @@ x is an arbitrary distance and
 r is a parameter controlling the function and the return value is
 between 0.0 and 1.0.
 """
-function trainGigaSOM(som::Som, train::Any;
-                     kernelFun::Function = gaussianKernel, r = 0.0, epochs = 10)
+function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel,
+                    r = 0.0, epochs = 10)
 
     train = convertTrainingData(train)
 
@@ -88,8 +88,8 @@ function trainGigaSOM(som::Som, train::Any;
     dm = distMatrix(som.grid, som.toroidal)
 
     codes = som.codes
-    global_sum_numerator = zeros(Float64, size(codes))
-    global_sum_denominator = zeros(Float64, size(codes)[1])
+    global_sum_numerator = zeros(Float32, size(codes))
+    global_sum_denominator = zeros(Float32, size(codes)[1])
 
     # linear decay
     if r < 1.5
@@ -112,8 +112,7 @@ function trainGigaSOM(som::Som, train::Any;
 
               println("worker: $p")
               @async R[p] = @spawnat p begin
-                 doEpoch(localpart(dTrain), codes, dm, kernelFun, r,
-                                                    false, epochs)
+                 doEpoch(localpart(dTrain), codes, dm, kernelFun, r, false)
               end
           end
 
@@ -126,7 +125,7 @@ function trainGigaSOM(som::Som, train::Any;
          # only batch mode
          println("In batch mode: ")
          sum_numerator, sum_denominator = doEpoch(localpart(dTrain), codes, dm, kernelFun, r,
-                                                            false, epochs)
+                                                            false)
 
         global_sum_numerator += sum_numerator
         global_sum_denominator += sum_denominator
@@ -157,29 +156,30 @@ end
 
 
 """
-    doEpoch(x::Array{Float64}, codes::Array{Float64},
-             dm::Array{Float64}, kernelFun::Function, len::Int, η::Float64,
-             r::Number, toroidal::Bool, rDecay::Bool, ηDecay::Bool)
+    doEpoch(x::Array{Float32}, codes::Array{Float32}, dm::Array{Float32},
+            kernelFun::Function, r::Number, toroidal::Bool)
 Train a SOM for one epoch. This implements also the batch update
 of the codebook vectors and the adjustment in radius after each
 epoch.
 # Arguments:
 - `x`: training Data
+- `codes`: Codebook
 - `dm`: distance matrix of all neurons of the SOM
 - `kernelFun`: distance kernel function of type fun(x, r)
-- `len`: number of training steps (*not* epochs)
 - `r`: training radius
 - `toroidal`: if true, the SOM is toroidal.
-- `rDecay`: if true, r decays to 0.0 during the training.
 """
-function doEpoch(x::Array{Float64}, codes::Array{Float64},
-                 dm::Array{Float64}, kernelFun::Function,
-                 r::Number, toroidal::Bool, epochs)
+function doEpoch(x::Array{Float32}, codes::Array{Float32}, dm::Array{Float32},
+                kernelFun::Function, r::Number, toroidal::Bool)
+
      numDat = size(x,1)
      numCodes = size(codes,1)
+     r = convert(Float32, r)
+     nRows = size(x, 1)
+     nCodes = size(codes, 1)
      # initialise numerator and denominator with 0's
-     sum_numerator = zeros(Float64, size(codes))
-     sum_denominator = zeros(Float64, size(codes)[1])
+     sum_numerator = zeros(Float32, size(codes))
+     sum_denominator = zeros(Float32, size(codes)[1])
      # for each sample in dataset / trainingsset
      for s in 1:numDat
 
@@ -430,7 +430,7 @@ Normalise every column of training data.
 - `train`: DataFrame with training Data
 - `norm`: type of normalisation; one of `minmax, zscore, none`
 """
-function normTrainData(train::Array{Float64,2}, norm::Symbol)
+function normTrainData(train::Array{Float32, 2}, norm::Symbol)
 
     normParams = zeros(2, size(train,2))
 
@@ -462,14 +462,14 @@ function normTrainData(train::Array{Float64,2}, norm::Symbol)
 end
 
 
-function convertTrainingData(data)::Array{Float64,2}
+function convertTrainingData(data)::Array{Float32,2}
 
     if typeof(data) == DataFrame
-        train = convert(Matrix{Float64}, data)
+        train = convert(Matrix{Float32}, data)
 
-    elseif typeof(data) != Matrix{Float64}
+    elseif typeof(data) != Matrix{Float32}
         try
-            train = convert(Matrix{Float64}, data)
+            train = convert(Matrix{Float32}, data)
         catch ex
             Base.showerror(STDERR, ex, backtrace())
             error("Unable to convert training data to Array{Float64,2}!")

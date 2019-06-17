@@ -21,7 +21,7 @@ end
 Structure to hold all data of a trained SOM.
 
 # Fields:
-- `codes::Array{Float64,2}`: 2D-array of codebook vectors. One vector per row
+- `codes::Array{Float32,2}`: 2D-array of codebook vectors. One vector per row
 - `colNames::Array{String,1}`: names of the attribute with which the SOM is trained
 - `normParams::DataFrame`: normalisation parameters for each column
                 of training data. Column headers corresponds with
@@ -30,7 +30,7 @@ Structure to hold all data of a trained SOM.
 - `xdim::Int`: number of neurons in x-direction
 - `ydim::Int`: number of neurons in y-direction
 - `numCodes::Int`: total number of neurons
-- `grid::Array{Float64,2}`: 2D-array of coordinates of neurons on the map
+- `grid::Array{Float32,2}`: 2D-array of coordinates of neurons on the map
           (2 columns (x,y)] for rectangular and hexagonal maps
            3 columns (x,y,z) for spherical maps)
 - `indices::DataFrame`: X-, Y-indices of the neurons
@@ -40,27 +40,27 @@ Structure to hold all data of a trained SOM.
                 each neuron.
 """
 struct Som
-    codes::Array{Float64,2}
+    codes::Array{Float32,2}
     colNames::Array{String}
     normParams::DataFrame
     norm::Symbol        # one of :none :minmax :zscore
     xdim::Int
     ydim::Int
     numCodes::Int
-    grid::Array{Float64,2}
+    grid::Array{Float32,2}
     indices::DataFrame
     topol::Symbol       # one of :rectangular :hexagonal :spherical
     toroidal::Bool
     population::Array{Int,1}
 
-    Som(;codes::Array{Float64} = Array{Float64}(0),
+    Som(;codes::Array{Float32} = Array{Float32}(0),
         colNames::Array{String,1} = Array{String}(0),
         normParams::DataFrame = DataFrame(),
         norm::Symbol = :none,
         xdim::Int = 1,
         ydim::Int = 1,
         numCodes::Int = 1,
-        grid::Array{Float64,2} = zeros(1,1),
+        grid::Array{Float32,2} = zeros(1,1),
         indices::DataFrame = DataFrame(),
         topol::Symbol = :hexagonal,
         toroidal::Bool = false,
@@ -92,7 +92,7 @@ The first neuron sits at (0,0).
 """
 function gridRectangular(xdim, ydim)
 
-    grid = zeros(Float64, (xdim*ydim, 2))
+    grid = zeros(Float32, (xdim*ydim, 2))
     for ix in 1:xdim
         for iy in 1:ydim
 
@@ -105,13 +105,14 @@ end
 
 
 """
-    gaussianKernel(x::Float64, r::Float64)::Float64
+    gaussianKernel(x::Float32, r::Float32)::Float64
 
 Return Gaussian(x) for μ=0.0 and σ = r/3.
 (a value of σ = r/3 makes the training results comparable between different kernels
 for same values of r).
 """
-function gaussianKernel(x::Float64, r::Float64)::Float64
+function gaussianKernel(x::Float32, r::Float32)::Float32
+
     return Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
 end
 
@@ -136,7 +137,7 @@ function distMatrix(grid::Array, toroidal::Bool)
 
     numNeurons = size(grid,1)
 
-    dm = zeros(Float64, (numNeurons,numNeurons))
+    dm = zeros(Float32, (numNeurons,numNeurons))
     for i in 1:numNeurons
         for j in 1:numNeurons
             Δx = abs(grid[i,X] - grid[j,X])
