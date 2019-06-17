@@ -1,6 +1,3 @@
-using Test
-using Distributed
-
 #fix the seed
 Random.seed!(1)
 
@@ -9,15 +6,18 @@ p = addprocs(2)
 @everywhere using GigaSOM
 
 # only use lineage_markers for clustering
+(lineage_markers,)= getMarkers(panel)
 cc = map(Symbol, lineage_markers)
-
 df_som = daf.fcstable[:,cc]
+
 # concatenate the dataset for performance testing
 n = 0
 for i in 1:n
     global df_som
     df_som = vcat(df_som, df_som)
 end
+
+#PARALLEL
 
 som2 = initGigaSOM(df_som, 10, 10)
 
@@ -55,10 +55,6 @@ CSV.write(genDataPath*"/parallel_mywinners.csv", mywinners)
 # CSV.write(refDataPath*"/ref_parallel_df_codes.csv", df_codes)
 # CSV.write(refDataPath*"/ref_parallel_mywinners.csv", mywinners)
 
-refDataPath = cwd*"/refData"
-
-@info genDataPath
-@info refDataPath
 
 #preparing parallel for testing
 ref_parallel_df_codes = CSV.File(refDataPath*"/ref_parallel_df_codes.csv") |> DataFrame
