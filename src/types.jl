@@ -112,8 +112,6 @@ Return Gaussian(x) for μ=0.0 and σ = r/3.
 for same values of r).
 """
 function gaussianKernel(x::Float32, r::Float32)::Float32
-    # dist = Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
-    # return convert(Float32, dist)
 
     return Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
 end
