@@ -11,7 +11,6 @@ cc = map(Symbol, lineage_markers)
 df_som = daf.fcstable[:,cc]
 
 # concatenate the dataset for performance testing
-# df_som = vcat(df_som, df_som)
 n = 0
 for i in 1:n
     global df_som
