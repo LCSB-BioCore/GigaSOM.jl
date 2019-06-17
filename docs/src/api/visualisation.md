@@ -1,0 +1,6 @@
+# Visualisation
+
+```@docs
+plotCounts
+plotPCA
+```
