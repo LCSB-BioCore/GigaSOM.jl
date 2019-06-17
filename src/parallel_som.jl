@@ -112,7 +112,7 @@ function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel
 
               println("worker: $p")
               @async R[p] = @spawnat p begin
-                 doEpoch(localpart(dTrain), codes, dm, kernelFun, r, false, epochs)
+                 doEpoch(localpart(dTrain), codes, dm, kernelFun, r, false)
               end
           end
 
@@ -125,7 +125,7 @@ function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel
          # only batch mode
          println("In batch mode: ")
          sum_numerator, sum_denominator = doEpoch(localpart(dTrain), codes, dm, kernelFun, r,
-                                                            false, epochs)
+                                                            false)
 
         global_sum_numerator += sum_numerator
         global_sum_denominator += sum_denominator
@@ -156,23 +156,21 @@ end
 
 
 """
-    doEpoch(x::Array{Float32}, codes::Array{Float32},
-             dm::Array{Float32}, kernelFun::Function, len::Int, η::Float64,
-             r::Number, toroidal::Bool, rDecay::Bool, ηDecay::Bool)
+    doEpoch(x::Array{Float32}, codes::Array{Float32}, dm::Array{Float32},
+            kernelFun::Function, r::Number, toroidal::Bool)
 Train a SOM for one epoch. This implements also the batch update
 of the codebook vectors and the adjustment in radius after each
 epoch.
 # Arguments:
 - `x`: training Data
+- `codes`: Codebook
 - `dm`: distance matrix of all neurons of the SOM
 - `kernelFun`: distance kernel function of type fun(x, r)
-- `len`: number of training steps (*not* epochs)
 - `r`: training radius
 - `toroidal`: if true, the SOM is toroidal.
-- `rDecay`: if true, r decays to 0.0 during the training.
 """
 function doEpoch(x::Array{Float32}, codes::Array{Float32}, dm::Array{Float32},
-                kernelFun::Function, r::Number, toroidal::Bool, epochs)
+                kernelFun::Function, r::Number, toroidal::Bool)
 
      numDat = size(x,1)
      numCodes = size(codes,1)
