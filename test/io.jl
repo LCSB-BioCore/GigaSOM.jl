@@ -20,17 +20,16 @@ if occursin("jenkins", homedir()) || "TRAVIS" in keys(ENV)
 else
     if !occursin("test", cwd)
         cd("test")
+        cwd = pwd()
     end
-    if !isdir("genData")
-        genDataPath = mkdir("genData")
-    else
-        genDataPath = cwd*"/genData"
+    dataFolders = ["genData", "data"]
+    for i in dataFolders
+        if !isdir(i)
+            mkdir(i)
+        end
     end
-    if !isdir("data")
-        dataPath = mkdir("data")
-    else
-        dataPath = cwd*"/data"
-    end
+    genDataPath = cwd*"/genData"
+    dataPath = cwd*"/data"
     cd(dataPath)
 end
 
