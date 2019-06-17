@@ -29,28 +29,21 @@ end
         xdim = 10
         ydim = 10
         x = GigaSOM.convertTrainingData(df_som)
-
         codes = GigaSOM.rowSample(x, xdim * ydim)
         @test size(codes) == (100, 10)
         @test typeof(codes) == Array{Float32, 2}
-
         grid = GigaSOM.gridRectangular(xdim, ydim)
         @test size(grid) == (100, 2)
         @test typeof(grid) == Array{Float32, 2}
-
         dm = GigaSOM.distMatrix(grid, false)
         @test size(dm) == (100, 100)
         @test typeof(dm) == Array{Float32, 2}
-
     end
 
     @testset "gaussianKernel" begin
-
         y = GigaSOM.gaussianKernel(Float32(10.0), Float32(6.0))
         @test typeof(y) == Float32
     end
-
-
 end
 
 #PARALLEL
