@@ -8,29 +8,26 @@ FCS, we need to see what functionality is missing and
 extend this in the original package
 =#
 
-
-using GigaSOM, DataFrames, XLSX, CSV
-
 #create genData and data folder and change dir to dataPath
 cwd = pwd()
 if occursin("jenkins", homedir()) || "TRAVIS" in keys(ENV)
     genDataPath = mktempdir()
     dataPath = mktempdir()
-    cd(dataPath)
 else
     if !occursin("test", cwd)
         cd("test")
         cwd = pwd()
     end
     dataFolders = ["genData", "data"]
-    for i in dataFolders
-        if !isdir(i)
-            mkdir(i)
+    for dir in dataFolders
+        if !isdir(dir)
+            mkdir(dir)
         end
     end
     genDataPath = cwd*"/genData"
     dataPath = cwd*"/data"
-    cd(dataPath)
+refDataPath = cwd*"/refData"
+cd(dataPath)
 end
 
 # fetch the required data for testing and download the zip archive and unzip it
@@ -68,3 +65,24 @@ daf = create_daFrame(fcs_raw, md, panel)
 cd(cwd)
 
 CSV.write(genDataPath*"/daf.csv", daf.fcstable)
+
+#test cleannames
+@testset "cleannames" begin
+    for i in eachindex(lineage_markers)
+            test_clean = @test !in("-",i)
+            return test_clean
+    end
+
+    for i in eachindex(functional_markers)
+            test_clean = @test !in("-",i)
+            return test_clean
+    end
+
+    for (k,v) in fcs_raw
+        colnames = names(v)
+        for i in eachindex(colnames)
+            test_clean = @test !in("-",i)
+            return test_clean
+        end
+    end
+end
