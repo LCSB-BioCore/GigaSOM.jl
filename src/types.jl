@@ -21,7 +21,7 @@ end
 Structure to hold all data of a trained SOM.
 
 # Fields:
-- `codes::Array{Float64,2}`: 2D-array of codebook vectors. One vector per row
+- `codes::Array{Float32,2}`: 2D-array of codebook vectors. One vector per row
 - `colNames::Array{String,1}`: names of the attribute with which the SOM is trained
 - `normParams::DataFrame`: normalisation parameters for each column
                 of training data. Column headers corresponds with
@@ -30,7 +30,7 @@ Structure to hold all data of a trained SOM.
 - `xdim::Int`: number of neurons in x-direction
 - `ydim::Int`: number of neurons in y-direction
 - `numCodes::Int`: total number of neurons
-- `grid::Array{Float64,2}`: 2D-array of coordinates of neurons on the map
+- `grid::Array{Float32,2}`: 2D-array of coordinates of neurons on the map
           (2 columns (x,y)] for rectangular and hexagonal maps
            3 columns (x,y,z) for spherical maps)
 - `indices::DataFrame`: X-, Y-indices of the neurons
@@ -105,7 +105,7 @@ end
 
 
 """
-    gaussianKernel(x::Float64, r::Float64)::Float64
+    gaussianKernel(x::Float32, r::Float32)::Float64
 
 Return Gaussian(x) for μ=0.0 and σ = r/3.
 (a value of σ = r/3 makes the training results comparable between different kernels

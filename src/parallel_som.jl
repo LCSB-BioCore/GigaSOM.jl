@@ -156,8 +156,8 @@ end
 
 
 """
-    doEpoch(x::Array{Float64}, codes::Array{Float64},
-             dm::Array{Float64}, kernelFun::Function, len::Int, η::Float64,
+    doEpoch(x::Array{Float32}, codes::Array{Float32},
+             dm::Array{Float32}, kernelFun::Function, len::Int, η::Float64,
              r::Number, toroidal::Bool, rDecay::Bool, ηDecay::Bool)
 Train a SOM for one epoch. This implements also the batch update
 of the codebook vectors and the adjustment in radius after each
