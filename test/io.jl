@@ -26,9 +26,10 @@ else
     end
     genDataPath = cwd*"/genData"
     dataPath = cwd*"/data"
+end
+
 refDataPath = cwd*"/refData"
 cd(dataPath)
-end
 
 # fetch the required data for testing and download the zip archive and unzip it
 dataFiles = ["PBMC8_metadata.xlsx", "PBMC8_panel.xlsx", "PBMC8_fcs_files.zip"]
