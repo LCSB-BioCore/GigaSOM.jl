@@ -12,17 +12,14 @@ extend this in the original package
 using GigaSOM, DataFrames, XLSX, CSV
 
 #create genData and data folder and change dir to dataPath
+cwd = pwd()
 if occursin("jenkins", homedir()) || "TRAVIS" in keys(ENV)
-    cwd = pwd()
     genDataPath = mktempdir()
     dataPath = mktempdir()
     cd(dataPath)
 else
-    if !occursin("test", pwd())
+    if !occursin("test", cwd)
         cd("test")
-        cwd = pwd()
-    else
-        cwd = pwd()
     end
     if !isdir("genData")
         genDataPath = mkdir("genData")
