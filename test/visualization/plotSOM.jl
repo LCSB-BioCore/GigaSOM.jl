@@ -3,7 +3,7 @@
 ####################################
 # barplot of cell counts per sample
 ####################################
-plotcounts(fcs_raw, md)
+plotCounts(fcs_raw, md)
 
 ####################################################################
 # PCA plot

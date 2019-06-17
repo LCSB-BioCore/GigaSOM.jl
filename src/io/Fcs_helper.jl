@@ -21,7 +21,7 @@ function readflowset(filenames)
 end
 
 """
-    transform_data(flowframe, method = "asinh", cofactor = 5)
+    transformData(flowframe, method = "asinh", cofactor = 5)
 
 Tansforms FCS data. Currently only asinh
 
@@ -30,7 +30,7 @@ Tansforms FCS data. Currently only asinh
 - `method`: transformation method
 - `cofactor`: Cofactor for transformation
 """
-function transform_data(flowframe, method = "asinh", cofactor = 5)
+function transformData(flowframe, method = "asinh", cofactor = 5)
     # loop through every file in dict
     # get the dataframe
     # convert to matrix
@@ -101,7 +101,7 @@ function create_daFrame(fcs_raw, md, panel)
     # extract lineage markers
     lineage_markers, functional_markers = getMarkers(panel)
 
-    transform_data(fcs_raw)
+    transformData(fcs_raw)
 
     for i in eachindex(md.file_name)
         df = fcs_raw[md.file_name[i]]

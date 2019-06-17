@@ -47,7 +47,7 @@ module GigaSOM
         daFrame
 
     export # Plotting
-        plotcounts,
+        plotCounts,
         plotPCA
 
 end # module

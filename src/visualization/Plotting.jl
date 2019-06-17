@@ -1,5 +1,14 @@
-"barplot of cell counts per sample"
-function plotcounts(fcs_raw, md, group_by = "condition")
+"""
+    plotCounts(fcs_raw, md, group_by = "condition")
+
+Barplot showing the number of cells per sample, used as a guide to identify samples where not enough cells were assayed
+
+# Arguments:
+- 
+
+"""
+
+function plotCounts(fcs_raw, md, group_by = "condition")
 
     df_barplot = DataFrame(filename = String[], size = Int[], condition = String[])
 
