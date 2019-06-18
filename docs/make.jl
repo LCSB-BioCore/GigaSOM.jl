@@ -16,8 +16,7 @@ makedocs(modules = [GigaSOM],
                         "Types" => "api/types.md",
                         "Batch/Parallel SOM" => "api/soms.md",
                         "Visualisation" => "api/visualisation.md"
-                        ],
-                "License" => "LICENSE.md"
+                        ]
                 ],
         )
 
