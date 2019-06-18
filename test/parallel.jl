@@ -64,7 +64,7 @@ som2 = initGigaSOM(df_som, 10, 10)
 
 end
 
-@time som2 = trainGigaSOM(som2, df_som, epochs = 10)
+@time som2 = trainGigaSOM(som2, df_som, epochs = 2)
 
 mywinners = mapToGigaSOM(som2, df_som)
 CSV.write("cell_clustering_som.csv", mywinners)
@@ -98,7 +98,7 @@ parallel_mywinners_test = first(parallel_mywinners, 10)
 #test parallel
 @testset "refData_parallel" begin
     for (i, j) in zip(parallel_df_codes_test[:,1], ref_parallel_df_codes[:,1])
-        test_parallel_df = @test isapprox(i, j; atol = 0.000001)
+        test_parallel_df = @test isapprox(i, j; atol = 0.001)
         return test_parallel_df
     end
     @test ref_parallel_mywinners == parallel_mywinners_test
