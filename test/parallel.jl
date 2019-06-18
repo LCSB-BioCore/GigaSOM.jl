@@ -98,7 +98,7 @@ parallel_mywinners_test = first(parallel_mywinners, 10)
 #test parallel
 @testset "refData_parallel" begin
     for (i, j) in zip(parallel_df_codes_test[:,1], ref_parallel_df_codes[:,1])
-        test_parallel_df = @test isapprox(i, j; atol = 0.000001)
+        test_parallel_df = @test isapprox(i, j; atol = 0.001)
         return test_parallel_df
     end
     @test ref_parallel_mywinners == parallel_mywinners_test

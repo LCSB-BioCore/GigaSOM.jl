@@ -14,7 +14,7 @@ som2 = initGigaSOM(df_som, 10, 10)
     @testset "Type test" begin
         @test typeof(som2) == GigaSOM.Som
         @test som2.toroidal == false
-        @test typeof(som2.grid) == Array{Float64,2}
+        @test typeof(som2.grid) == Array{Float32,2}
     end
     @testset "Dimensions Test" begin
         @test size(som2.codes) == (100,10)
@@ -54,7 +54,7 @@ batch_mywinners_test = first(batch_mywinners, 10)
 #test batch
 @testset "refData_batch" begin
     for (i, j) in zip(batch_df_codes_test[:,1], ref_batch_df_codes[:,1])
-        test_batch_df = @test isapprox(i, j; atol = 0.000001)
+        test_batch_df = @test isapprox(i, j; atol = 0.001)
         return test_batch_df
     end
     @test ref_batch_mywinners == batch_mywinners_test

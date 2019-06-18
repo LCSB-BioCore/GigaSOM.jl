@@ -1,13 +1,11 @@
 """
-        initGigaSOM_parallel(train, xdim, ydim = xdim;  norm = :zscore, topol = :hexagonal,
-            toroidal = false)
+        initGigaSOM_parallel(train, xdim, ydim = xdim;  norm = :none, toroidal = false)
 Initialises a SOM.
 # Arguments:
 - `train`: training data
 - `xdim, ydim`: geometry of the SOM
            If DataFrame, the column names will be used as attribute names.
            Codebook vectors will be sampled from the training data.
-           for spherical SOMs ydim can be omitted.
 - `norm`: optional normalisation; one of :`minmax, :zscore or :none`
 - `toroidal`: optional flag; if true, the SOM is toroidal.
 """
@@ -52,28 +50,20 @@ end
 
 
 """
-    trainGigaSOM_parallel(som::Som, train::Any, len;
-             η = 0.2, kernelFun = gaussianKernel,
-             r = 0.0, rDecay = true, ηDecay = true)
+    trainGigaSOM_parallel(som::Som, train::Any, kernelFun = gaussianKernel,
+                        r = 0.0, epochs = 10)
 # Arguments:
 - `som`: object of type Som with an initialised som
 - `train`: training data
-- `len`: number of single training steps (*not* epochs)
-- `η`: learning rate
 - `kernel::function`: optional distance kernel; one of (`bubbleKernel, gaussianKernel`)
             default is `gaussianKernel`
 - `r`: optional training radius.
        If r is not specified, it defaults to √(xdim^2 + ydim^2) / 2
-- `rDecay`: optional flag; if true, r decays to 0.0 during the training.
-- `ηDecay`: optional flag; if true, learning rate η decays to 0.0
-            during the training.
-Training data must be convertable to Array{Float64,2} with
-`convert()`. Training samples are row-wise; one sample per row.
-An alternative kernel function can be provided to modify the distance-dependent
-training. The function must fit to the signature fun(x, r) where
-x is an arbitrary distance and
-r is a parameter controlling the function and the return value is
-between 0.0 and 1.0.
+Training data must be convertable to Array{Float34,2} with `convert()`.
+Training samples are row-wise; one sample per row. An alternative kernel function
+can be provided to modify the distance-dependent training. The function must fit
+to the signature fun(x, r) where x is an arbitrary distance and r is a parameter
+controlling the function and the return value is between 0.0 and 1.0.
 """
 function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel,
                     r = 0.0, epochs = 10)
@@ -124,30 +114,25 @@ function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel
      else
          # only batch mode
          println("In batch mode: ")
-         sum_numerator, sum_denominator = doEpoch(localpart(dTrain), codes, dm, kernelFun, r,
-                                                            false)
+         sum_numerator, sum_denominator = doEpoch(localpart(dTrain), codes, dm,
+                                                    kernelFun, r, false)
 
         global_sum_numerator += sum_numerator
         global_sum_denominator += sum_denominator
      end
 
      r -= Δr
-
      if r < 0.0
          r = 0.0
      end
 
      println("Radius: $r")
-
      codes = global_sum_numerator ./ global_sum_denominator
-
     end
 
     # map training samples to SOM and calc. neuron population:
     vis = visual(codes, train)
     population = makePopulation(som.numCodes, vis)
-
-
     # update SOM object:
     som.codes[:,:] = codes[:,:]
     som.population[:] = population[:]
@@ -158,9 +143,8 @@ end
 """
     doEpoch(x::Array{Float32}, codes::Array{Float32}, dm::Array{Float32},
             kernelFun::Function, r::Number, toroidal::Bool)
-Train a SOM for one epoch. This implements also the batch update
-of the codebook vectors and the adjustment in radius after each
-epoch.
+Train a SOM for one epoch. This implements also the batch update of the codebook
+vectors and the adjustment in radius after each epoch.
 # Arguments:
 - `x`: training Data
 - `codes`: Codebook
@@ -183,8 +167,6 @@ function doEpoch(x::Array{Float32}, codes::Array{Float32}, dm::Array{Float32},
      # for each sample in dataset / trainingsset
      for s in 1:numDat
 
-         sampl = vec(x[rand(1:size(x,1), 1),:])
-
          sampl = vec(x[s, : ])
          bmu_idx, bmu_vec = find_bmu(codes, sampl)
 
@@ -197,12 +179,12 @@ function doEpoch(x::Array{Float32}, codes::Array{Float32}, dm::Array{Float32},
              @inbounds @views begin
                  sum_numerator[i,:] .+= sampl .* dist
              end
-             # sum_numerator[i,:] += sampl .* dist
              sum_denominator[i] += dist
          end
      end
      return sum_numerator, sum_denominator
 end
+
 
 """
     mapToGigaSOM(som::Som, data)
@@ -232,7 +214,6 @@ function mapToGigaSOM(som::Som, data)
 
     return DataFrame(X = x, Y = y, index = vis)
 end
-
 
 
 """
@@ -379,8 +360,8 @@ end
 
 """
     Find the best matching unit for a given vector, row_t, in the SOM
-    Returns: a (bmu, bmu_idx) tuple where bmu is the high-dimensional Best Matching Unit
-           and bmu_idx is the index of this vector in the SOM
+    Returns: A (bmu, bmu_idx) tuple where bmu is the high-dimensional
+            Best Matching Unit and bmu_idx is the index of this vector in the SOM
 """
 function find_bmu(cod, sampl)
 
@@ -408,10 +389,10 @@ end
 Normalise every column of training data with the params.
 
 # Arguments
-- `train`: DataFrame with training Data
+- `x`: DataFrame with training Data
 - `normParams`: Shift and scale parameters for each attribute column.
 """
-function normTrainData(x::Array{Float64,2}, normParams)
+function normTrainData(x::Array{Float32,2}, normParams)
 
     for i in 1:size(x,2)
         x[:,i] = (x[:,i] .- normParams[1,i]) ./ normParams[2,i]
@@ -461,7 +442,15 @@ function normTrainData(train::Array{Float32, 2}, norm::Symbol)
     return x, normParams
 end
 
+"""
+    convertTrainingData(data)
 
+Converts the training data to an Array of type Float32.
+
+# Arguments:
+- `data`: Data to be converted
+Returns: training data in Float32
+"""
 function convertTrainingData(data)::Array{Float32,2}
 
     if typeof(data) == DataFrame
