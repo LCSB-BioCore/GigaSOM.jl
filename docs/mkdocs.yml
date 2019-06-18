@@ -1,0 +1,37 @@
+site_name:        GigaSOM.jl
+repo_url:         https://github.com/LCSB-BioCore/GigaSOM.jl.git
+site_description: Huge-scale, high-performance flow cytometry clustering in Julia
+site_author:      Developers of GigaSOM
+
+theme: material
+
+extra:
+  palette:
+    primary: 'indigo'
+    accent:  'blue'
+
+extra_css:
+  - assets/Documenter.css
+
+extra_javascript:
+  - https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+  - assets/mathjaxhelper.js
+
+markdown_extensions:
+  - extra
+  - tables
+  - fenced_code
+  - mdx_math
+  - codehilite
+
+docs_dir: 'build'
+
+pages:
+  - Introduction: index.md
+  - Tutorial: tutorials/tutorial.md
+  - API:
+    - IO: api/io.md
+    - Types: api/types.md
+    - Batch/Parallel SOM: api/soms.md
+    - Visualisation: visualisation.md
+  - License: LICENSE.md

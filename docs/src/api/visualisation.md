@@ -1,6 +1,3 @@
 # Visualisation
 
-```@docs
-plotCounts
-plotPCA
-```
+Not sure if we will use this one.

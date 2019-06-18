@@ -1,12 +1,14 @@
 using Documenter, GigaSOM
 
 makedocs(modules = [GigaSOM],
-         clean = false,
-         format = :html,
-         assets = ["assets/icongigasom.ico"],
-         sitename = "GigaSOM.jl",
-         authors = "The developers of GigaSOM.jl",
-         pages = [
+        clean = false,
+        format = Documenter.HTML(prettyurls = !("local" in ARGS),
+                canonical = "https://lcsb-biocore.github.io/GigaSOM.jl/stable/",
+                assets = ["assets/icongigasom.ico"]),
+        sitename = "GigaSOM.jl",
+        authors = "The developers of GigaSOM.jl",
+        linkcheck = !("skiplinks" in ARGS),
+        pages = [
                 "Introduction" => "index.md",
                 "Tutorial" => "tutorials/tutorial.md",
                 "API" => Any[
@@ -17,13 +19,15 @@ makedocs(modules = [GigaSOM],
                         ],
                 "License" => "LICENSE.md"
                 ],
-        html_cannonical = "https://lcsb-biocore.github.io/GigaSOM.jl/stable/",
         )
 
 deploydocs(
     repo = "github.com/LCSB-BioCore/GigaSOM.jl.git",
     julia = "1.1.0",
+    osname = "linux",
     target = "build",
     branch = "gh-pages",
     devbranch = "origin/develop",
-)
+    deps = nothing,
+    make = nothing
+    )
