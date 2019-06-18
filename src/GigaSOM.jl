@@ -26,8 +26,8 @@ module GigaSOM
     # using TensorToolbox
 
     include("types.jl")
-    include("helpers.jl")
     include("parallel_som.jl")
+
     # include IO files
     include("io/Fcs_helper.jl")
 
