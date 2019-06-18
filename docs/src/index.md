@@ -3,17 +3,23 @@
 GigaSOM.jl - Huge-scale, high-performance flow cytometry clustering in Julia
 =========
 
-
-
-# Introduction
-
 Flow cytometry clustering for several hundred million cells has long been hampered by software implementations.
 Julia allows us to go beyond these limits. Through the high-performance GigaSOM.jl package, we gear up for huge-scale flow cytometry analysis.
 
-Recent advances in single-cell technologies offer an unprecedented opportunity to comprehensively characterize the immune system, revealing a previously unparalleled complexity in the phenotype and function of immune cells. Mass cytometry, also known as CyTOF, was recently implemented to measure up to 40 different markers in several million single cells. A typical clinical study with hundreds of patients can therefore include billions of single cells (rows) and up to 40 markers (features).
-Different dimension reduction methods have been implemented in commercial and open-source software, mainly written in R. The machine learning algorithm FlowSOM [1] is based on the famous Kohonen Self Organising Feature Maps (SOM) [2] and has shown various advantages over other methods.
-However, all current implementations have a critical limitation on the total number of cells to be analyzed . This limitation often blocks the analysis of large-scale clinical studies with several hundred million cells.
-Here, we present the open-source, high-level, and high-performance package GigaSOM.jl <https://github.com/LCSB-BioCore/GigaSOM.jl>, which is HPC-ready and is written to handle very large datasets without limits. Julia is the natural language of choice when it comes to performing huge-scale cytometric analyses. With the GigaSOM.jl package, the possibilities for flow cytometry analysis  are further broadened. The quality of the software package is assured using ARTENOLIS <https://artenolis.lcsb.uni.lu> [3]. Biological validation of the results will be performed on downsampled datasets by comparison to conventional implementations of the FlowSOM package and manual hierarchical analysis.
+# Introduction
+
+Immunology is a very important branch of the medical and biological sciences that focuses, as the name suggests, on the study of the immune system.
+The immune system is a complex system of structures and processes that protect us from disease and infection and is composed by molecular and cellular components that can be organised in two different groups, according to their function: innate and adaptive immunity.
+Innate immunity is the non-specific first line of defence, which basically means that the response is the same, regardless of the potential pathogen. Adaptive immunity is the second line of defence with a specific response to the pathogen due to the memory of previously encountered infections.
+Advances in immunology research are very important because Immunology has changed the face of modern medicine, and its understanding is essential for clinical applications to facilitate the discovery of new diagnostics and treatments for many different diseases, for example to allow a better management of allergies, one of the most common immune dysfunctions. Allergies are hypersensitivity disorders that occur when the body’s immune system reacts unnecessarily against harmless substances (allergens), like pollens, insect venom or food, and can be either immunoglobulin-E (IgE) mediated or non-IgE mediated.
+In addition, immunological research has provided critically important research techniques and tools, such as flow cytometry.
+The use of flow cytometry has grown substantially in the past decade, mainly due to the development of smaller, user-friendly and less expensive instruments, but also to the increase of clinical applications, like cell counting, cell sorting, detection of biomarkers or protein engineering.
+Flow cytometry is an immunophenotyping technique used to identify and quantify the cells of the immune system by analysing their physical and chemical characteristics in a fluid. These cells are stained with specific, fluorescently labelled antibodies and then analysed with a flow cytometer, where the fluorescence intensity is measured using lasers and photodetectors. [1] More recently, a variation of flow cytometry called mass cytometry (CyTOF) was introduced, in which antibodies are labelled with heavy metal ion tags rather than fluorochromes, breaking the limit of multiplexing capability of FACS (fluorescence-activated cell sorting) and allowing the simultaneous quantification of 40+ protein parameters within each single cell.[2]
+ The ability of flow cytometry and mass cytometry to analyse individual cells at high-throughput scales makes them ideal for multi-parameter cell analysis and high-speed sorting.
+However, flow cytometry clustering for several hundred million cells has long been hampered by software limitations. [3] Julia allows us to go beyond these limits. Through our high-performance GigaSOM.jl package, we gear up for huge-scale flow cytometry analysis by introducing the parallel computing component to the existing algorithm.
+After the validation of the GigaSOM.jl package, the main goal is to work with Feng He’s group at the Luxembourg Institute of Health (LIH) analysing huge-scale flow cytometry datasets on pollen and insect venom allergy, searching for predictive biomarkers and improving therapeutic responses.
+Allowing the huge-scale, high-performance, flow cytometry data clustering of more than 500 million cells on an unsupervised manner would result in a big step forward into the development of the immunology research field.
+
 
 ## Self-organising maps
 
