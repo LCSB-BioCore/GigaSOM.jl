@@ -1,6 +1,8 @@
 """
         initGigaSOM_parallel(train, xdim, ydim = xdim;  norm = :none, toroidal = false)
+
 Initialises a SOM.
+
 # Arguments:
 - `train`: training data
 - `xdim, ydim`: geometry of the SOM
@@ -52,6 +54,7 @@ end
 """
     trainGigaSOM_parallel(som::Som, train::Any, kernelFun = gaussianKernel,
                         r = 0.0, epochs = 10)
+
 # Arguments:
 - `som`: object of type Som with an initialised som
 - `train`: training data
@@ -144,8 +147,9 @@ end
 """
     doEpoch(x::Array{Float64}, codes::Array{Float64}, dm::Array{Float64},
             kernelFun::Function, r::Number, toroidal::Bool)
-Train a SOM for one epoch. This implements also the batch update of the codebook
+
 vectors and the adjustment in radius after each epoch.
+
 # Arguments:
 - `x`: training Data
 - `codes`: Codebook

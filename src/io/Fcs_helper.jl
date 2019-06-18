@@ -1,6 +1,6 @@
 
 """
-    readflowset(filenames)
+    readFlowset(filenames)
 
 Create a dictionary with filenames as keys and daFrame as values
 
@@ -8,7 +8,7 @@ Create a dictionary with filenames as keys and daFrame as values
 - `filenames`: Array of type string
 """
 
-function readflowset(filenames)
+function readFlowset(filenames)
     flowFrame = Dict()
 
     # read all FCS files into flowFrame

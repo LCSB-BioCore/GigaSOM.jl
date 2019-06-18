@@ -41,7 +41,7 @@ module GigaSOM
 
     export # Fcs_helper
         cleannames!,
-        readflowset,
+        readFlowset,
         create_daFrame,
         getMarkers,
         daFrame
