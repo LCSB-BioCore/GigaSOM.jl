@@ -56,10 +56,10 @@ print(panel.fcs_colname)
 lineage_markers, functional_markers = getMarkers(panel)
 
 fcs_raw = readFlowset(md.file_name)
-cleannames!(fcs_raw)
+cleanNames!(fcs_raw)
 
 # create daFrame file
-daf = create_daFrame(fcs_raw, md, panel)
+daf = createDaFrame(fcs_raw, md, panel)
 
 # change the directory back to the current directory
 cd(cwd)

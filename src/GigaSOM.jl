@@ -40,9 +40,9 @@ module GigaSOM
         trainGigaSOM
 
     export # Fcs_helper
-        cleannames!,
+        cleanNames!,
         readFlowset,
-        create_daFrame,
+        createDaFrame,
         getMarkers,
         daFrame
 

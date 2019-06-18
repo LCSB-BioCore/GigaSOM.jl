@@ -4,8 +4,8 @@
 Barplot showing the number of cells per sample, used as a guide to identify samples where not enough cells were assayed
 
 # Arguments:
-- 
-
+- `fcs_raw`: raw FCS data
+- `md`: Metadata table
 """
 
 function plotCounts(fcs_raw, md, group_by = "condition")

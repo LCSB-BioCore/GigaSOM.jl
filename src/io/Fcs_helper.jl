@@ -52,14 +52,15 @@ function transformData(flowframe, method = "asinh", cofactor = 5)
 end
 
 """
-    cleannames!(mydata)
+    cleanNames!(mydata)
 
-Replaces problematic characters in column names
+Replaces problematic characters in column names.
+Checks if the column name contains a '-' and transforms it to and '_' and it checks if the name starts with a number.
 
 # Arguments:
 - `mydata`: dict fcs_raw or array of string
 """
-function cleannames!(mydata)
+function cleanNames!(mydata)
     # replace chritical characters
     # put "_" in front of colname in case it starts with a number
     # println(typeof(mydata))
@@ -86,7 +87,7 @@ function cleannames!(mydata)
 end
 
 """
-    create_daFrame(fcs_raw, md, panel)
+    createDaFrame(fcs_raw, md, panel)
 
 Creates a daFrame of type struct.
 Read in the fcs raw, add sample id, subset the columns and transform
@@ -94,9 +95,9 @@ Read in the fcs raw, add sample id, subset the columns and transform
 # Arguments:
 - `fcs_raw`: raw FCS data
 - `md`: Metadata table
-- `panel`: Panel table with column each for lineage and functional markers
+- `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 """
-function create_daFrame(fcs_raw, md, panel)
+function createDaFrame(fcs_raw, md, panel)
 
     # extract lineage markers
     lineage_markers, functional_markers = getMarkers(panel)
@@ -124,6 +125,10 @@ end
 """
     getMarkers(panel)
 
+Returns the lineage and functional markers on a given panel
+
+# Arguments:
+- `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 """
 function getMarkers(panel)
 
@@ -135,8 +140,8 @@ function getMarkers(panel)
     # flatten this array by using vec:
     lineage_markers = vec(lineage_markers)
     functional_markers = vec(functional_markers)
-    cleannames!(lineage_markers)
-    cleannames!(functional_markers)
+    cleanNames!(lineage_markers)
+    cleanNames!(functional_markers)
 
     return lineage_markers, functional_markers
 
