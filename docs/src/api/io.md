@@ -1,7 +1,7 @@
 # IO
 
 ```@docs
-cleannames!
-create_daFrame
+cleanNames!
+createDaFrame
 getMarkers
 ```
