@@ -1,6 +1,0 @@
-# Visualisation
-
-```@docs
-plotCounts
-plotPCA
-```
