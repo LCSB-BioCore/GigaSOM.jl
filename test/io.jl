@@ -66,7 +66,7 @@ cd(cwd)
 
 CSV.write(genDataPath*"/daf.csv", daf.fcstable)
 
-@testset "cleannames" begin
+@testset "Cleaning names" begin
     for i in eachindex(lineage_markers)
         @test !in("-",i)
     end
