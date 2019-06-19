@@ -23,7 +23,9 @@ regardless of the potential pathogen. Adaptive immunity is the second line of de
 to the pathogen due to the memory of previously encountered infections.
 Advances in immunology research are very important because Immunology has changed the face of modern medicine,
 and its understanding is essential for clinical applications to facilitate the discovery of new diagnostics and treatments
-for many different diseases, for example to allow a better management of allergies, one of the most common immune dysfunctions. Allergies are hypersensitivity disorders that occur when the body’s immune system reacts unnecessarily against harmless substances (allergens), like pollens, insect venom or food, and can be either immunoglobulin-E (IgE) mediated or non-IgE mediated.
+for many different diseases, for example to allow a better management of allergies, one of the most common immune dysfunctions.
+Allergies are hypersensitivity disorders that occur when the body’s immune system reacts unnecessarily against harmless substances (allergens),
+like pollens, insect venom or food, and can be either immunoglobulin-E (IgE) mediated or non-IgE mediated.
 In addition, immunological research has provided critically important research techniques and tools, such as flow cytometry.
 
 ## Flow Cytometry
