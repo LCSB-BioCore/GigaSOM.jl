@@ -157,7 +157,6 @@ vectors and the adjustment in radius after each epoch.
 function doEpoch(x::Array{Float64}, codes::Array{Float64}, dm::Array{Float64},
                 kernelFun::Function, r::Number, toroidal::Bool)
 
-     r = convert(Float64, r)
      nRows = size(x, 1)
      nCodes = size(codes, 1)
 
