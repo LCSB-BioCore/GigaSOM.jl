@@ -11,9 +11,7 @@ makedocs(modules = [GigaSOM],
         pages = [
                 "Home" => "index.md",
                 "Tutorial" => "tutorials/tutorial.md",
-                "API" => Any[
-                        "Functions" => "api/functions.md"
-                        ]
+                "Functions" => "functions/functions.md"
                 ],
         )
 
@@ -22,6 +20,4 @@ deploydocs(
     target = "build",
     branch = "gh-pages",
     devbranch = "origin/develop",
-    deps = nothing,
-    make = nothing
     )
