@@ -1,5 +1,9 @@
 # Tutorial
 
+```@contents
+Pages = ["tutorials/tutorial.md"]
+```
+
 GigaSOM is a package design for huge-scale high-performance flow cytometry data clustering.
 
 
