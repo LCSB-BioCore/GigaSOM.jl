@@ -266,7 +266,7 @@ function visual(codes, x)
 
     vis = zeros(Int, size(x,1))
     for i in 1:size(x,1)
-        (vis[i],) = find_bmu(codes, [x[i, col] for col in 1:size(x, 2)])
+        (vis[i],) = findBmu(codes, [x[i, col] for col in 1:size(x, 2)])
     end
 
     return vis
