@@ -33,7 +33,7 @@ end
     @test som2.numCodes == 100
 end
 
-som2 = trainGigaSOM(som2, df_som, epochs = 10)
+som2 = trainGigaSOM(som2, df_som, epochs = 2, r = 6.0)
 
 mywinners = mapToGigaSOM(som2, df_som)
 CSV.write("cell_clustering_som.csv", mywinners)
