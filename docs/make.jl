@@ -9,13 +9,10 @@ makedocs(modules = [GigaSOM],
         authors = "The developers of GigaSOM.jl",
         linkcheck = !("skiplinks" in ARGS),
         pages = [
-                "Introduction" => "index.md",
+                "Home" => "index.md",
                 "Tutorial" => "tutorials/tutorial.md",
                 "API" => Any[
-                        "IO" => "api/io.md",
-                        "Types" => "api/types.md",
-                        "Batch/Parallel SOM" => "api/soms.md",
-                        "Visualisation" => "api/visualisation.md"
+                        "Functions" => "api/functions.md"
                         ]
                 ],
         )
