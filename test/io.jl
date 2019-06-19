@@ -49,6 +49,7 @@ panel[:Isotope] = map(string, panel[:Isotope])
 panel[:Metal] = map(string, panel[:Metal])
 panel[:Antigen] = map(string, panel[:Antigen])
 panel.Metal[1]=""
+
 insertcols!(panel,4,:fcs_colname => map((x,y,z)->x.*"(".*y.*z.*")".*"Dd",panel[:Antigen],panel[:Metal],panel[:Isotope]))
 print(panel.fcs_colname)
 
@@ -57,8 +58,6 @@ lineage_markers, functional_markers = getMarkers(panel)
 fcs_raw = readflowset(md.file_name)
 cleannames!(fcs_raw)
 
-# subset the data
-# transform the data
 # create daFrame file
 daf = create_daFrame(fcs_raw, md, panel)
 
@@ -67,23 +66,17 @@ cd(cwd)
 
 CSV.write(genDataPath*"/daf.csv", daf.fcstable)
 
-#test cleannames
 @testset "cleannames" begin
     for i in eachindex(lineage_markers)
-            test_clean = @test !in("-",i)
-            return test_clean
+        @test !in("-",i)
     end
-
     for i in eachindex(functional_markers)
-            test_clean = @test !in("-",i)
-            return test_clean
+        @test !in("-",i)
     end
-
     for (k,v) in fcs_raw
         colnames = names(v)
         for i in eachindex(colnames)
-            test_clean = @test !in("-",i)
-            return test_clean
+            @test !in("-",i)
         end
     end
 end

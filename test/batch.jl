@@ -54,8 +54,7 @@ batch_mywinners_test = first(batch_mywinners, 10)
 #test batch
 @testset "refData_batch" begin
     for (i, j) in zip(batch_df_codes_test[:,1], ref_batch_df_codes[:,1])
-        test_batch_df = @test isapprox(i, j; atol = 0.001)
-        return test_batch_df
+        @test isapprox(i, j; atol = 0.001)
     end
     @test ref_batch_mywinners == batch_mywinners_test
 end
