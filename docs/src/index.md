@@ -70,16 +70,9 @@ For installation please refer to the README @github:
 <https://github.com/LCSB-BioCore/GigaSOM.jl>
 
 
-## Tutorial
-
-```@contents
-Pages = ["tutorials/tutorial.md"]
-```
-
 ## API
 
 ```@contents
-Pages = ["api/io.md", "api/types.md", "api/soms.md", "api/visualisation.md"]
 ```
 
 ## Index
