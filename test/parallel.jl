@@ -17,34 +17,6 @@ for i in 1:n
     df_som = vcat(df_som, df_som)
 end
 
-@testset "Test Data conversion" begin
-    @testset "Function convertTrainingData" begin
-        x = GigaSOM.convertTrainingData(df_som)
-        @test typeof(x) == Array{Float32, 2}
-    end
-
-    @testset "Function distMatrix" begin
-        # initialise the codes with random samples
-        xdim = 10
-        ydim = 10
-        x = GigaSOM.convertTrainingData(df_som)
-        codes = GigaSOM.rowSample(x, xdim * ydim)
-        @test size(codes) == (100, 10)
-        @test typeof(codes) == Array{Float32, 2}
-        grid = GigaSOM.gridRectangular(xdim, ydim)
-        @test size(grid) == (100, 2)
-        @test typeof(grid) == Array{Float32, 2}
-        dm = GigaSOM.distMatrix(grid, false)
-        @test size(dm) == (100, 100)
-        @test typeof(dm) == Array{Float32, 2}
-    end
-
-    @testset "gaussianKernel" begin
-        y = GigaSOM.gaussianKernel(Float32(10.0), Float32(6.0))
-        @test typeof(y) == Float32
-    end
-end
-
 #PARALLEL
 
 som2 = initGigaSOM(df_som, 10, 10)
@@ -53,7 +25,7 @@ som2 = initGigaSOM(df_som, 10, 10)
     @testset "Type test" begin
         @test typeof(som2) == GigaSOM.Som
         @test som2.toroidal == false
-        @test typeof(som2.grid) == Array{Float32,2}
+        @test typeof(som2.grid) == Array{Float64,2}
     end
     @testset "Dimensions Test" begin
         @test size(som2.codes) == (100,10)
@@ -64,7 +36,7 @@ som2 = initGigaSOM(df_som, 10, 10)
 
 end
 
-@time som2 = trainGigaSOM(som2, df_som, epochs = 10)
+@time som2 = trainGigaSOM(som2, df_som, epochs = 2, r = 6.0)
 
 mywinners = mapToGigaSOM(som2, df_som)
 CSV.write("cell_clustering_som.csv", mywinners)

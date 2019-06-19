@@ -14,7 +14,7 @@ som2 = initGigaSOM(df_som, 10, 10)
     @testset "Type test" begin
         @test typeof(som2) == GigaSOM.Som
         @test som2.toroidal == false
-        @test typeof(som2.grid) == Array{Float32,2}
+        @test typeof(som2.grid) == Array{Float64,2}
     end
     @testset "Dimensions Test" begin
         @test size(som2.codes) == (100,10)

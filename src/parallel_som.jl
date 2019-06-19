@@ -73,13 +73,14 @@ function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel
     # set default radius:
     if r == 0.0
         r = √(som.xdim^2 + som.ydim^2) / 2
+        @info "The radius has been determined automatically."
     end
 
     dm = distMatrix(som.grid, som.toroidal)
 
     codes = som.codes
-    global_sum_numerator = zeros(Float32, size(codes))
-    global_sum_denominator = zeros(Float32, size(codes)[1])
+    global_sum_numerator = zeros(Float64, size(codes))
+    global_sum_denominator = zeros(Float64, size(codes)[1])
 
     # linear decay
     if r < 1.5
@@ -141,7 +142,7 @@ end
 
 
 """
-    doEpoch(x::Array{Float32}, codes::Array{Float32}, dm::Array{Float32},
+    doEpoch(x::Array{Float64}, codes::Array{Float64}, dm::Array{Float64},
             kernelFun::Function, r::Number, toroidal::Bool)
 Train a SOM for one epoch. This implements also the batch update of the codebook
 vectors and the adjustment in radius after each epoch.
@@ -153,16 +154,15 @@ vectors and the adjustment in radius after each epoch.
 - `r`: training radius
 - `toroidal`: if true, the SOM is toroidal.
 """
-function doEpoch(x::Array{Float32}, codes::Array{Float32}, dm::Array{Float32},
+function doEpoch(x::Array{Float64}, codes::Array{Float64}, dm::Array{Float64},
                 kernelFun::Function, r::Number, toroidal::Bool)
 
-     r = convert(Float32, r)
      nRows = size(x, 1)
      nCodes = size(codes, 1)
 
      # initialise numerator and denominator with 0's
-     sum_numerator = zeros(Float32, size(codes))
-     sum_denominator = zeros(Float32, size(codes)[1])
+     sum_numerator = zeros(Float64, size(codes))
+     sum_denominator = zeros(Float64, size(codes)[1])
 
      # for each sample in dataset / trainingsset
      for s in 1:nRows
@@ -390,7 +390,7 @@ Normalise every column of training data with the params.
 - `x`: DataFrame with training Data
 - `normParams`: Shift and scale parameters for each attribute column.
 """
-function normTrainData(x::Array{Float32,2}, normParams)
+function normTrainData(x::Array{Float64,2}, normParams)
 
     for i in 1:size(x,2)
         x[:,i] = (x[:,i] .- normParams[1,i]) ./ normParams[2,i]
@@ -409,7 +409,7 @@ Normalise every column of training data.
 - `train`: DataFrame with training Data
 - `norm`: type of normalisation; one of `minmax, zscore, none`
 """
-function normTrainData(train::Array{Float32, 2}, norm::Symbol)
+function normTrainData(train::Array{Float64, 2}, norm::Symbol)
 
     normParams = zeros(2, size(train,2))
 
@@ -443,20 +443,20 @@ end
 """
     convertTrainingData(data)
 
-Converts the training data to an Array of type Float32.
+Converts the training data to an Array of type Float64.
 
 # Arguments:
 - `data`: Data to be converted
-Returns: training data in Float32
+Returns: training data in Float64
 """
-function convertTrainingData(data)::Array{Float32,2}
+function convertTrainingData(data)::Array{Float64,2}
 
     if typeof(data) == DataFrame
-        train = convert(Matrix{Float32}, data)
+        train = convert(Matrix{Float64}, data)
 
-    elseif typeof(data) != Matrix{Float32}
+    elseif typeof(data) != Matrix{Float64}
         try
-            train = convert(Matrix{Float32}, data)
+            train = convert(Matrix{Float64}, data)
         catch ex
             Base.showerror(STDERR, ex, backtrace())
             error("Unable to convert training data to Array{Float64,2}!")
