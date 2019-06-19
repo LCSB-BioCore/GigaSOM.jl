@@ -124,7 +124,7 @@ end
 """
     getMarkers(panel)
 
-Returns the lineage and functional markers on a given panel
+Returns the `lineage_markers` and `functional_markers` on a given panel
 
 # Arguments:
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
