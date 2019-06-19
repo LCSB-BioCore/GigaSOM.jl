@@ -17,61 +17,46 @@ for i in 1:n
     df_som = vcat(df_som, df_som)
 end
 
-#PARALLEL
-
 som2 = initGigaSOM(df_som, 10, 10)
 
-@testset "GigaSOM initialisation" begin
-    @testset "Type test" begin
-        @test typeof(som2) == GigaSOM.Som
-        @test som2.toroidal == false
-        @test typeof(som2.grid) == Array{Float64,2}
-    end
-    @testset "Dimensions Test" begin
-        @test size(som2.codes) == (100,10)
-        @test som2.xdim == 10
-        @test som2.ydim == 10
-        @test som2.numCodes == 100
-    end
-
+@testset "Dimensions - parallel" begin
+    @test size(som2.codes) == (100,10)
+    @test som2.xdim == 10
+    @test som2.ydim == 10
+    @test som2.numCodes == 100
 end
 
-@time som2 = trainGigaSOM(som2, df_som, epochs = 2, r = 6.0)
+som2 = trainGigaSOM(som2, df_som, epochs = 2, r = 6.0)
 
 mywinners = mapToGigaSOM(som2, df_som)
 CSV.write("cell_clustering_som.csv", mywinners)
 
-@time mywinners = mapToGigaSOM(som2, df_som)
+mywinners = mapToGigaSOM(som2, df_som)
 
-codes = som2.codes
-@test size(codes) == (100,10)
+@testset "Parallel" begin
+    codes = som2.codes
+    @test size(codes) == (100,10)
 
-df_codes = DataFrame(codes)
-names!(df_codes, Symbol.(som2.colNames))
-CSV.write(genDataPath*"/parallel_df_codes.csv", df_codes)
-CSV.write(genDataPath*"/parallel_mywinners.csv", mywinners)
+    df_codes = DataFrame(codes)
+    names!(df_codes, Symbol.(som2.colNames))
+    CSV.write(genDataPath*"/parallel_df_codes.csv", df_codes)
+    CSV.write(genDataPath*"/parallel_mywinners.csv", mywinners)
 
+    # load the ref data
+    ref_parallel_df_codes = CSV.File(refDataPath*"/ref_parallel_df_codes.csv") |> DataFrame
+    ref_parallel_mywinners = CSV.File(refDataPath*"/ref_parallel_mywinners.csv") |> DataFrame
 
-#TEST PARALLEL
+    # load the generated data
+    parallel_df_codes = CSV.File(genDataPath*"/parallel_df_codes.csv") |> DataFrame
+    parallel_mywinners = CSV.File(genDataPath*"/parallel_mywinners.csv") |> DataFrame
 
-#create new refData if necessary
-# CSV.write(refDataPath*"/ref_parallel_df_codes.csv", df_codes)
-# CSV.write(refDataPath*"/ref_parallel_mywinners.csv", mywinners)
+    # test the generated data against the reference data
+    @test ref_parallel_mywinners == parallel_mywinners
+    @test ref_parallel_df_codes == parallel_df_codes
 
-
-#preparing parallel for testing
-ref_parallel_df_codes = CSV.File(refDataPath*"/ref_parallel_df_codes.csv") |> DataFrame
-ref_paralel_mywinners = CSV.File(refDataPath*"/ref_parallel_mywinners.csv") |> DataFrame
-parallel_df_codes = CSV.File(genDataPath*"/parallel_df_codes.csv") |> DataFrame
-parallel_df_codes_test = first(parallel_df_codes, 10)
-parallel_mywinners = CSV.File(genDataPath*"/parallel_mywinners.csv") |> DataFrame
-parallel_mywinners_test = first(parallel_mywinners, 10)
-
-#test parallel
-@testset "refData_parallel" begin
-    for (i, j) in zip(parallel_df_codes_test[:,1], ref_parallel_df_codes[:,1])
-        test_parallel_df = @test isapprox(i, j; atol = 0.001)
-        return test_parallel_df
+    #test parallel
+    for (i, j) in zip(parallel_df_codes[:,1], ref_parallel_df_codes[:,1])
+        @test isapprox(i, j; atol = 0.001)
     end
-    @test ref_parallel_mywinners == parallel_mywinners_test
+
 end
