@@ -28,7 +28,7 @@ function plotPCA(daf, md)
 
     T = convert(Matrix, dfall_median)
     samples_ids = T[:,1]
-    T_reshaped = permutedims(convert(Matrix{Float32}, T[:, 2:10]), [2, 1])
+    T_reshaped = permutedims(convert(Matrix{Float64}, T[:, 2:10]), [2, 1])
 
     my_pca = StatsBase.fit(MultivariateStats.PCA, T_reshaped)
 
