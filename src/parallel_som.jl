@@ -170,8 +170,8 @@ function doEpoch(x::Array{Float64}, codes::Array{Float64}, dm::Array{Float64},
 
      # for each sample in dataset / trainingsset
      for s in 1:nRows
-         sampl = vec(x[s, : ])
-         bmu_idx, bmu_vec = findBmu(codes, sampl)
+         sample = vec(x[s, : ])
+         bmu_idx, bmu_vec = findBmu(codes, sample)
 
          # for each node in codebook get distances to bmu and multiply it
          # with sample row: x(i)
@@ -179,7 +179,7 @@ function doEpoch(x::Array{Float64}, codes::Array{Float64}, dm::Array{Float64},
              dist = kernelFun(dm[bmu_idx, i], r)
 
              @inbounds @views begin
-                 sum_numerator[i,:] .+= sampl .* dist
+                 sum_numerator[i,:] .+= sample .* dist
              end
              sum_denominator[i] += dist
          end
@@ -301,7 +301,7 @@ Return a DataFrame with class frequencies for all neurons.
 # Arguments
 - `som`: a trained SOM
 - `vis`: index of the winner neuron for each training pattern in x
-- `classes`: Name of column with class information
+- `classes`: name of column with class information
 """
 function makeClassFreqs(som, vis, classes)
 
@@ -356,33 +356,34 @@ end
 
 
 """
-    findBmu(cod, sampl)
+    findBmu(codes, sample)
 
 Find the best matching unit for a given vector, row_t, in the SOM
-
-# Arguments
-
 
 Returns: A (bmu, bmu_idx) tuple where bmu is the high-dimensional
 Best Matching Unit and bmu_idx is the index of this vector in the SOM
 
+# Arguments
+- `codes`: 2D-array of codebook vectors. One vector per row
+- `sample`: row in dataset / trainingsset
+
 """
-function findBmu(cod, sampl)
+function findBmu(codes, sample)
 
     dist = floatmax()
     winner = 1
-    n = size(cod,1)
+    n = size(codes,1)
 
     for i in 1:n
 
-        d = euclidean(sampl, cod[i,:])
+        d = euclidean(sample, codes[i,:])
         if (d < dist)
             dist = d
             winner = i
         end
     end
     # get the code vector of the bmu
-    bmu_vec = cod[winner,:]
+    bmu_vec = codes[winner,:]
     return winner, bmu_vec
 end
 
