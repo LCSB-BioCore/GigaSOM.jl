@@ -17,34 +17,6 @@ for i in 1:n
     df_som = vcat(df_som, df_som)
 end
 
-@testset "Test Data conversion" begin
-    @testset "Function convertTrainingData" begin
-        x = GigaSOM.convertTrainingData(df_som)
-        @test typeof(x) == Array{Float64, 2}
-    end
-
-    @testset "Function distMatrix" begin
-        # initialise the codes with random samples
-        xdim = 10
-        ydim = 10
-        x = GigaSOM.convertTrainingData(df_som)
-        codes = GigaSOM.rowSample(x, xdim * ydim)
-        @test size(codes) == (100, 10)
-        @test typeof(codes) == Array{Float64, 2}
-        grid = GigaSOM.gridRectangular(xdim, ydim)
-        @test size(grid) == (100, 2)
-        @test typeof(grid) == Array{Float64, 2}
-        dm = GigaSOM.distMatrix(grid, false)
-        @test size(dm) == (100, 100)
-        @test typeof(dm) == Array{Float64, 2}
-    end
-
-    @testset "gaussianKernel" begin
-        y = GigaSOM.gaussianKernel(Float64(10.0), Float64(6.0))
-        @test typeof(y) == Float64
-    end
-end
-
 #PARALLEL
 
 som2 = initGigaSOM(df_som, 10, 10)
