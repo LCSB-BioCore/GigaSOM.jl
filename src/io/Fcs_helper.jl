@@ -7,7 +7,6 @@ Create a dictionary with filenames as keys and daFrame as values
 # Arguments:
 - `filenames`: Array of type string
 """
-
 function readFlowset(filenames)
     flowFrame = Dict()
 
