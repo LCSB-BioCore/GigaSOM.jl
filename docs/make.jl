@@ -22,8 +22,6 @@ makedocs(modules = [GigaSOM],
 
 deploydocs(
     repo = "github.com/LCSB-BioCore/GigaSOM.jl.git",
-    julia = "1.1.0",
-    osname = "linux",
     target = "build",
     branch = "gh-pages",
     devbranch = "origin/develop",
