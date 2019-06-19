@@ -73,6 +73,7 @@ function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel
     # set default radius:
     if r == 0.0
         r = √(som.xdim^2 + som.ydim^2) / 2
+        @info "The radius has been determined automatically."
     end
 
     dm = distMatrix(som.grid, som.toroidal)
