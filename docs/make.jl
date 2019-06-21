@@ -10,8 +10,9 @@ makedocs(modules = [GigaSOM],
         linkcheck = !("skiplinks" in ARGS),
         pages = [
                 "Home" => "index.md",
-                "Tutorial" => "tutorials/tutorial.md",
-                "Functions" => "functions/functions.md"
+                "Background" => "background.md",
+                "Tutorial" => "tutorial.md",
+                "Functions" => "functions.md"
                 ],
         )
 
