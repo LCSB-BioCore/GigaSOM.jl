@@ -53,13 +53,13 @@ panel.Metal[1]=""
 insertcols!(panel,4,:fcs_colname => map((x,y,z)->x.*"(".*y.*z.*")".*"Dd",panel[:Antigen],panel[:Metal],panel[:Isotope]))
 print(panel.fcs_colname)
 
-lineage_markers, functional_markers = getMarkers(panel)
+lineageMarkers, functionalMarkers = getMarkers(panel)
 
-fcs_raw = readFlowset(md.file_name)
-cleanNames!(fcs_raw)
+fcsRaw = readFlowset(md.file_name)
+cleanNames!(fcsRaw)
 
 # create daFrame file
-daf = createDaFrame(fcs_raw, md, panel)
+daf = createDaFrame(fcsRaw, md, panel)
 
 # change the directory back to the current directory
 cd(cwd)
@@ -67,13 +67,13 @@ cd(cwd)
 CSV.write(genDataPath*"/daf.csv", daf.fcstable)
 
 @testset "Cleaning names" begin
-    for i in eachindex(lineage_markers)
+    for i in eachindex(lineageMarkers)
         @test !in("-",i)
     end
-    for i in eachindex(functional_markers)
+    for i in eachindex(functionalMarkers)
         @test !in("-",i)
     end
-    for (k,v) in fcs_raw
+    for (k,v) in fcsRaw
         colnames = names(v)
         for i in eachindex(colnames)
             @test !in("-",i)
