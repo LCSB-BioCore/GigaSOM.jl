@@ -1,12 +1,12 @@
 #fix the seed
 Random.seed!(1)
 
-# only use lineage_markers for clustering
-(lineage_markers,)= getMarkers(panel)
-cc = map(Symbol, lineage_markers)
-df_som = daf.fcstable[:,cc]
+# only use lineageMarkers for clustering
+(lineageMarkers,)= getMarkers(panel)
+cc = map(Symbol, lineageMarkers)
+dfSom = daf.fcstable[:,cc]
 
-som2 = initGigaSOM(df_som, 10, 10)
+som2 = initGigaSOM(dfSom, 10, 10)
 
 @testset "Dimensions - batch" begin
     @test size(som2.codes) == (100,10)
@@ -16,31 +16,31 @@ som2 = initGigaSOM(df_som, 10, 10)
 end
 
 # using batch som with epochs
-som2 = trainGigaSOM(som2, df_som, epochs = 1)
+som2 = trainGigaSOM(som2, dfSom, epochs = 1)
 
-mywinners = mapToGigaSOM(som2, df_som)
+winners = mapToGigaSOM(som2, dfSom)
 
 #test batch
 @testset "Batch" begin
     codes = som2.codes
     @test size(codes) == (100,10)
 
-    df_codes = DataFrame(codes)
-    names!(df_codes, Symbol.(som2.colNames))
-    CSV.write(genDataPath*"/batch_df_codes.csv", df_codes)
-    CSV.write(genDataPath*"/batch_mywinners.csv", mywinners)
+    dfCodes = DataFrame(codes)
+    names!(dfCodes, Symbol.(som2.colNames))
+    CSV.write(genDataPath*"/batchDfCodes.csv", dfCodes)
+    CSV.write(genDataPath*"/batchWinners.csv", winners)
 
 
     #preparing batch for testing
-    ref_batch_df_codes = CSV.File(refDataPath*"/ref_batch_df_codes.csv") |> DataFrame
-    ref_batch_mywinners = CSV.File(refDataPath*"/ref_batch_mywinners.csv") |> DataFrame
-    batch_df_codes = CSV.File(genDataPath*"/batch_df_codes.csv") |> DataFrame
-    batch_df_codes_test = first(batch_df_codes, 10)
-    batch_mywinners = CSV.File(genDataPath*"/batch_mywinners.csv") |> DataFrame
-    batch_mywinners_test = first(batch_mywinners, 10)
+    refBatchDfCodes = CSV.File(refDataPath*"/refBatchDfCodes.csv") |> DataFrame
+    refBatchWinners = CSV.File(refDataPath*"/refBatchWinners.csv") |> DataFrame
+    batchDfCodes = CSV.File(genDataPath*"/batchDfCodes.csv") |> DataFrame
+    batchDfCodesTest = first(batchDfCodes, 10)
+    batchWinners = CSV.File(genDataPath*"/batchWinners.csv") |> DataFrame
+    batchWinnersTest = first(batchWinners, 10)
 
-    for (i, j) in zip(batch_df_codes_test[:,1], ref_batch_df_codes[:,1])
+    for (i, j) in zip(batchDfCodesTest[:,1], refBatchDfCodes[:,1])
         @test isapprox(i, j; atol = 0.001)
     end
-    @test ref_batch_mywinners == batch_mywinners_test
+    @test refBatchWinners == batchWinnersTest
 end

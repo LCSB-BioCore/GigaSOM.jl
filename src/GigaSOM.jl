@@ -25,29 +25,35 @@ module GigaSOM
     # using ProgressMeter
     # using TensorToolbox
 
-    include("types.jl")
-    include("helpers.jl")
-    include("parallel_som.jl")
+    include("structs.jl")
+    include("core.jl")
+    include("satellites.jl")
+
     # include IO files
-    include("io/Fcs_helper.jl")
+    include("io/input.jl")
+    include("io/process.jl")
 
     # include visualization files
-    # include("visualization/Plotting.jl")
+    # include("visualization/plotting.jl")
 
-    export # ext/som
-        mapToGigaSOM,
+    export #core
         initGigaSOM,
-        trainGigaSOM
+        trainGigaSOM,
+        mapToGigaSOM
 
-    export # Fcs_helper
-        cleannames!,
-        readflowset,
-        create_daFrame,
-        getMarkers,
+    export # structs
         daFrame
 
-    export # Plotting
-        plotcounts,
+    export #input
+        readFlowset
+
+    export #satellites
+    cleanNames!,
+    createDaFrame,
+    getMarkers
+
+    export # plotting
+        plotCounts,
         plotPCA
 
 end # module

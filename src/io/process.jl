@@ -1,27 +1,6 @@
 
 """
-    readflowset(filenames)
-
-Create a dictionary with filenames as keys and daFrame as values
-
-# Arguments:
-- `filenames`: Array of type string
-"""
-
-function readflowset(filenames)
-    flowFrame = Dict()
-
-    # read all FCS files into flowFrame
-    for name in filenames # file list
-        flowrun = FileIO.load(name) # FCS file
-        flowDF = DataFrame(flowrun.data)
-        flowFrame[name] = flowDF
-    end
-    return flowFrame
-end
-
-"""
-    transform_data(flowframe, method = "asinh", cofactor = 5)
+    transformData(flowframe, method = "asinh", cofactor = 5)
 
 Tansforms FCS data. Currently only asinh
 
@@ -30,36 +9,38 @@ Tansforms FCS data. Currently only asinh
 - `method`: transformation method
 - `cofactor`: Cofactor for transformation
 """
-function transform_data(flowframe, method = "asinh", cofactor = 5)
+function transformData(flowframe, method = "asinh", cofactor = 5)
     # loop through every file in dict
     # get the dataframe
     # convert to matrix
     # arcsinh transformation
     # convert back to dataframe
     for (k,v) in flowframe
-        fcs_df = flowframe[k]
-        colnames = names(fcs_df) # keep the column names
-        dMatrix = Matrix(fcs_df)
-        # single_fcs["data"] = [(asinh(x)/cofactor) for x in dMatrix]
+        fcsDf = flowframe[k]
+        colnames = names(fcsDf) # keep the column names
+        dMatrix = Matrix(fcsDf)
+        # singleFcs["data"] = [(asinh(x)/cofactor) for x in dMatrix]
         dMatrix = [(asinh(x)/cofactor) for x in dMatrix]
 
         ddf = DataFrame(dMatrix)
 
         names!(ddf, Symbol.(colnames))
-        # single_fcs["data"] = ddf
+        # singleFcs["data"] = ddf
         flowframe[k] = ddf
     end
 end
 
-"""
-    cleannames!(mydata)
 
-Replaces problematic characters in column names
+"""
+    cleanNames!(mydata)
+
+Replaces problematic characters in column names.
+Checks if the column name contains a '-' and transforms it to and '_' and it checks if the name starts with a number.
 
 # Arguments:
-- `mydata`: dict fcs_raw or array of string
+- `mydata`: dict fcsRaw or array of string
 """
-function cleannames!(mydata)
+function cleanNames!(mydata)
     # replace chritical characters
     # put "_" in front of colname in case it starts with a number
     # println(typeof(mydata))
@@ -85,35 +66,36 @@ function cleannames!(mydata)
 
 end
 
+
 """
-    create_daFrame(fcs_raw, md, panel)
+    createDaFrame(fcsRaw, md, panel)
 
 Creates a daFrame of type struct.
 Read in the fcs raw, add sample id, subset the columns and transform
 
 # Arguments:
-- `fcs_raw`: raw FCS data
+- `fcsRaw`: raw FCS data
 - `md`: Metadata table
-- `panel`: Panel table with column each for lineage and functional markers
+- `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 """
-function create_daFrame(fcs_raw, md, panel)
+function createDaFrame(fcsRaw, md, panel)
 
     # extract lineage markers
-    lineage_markers, functional_markers = getMarkers(panel)
+    lineageMarkers, functionalMarkers = getMarkers(panel)
 
-    transform_data(fcs_raw)
+    transformData(fcsRaw)
 
     for i in eachindex(md.file_name)
-        df = fcs_raw[md.file_name[i]]
+        df = fcsRaw[md.file_name[i]]
         df[:sample_id] = string(md.sample_id[i])
     end
 
     dfall = []
-    for (k,v) in fcs_raw
+    for (k,v) in fcsRaw
         push!(dfall,v)
     end
     dfall = vcat(dfall...)
-    cc = map(Symbol, vcat(lineage_markers, functional_markers))
+    cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
     push!(cc, :sample_id)
     # reduce the dataset to lineage (and later) functional (state) markers
     dfall = dfall[:, cc]
@@ -124,20 +106,24 @@ end
 """
     getMarkers(panel)
 
+Returns the `lineageMarkers` and `functionalMarkers` on a given panel
+
+# Arguments:
+- `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 """
 function getMarkers(panel)
 
     # extract lineage markers
-    lineage_markers = panel.fcs_colname[panel.Lineage .== 1, : ]
-    functional_markers = panel.fcs_colname[panel.Functional .== 1, :]
+    lineageMarkers = panel.fcs_colname[panel.Lineage .== 1, : ]
+    functionalMarkers = panel.fcs_colname[panel.Functional .== 1, :]
 
-    # lineage_markers are 2d array,
+    # lineageMarkers are 2d array,
     # flatten this array by using vec:
-    lineage_markers = vec(lineage_markers)
-    functional_markers = vec(functional_markers)
-    cleannames!(lineage_markers)
-    cleannames!(functional_markers)
+    lineageMarkers = vec(lineageMarkers)
+    functionalMarkers = vec(functionalMarkers)
+    cleanNames!(lineageMarkers)
+    cleanNames!(functionalMarkers)
 
-    return lineage_markers, functional_markers
+    return lineageMarkers, functionalMarkers
 
 end

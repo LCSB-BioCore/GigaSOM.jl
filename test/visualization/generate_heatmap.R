@@ -21,9 +21,9 @@ head(data.frame(md))
 color_conditions <- c("#6A3D9A", "#FF7F00")
 names(color_conditions) <- levels(md$condition)
 
-fcs_raw <- read.flowSet(md$file_name, transformation = FALSE,
+fcsRaw <- read.flowSet(md$file_name, transformation = FALSE,
                         truncate_max_range = FALSE)
-fcs_raw
+fcsRaw
 
 panel_filename <- "PBMC8_panel.csv"
 panel <- read_excel(panel_filename)
@@ -32,28 +32,28 @@ head(data.frame(panel))
 # Replace problematic characters
 panel$fcs_colname <- gsub("-", "_", panel$Antigen)
 
-panel_fcs <- pData(parameters(fcs_raw[[1]]))
+panel_fcs <- pData(parameters(fcsRaw[[1]]))
 head(panel_fcs)
 
 # Replace problematic characters
 panel_fcs$desc <- gsub("-", "_", panel_fcs$desc)
 
 # Lineage markers
-(lineage_markers <- panel$fcs_colname[panel$Lineage == 1])
+(lineageMarkers <- panel$fcs_colname[panel$Lineage == 1])
 
 # Functional markers
-(functional_markers <- panel$fcs_colname[panel$Functional == 1])
+(functionalMarkers <- panel$fcs_colname[panel$Functional == 1])
 
 # Spot checks
-all(lineage_markers %in% panel_fcs$desc)
+all(lineageMarkers %in% panel_fcs$desc)
 
-all(functional_markers %in% panel_fcs$desc)
+all(functionalMarkers %in% panel_fcs$desc)
 
 ## arcsinh transformation and column subsetting
-fcs <- fsApply(fcs_raw, function(x, cofactor=5){
+fcs <- fsApply(fcsRaw, function(x, cofactor=5){
   colnames(x) <- panel_fcs$desc
   expr <- exprs(x)
-  expr <- asinh(expr[, c(lineage_markers, functional_markers)] / cofactor)
+  expr <- asinh(expr[, c(lineageMarkers, functionalMarkers)] / cofactor)
   exprs(x) <- expr
   x
 })
@@ -70,7 +70,7 @@ expr01[expr01 < 0] <- 0
 expr01[expr01 > 1] <- 1
 
 ## Generate sample IDs corresponding to each cell in the 'expr' matrix
-sample_ids <- rep(md$sample_id, fsApply(fcs_raw, nrow))
+sample_ids <- rep(md$sample_id, fsApply(fcsRaw, nrow))
 library(ggplot2)
 library(reshape2)
 ggdf <- data.frame(sample_id = sample_ids, expr)
@@ -105,8 +105,8 @@ cell_clustering_som <- as.numeric(cc_som)
 
 ## Metaclustering into 20 clusters with ConsensusClusterPlus
 
-df_codes <- read.csv("df_codes.csv")
-codes <- as.matrix(df_codes)
+dfCodes <- read.csv("dfCodes.csv")
+codes <- as.matrix(dfCodes)
 daf <- read.csv("daf.csv")
 dafcolnames <- colnames(daf)
 
