@@ -1,18 +1,18 @@
 """
-    plotCounts(fcs_raw, md, group_by = "condition")
+    plotCounts(fcsRaw, md, group_by = "condition")
 
 Barplot showing the number of cells per sample, used as a guide to identify samples where not enough cells were assayed
 
 # Arguments:
-- `fcs_raw`: raw FCS data
+- `fcsRaw`: raw FCS data
 - `md`: Metadata table
 """
 
-function plotCounts(fcs_raw, md, group_by = "condition")
+function plotCounts(fcsRaw, md, group_by = "condition")
 
     df_barplot = DataFrame(filename = String[], size = Int[], condition = String[])
 
-    for (k,v) in fcs_raw
+    for (k,v) in fcsRaw
         sid = md.sample_id[k .== md.file_name]
         # println(sid[1])
         condition = md.condition[k .== md.file_name]
