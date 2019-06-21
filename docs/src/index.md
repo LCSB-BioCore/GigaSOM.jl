@@ -9,15 +9,16 @@ using HPC and increase the maximum number of cells that can be processed simulta
 
 ## Package Features
 
-- Maybe
-- Make
-- A List
-- Of The
-- Package Features
+- Analysis and clustering of huge-scale flow cytometry data.
+- HPC-ready to handle very large datasets.
+- Supports Julia `1.0`.
+- Load and transform `.fcs` data files accordingly.
+- GigaSOM algorithm maps high-dimensional vectors into a lower-dimensional grid.
+- Automatically determine the required number of cell populations using parallel computing.
 
 Check the [Background](@ref) section for some insights on the theory behind our package
 
-The [Tutorial](@ref) section provides a thorough guide explaining how to get started using GigaSOM.
+The [Tutorial](@ref) section provides a thorough guide explaining how to get started on GigaSOM.jl package.
 
 See the [Functions](@ref) section for the complete list of documented functions and types.
 
