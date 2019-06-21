@@ -26,8 +26,3 @@ See the [Functions](@ref) section for the complete list of documented functions 
 ```@contents
 Pages = ["index.md", "background.md", "tutorial.md", "functions.md"]
 ```
-
-## Index
-
-```@index
-```

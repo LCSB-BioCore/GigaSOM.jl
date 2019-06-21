@@ -1,10 +1,5 @@
 # Functions
 
-## Index
-
-```@index
-```
-
 ## Input
 
 ```@autodocs
