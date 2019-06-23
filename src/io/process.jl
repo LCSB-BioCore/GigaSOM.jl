@@ -111,7 +111,7 @@ Returns the `lineageMarkers` and `functionalMarkers` on a given panel
 # Arguments:
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 """
-function getMarkers(panel::DataFrame)
+function getMarkers(panel::DataFrame)::Tuple{Array{String,1},Array{String,1}}
 
     # extract markers
     lineageMarkers::Array{String,1} = vec(panel.fcs_colname[panel.Lineage .== 1, : ])
