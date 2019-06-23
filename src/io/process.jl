@@ -78,7 +78,7 @@ Read in the fcs raw, add sample id, subset the columns and transform
 - `md`: Metadata table
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 """
-function createDaFrame(fcsRaw, md, panel)
+function createDaFrame(fcsRaw::Dict, md::DataFrame, panel::DataFrame)
 
     # extract lineage markers
     lineageMarkers, functionalMarkers = getMarkers(panel)
