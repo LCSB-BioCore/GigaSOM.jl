@@ -9,7 +9,7 @@ Structure to hold FCS files.
 - `panel::DataFrame`: defines which markers to use (lineage, functional)
 """
 struct daFrame
-    fcstable
+    fcstable::DataFrame
     md::DataFrame
     panel::DataFrame
 end
