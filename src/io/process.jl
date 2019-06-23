@@ -90,7 +90,7 @@ function createDaFrame(fcsRaw::Dict, md::DataFrame, panel::DataFrame)
         df[:sample_id] = string(md.sample_id[i])
     end
 
-    dfall = []
+    dfall = DataFrame[]
     for (k,v) in fcsRaw
         push!(dfall,v)
     end
@@ -111,16 +111,12 @@ Returns the `lineageMarkers` and `functionalMarkers` on a given panel
 # Arguments:
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 """
-function getMarkers(panel)
+function getMarkers(panel::DataFrame)
 
-    # extract lineage markers
-    lineageMarkers = panel.fcs_colname[panel.Lineage .== 1, : ]
-    functionalMarkers = panel.fcs_colname[panel.Functional .== 1, :]
+    # extract markers
+    lineageMarkers::Array{String,1} = vec(panel.fcs_colname[panel.Lineage .== 1, : ])
+    functionalMarkers::Array{String,1} = vec(panel.fcs_colname[panel.Functional .== 1, :])
 
-    # lineageMarkers are 2d array,
-    # flatten this array by using vec:
-    lineageMarkers = vec(lineageMarkers)
-    functionalMarkers = vec(functionalMarkers)
     cleanNames!(lineageMarkers)
     cleanNames!(functionalMarkers)
 
