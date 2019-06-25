@@ -127,7 +127,7 @@ in x (row-wise).
 - `codes`: Codebook
 - `x`: training Data
 """
-function visual(codes, x)
+function visual(codes::Array{Float64,2}, x::Array{Float64})
 
     vis = zeros(Int, size(x,1))
     for i in 1:size(x,1)
@@ -229,22 +229,22 @@ Best Matching Unit and bmuIdx is the index of this vector in the SOM
 - `sample`: row in dataset / trainingsset
 
 """
-function findBmu(codes, sample)
+function findBmu(codes::Array{Float64, 2}, sample::Array{Float64})
 
-    dist = floatmax()
+    dist::Float64 = floatmax()
     winner = 1
     n = size(codes,1)
 
     for i in 1:n
 
-        d = euclidean(sample, codes[i,:])
+        d::Float64 = euclidean(sample, codes[i,:])
         if (d < dist)
             dist = d
             winner = i
         end
     end
     # get the code vector of the bmu
-    bmuVec = codes[winner,:]
+    bmuVec::Array{Float64} = codes[winner,:]
     return winner, bmuVec
 end
 
