@@ -161,27 +161,28 @@ vectors and the adjustment in radius after each epoch.
 function doEpoch(x::Array{Float64}, codes::Array{Float64}, dm::Array{Float64},
                 kernelFun::Function, r::Number, toroidal::Bool)
 
-     nRows = size(x, 1)
-     nCodes = size(codes, 1)
+     nRows::Int = size(x, 1)
+     nCodes::Int = size(codes, 1)
 
      # initialise numerator and denominator with 0's
-     sumNumerator = zeros(Float64, size(codes))
-     sumDenominator = zeros(Float64, size(codes)[1])
+     sumNumerator::Array{Float64, 2} = zeros(Float64, size(codes))
+     sumDenominator::Array{Float64} = zeros(Float64, size(codes)[1])
 
      # for each sample in dataset / trainingsset
      for s in 1:nRows
-         sample = vec(x[s, : ])
-         bmuIdx, bmuVec = findBmu(codes, sample)
+         sample::Array{Float64} = vec(x[s, : ])
+         bmuIdx::Int, bmuVec::Array{Float64} = findBmu(codes, sample)
 
          # for each node in codebook get distances to bmu and multiply it
          # with sample row: x(i)
          for i in 1:nCodes
-             dist = kernelFun(dm[bmuIdx, i], r)
+             dist::Float64 = kernelFun(dm[bmuIdx, i], r)
 
              @inbounds @views begin
                  sumNumerator[i,:] .+= sample .* dist
              end
              sumDenominator[i] += dist
+
          end
      end
      return sumNumerator, sumDenominator
