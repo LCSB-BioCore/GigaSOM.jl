@@ -43,8 +43,8 @@ for f in dataFiles
     end
 end
 
-md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1")...)
-panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1")...)
+md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
+panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
 panel[:Isotope] = map(string, panel[:Isotope])
 panel[:Metal] = map(string, panel[:Metal])
 panel[:Antigen] = map(string, panel[:Antigen])
