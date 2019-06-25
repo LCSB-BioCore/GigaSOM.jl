@@ -9,7 +9,7 @@ Tansforms FCS data. Currently only asinh
 - `method`: transformation method
 - `cofactor`: Cofactor for transformation
 """
-function transformData(flowframe, method = "asinh", cofactor = 5)
+function transformData(flowframe::Dict, method = "asinh", cofactor = 5)
     # loop through every file in dict
     # get the dataframe
     # convert to matrix
@@ -44,7 +44,7 @@ function cleanNames!(mydata)
     # replace chritical characters
     # put "_" in front of colname in case it starts with a number
     # println(typeof(mydata))
-    if mydata isa Dict{Any, Any}
+    if mydata isa Dict{String, DataFrame}
         for (k,v) in mydata
             colnames = names(v)
             for i in eachindex(colnames)
