@@ -7,7 +7,7 @@ Create a dictionary with filenames as keys and daFrame as values
 # Arguments:
 - `filenames`: Array of type string
 """
-function readFlowset(filenames)
+function readFlowset(filenames::Array{String})
     flowFrame = Dict{String, DataFrame}()
 
     # read all FCS files into flowFrame
