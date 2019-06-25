@@ -1,6 +1,6 @@
 
 """
-    readFlowset(filenames)
+    readFlowset(filenames::Array{String})::Dict{String, DataFrame}
 
 Create a dictionary with filenames as keys and daFrame as values
 

@@ -118,7 +118,7 @@ end
 
 
 """
-    visual(codes, x)
+    visual(codes::Array{Float64,2}, x::Array{Float64})
 
 Return the index of the winner neuron for each training pattern
 in x (row-wise).
@@ -217,7 +217,7 @@ end
 
 
 """
-    findBmu(codes, sample)
+    findBmu(codes::Array{Float64, 2}, sample::Array{Float64})
 
 Find the best matching unit for a given vector, row_t, in the SOM
 
@@ -250,7 +250,7 @@ end
 
 
 """
-    normTrainData(x::DataFrame, normParams::DataFrame)
+    normTrainData(x::Array{Float64,2}, normParams::DataFrame)
 
 Normalise every column of training data with the params.
 
@@ -269,7 +269,7 @@ end
 
 
 """
-    normTrainData(train::DataFrame, norm::Symbol)
+    normTrainData(train::Array{Float64, 2}, norm::Symbol)
 
 Normalise every column of training data.
 
@@ -310,7 +310,7 @@ end
 
 
 """
-    convertTrainingData(data)
+    convertTrainingData(data)::Array{Float64,2}
 
 Converts the training data to an Array of type Float64.
 

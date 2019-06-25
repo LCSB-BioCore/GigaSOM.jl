@@ -4,7 +4,7 @@
 Structure to hold FCS files.
 
 # Fields:
-- `fcstable::Dict`: Key: Filename, Value: FCS data table
+- `fcstable::DataFrame`
 - `md::DataFrame`: Metadata containing the filenames, and experiment conditions
 - `panel::DataFrame`: defines which markers to use (lineage, functional)
 """

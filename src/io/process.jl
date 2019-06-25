@@ -1,6 +1,6 @@
 
 """
-    transformData(flowframe, method = "asinh", cofactor = 5)
+    transformData(flowframe::Dict, method = "asinh", cofactor = 5)
 
 Tansforms FCS data. Currently only asinh
 
@@ -68,7 +68,7 @@ end
 
 
 """
-    createDaFrame(fcsRaw, md, panel)
+    createDaFrame(fcsRaw::Dict, md::DataFrame, panel::DataFrame)
 
 Creates a daFrame of type struct.
 Read in the fcs raw, add sample id, subset the columns and transform
@@ -104,7 +104,7 @@ end
 
 
 """
-    getMarkers(panel)
+    getMarkers(panel::DataFrame)::Tuple{Array{String,1},Array{String,1}}
 
 Returns the `lineageMarkers` and `functionalMarkers` on a given panel
 
