@@ -30,8 +30,6 @@ som2 = trainGigaSOM(som2, dfSom, epochs = 2, r = 6.0)
 
 winners = mapToGigaSOM(som2, dfSom)
 
-winners = mapToGigaSOM(som2, dfSom)
-
 @testset "Parallel" begin
     codes = som2.codes
     @test size(codes) == (100,10)
