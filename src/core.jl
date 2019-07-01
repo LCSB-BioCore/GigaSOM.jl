@@ -115,7 +115,12 @@ function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel
           end
      else
          # only batch mode
+<<<<<<< HEAD
          sumNumerator, sumDenominator = doEpoch(localpart(dTrain), codes, dm,
+=======
+         println("In batch mode: ")
+         sumNumerator, sumDenominator = doEpoch(train, codes, dm,
+>>>>>>> dont use dTrain for batch mode
                                                     kernelFun, r, false)
 
         globalSumNumerator += sumNumerator
