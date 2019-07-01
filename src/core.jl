@@ -228,16 +228,11 @@ function mapToGigaSOM(som::Som, data::DataFrame)
              end
          end
     else
-        append!(vis, visual(som.codes, data))
+        vis = visual(som.codes, data)
     end
 
-    df = DataFrame(X = Int64[], Y = Int64[], index = Int64[])
-    for i in vis
-        x = som.indices[i, :X]
-        y = som.indices[i, :Y]
-        index = vis[i]
-        push!(df, [x y index])
-    end
+    x = [som.indices[i,:X] for i in vis]
+    y = [som.indices[i,:Y] for i in vis]
 
-    return df
+    return DataFrame(X = x, Y = y, index = vis)
 end
