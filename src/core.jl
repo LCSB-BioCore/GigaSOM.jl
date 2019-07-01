@@ -220,9 +220,12 @@ function mapToGigaSOM(som::Som, data::DataFrame)
              end
          end
 
-         @sync for p in workers()
-             append!(vis, fetch(R[p]))
-
+         @sync begin myworkers = workers()
+             sort!(myworkers)
+             println(myworkers)
+             for p in myworkers
+                 append!(vis, fetch(R[p]))
+             end
          end
     else
         append!(vis, visual(som.codes, data))
