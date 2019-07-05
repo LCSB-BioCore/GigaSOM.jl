@@ -54,7 +54,7 @@ Return the distance matrix for a non-toroidal or toroidal SOM.
 with x-coordinates in 1st column and y-coordinates in 2nd column.
 - `toroidal`: true for a toroidal SOM.
 """
-function distMatrix(grid::Array, toroidal::Bool)
+function distMatrix(grid::Array, toroidal::Bool)::Array{Float64, 2}
 
     X = 1
     Y = 2
@@ -132,7 +132,7 @@ function visual(codes::Array{Float64,2}, x::Array{Float64,2})
     vis = zeros(Int, size(x,1))
     for i in 1:size(x,1)
 
-        (vis[i], ) = findBmu(codes, x[i, : ])
+        vis[i] = findBmu(codes, x[i, : ])
 
     end
 
@@ -231,24 +231,32 @@ Best Matching Unit and bmuIdx is the index of this vector in the SOM
 - `sample`: row in dataset / trainingsset
 
 """
-function findBmu(codes::Array{Float64,2}, sample::Array{Float64,1})
+# function findBmu(codes::Array{Float64,2}, sample::Array{Float64,1})::Int64
+#
+#     dist = floatmax()
+#     winner = 1
+#     n = size(codes,1)
+#
+#     for i in 1:n
+#
+#         d::Float64 = euclidean(sample, codes[i,:])
+#
+#         if (d < dist)
+#             dist = d
+#             winner = i
+#         end
+#     end
+#     # get the code vector of the bmu
+#     # bmuVec = codes[winner,:]
+#     return winner
+# end
 
-    dist = floatmax()
-    winner = 1
-    n = size(codes,1)
+function findBmu(codes::Array{Float64,2}, sample::Array{Float64,1})::Int64
 
-    for i in 1:n
+    x = Distances.colwise(Euclidean(), sample, codes')
 
-        d::Float64 = euclidean(sample, codes[i,:])
+    return argmin(x)
 
-        if (d < dist)
-            dist = d
-            winner = i
-        end
-    end
-    # get the code vector of the bmu
-    bmuVec = codes[winner,:]
-    return winner, bmuVec
 end
 
 
