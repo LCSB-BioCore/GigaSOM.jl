@@ -156,20 +156,22 @@ vectors and the adjustment in radius after each epoch.
 - `r`: training radius
 - `toroidal`: if true, the SOM is toroidal.
 """
-function doEpoch(x::Array{Float64}, codes::Array{Float64}, dm::Array{Float64},
+function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, dm::Array{Float64, 2},
                 kernelFun::Function, r::Number, toroidal::Bool)
 
-     nRows = size(x, 1)
-     nCodes = size(codes, 1)
+     nRows::Int64 = size(x, 1)
+     nCodes::Int64 = size(codes, 1)
 
      # initialise numerator and denominator with 0's
      sumNumerator = zeros(Float64, size(codes))
      sumDenominator = zeros(Float64, size(codes)[1])
 
      # for each sample in dataset / trainingsset
+     sample = zeros(size(x,2))
      for s in 1:nRows
+    
          sample = vec(x[s, : ])
-         bmuIdx, bmuVec = findBmu(codes, sample)
+         bmuIdx = findBmu(codes, sample)
 
          # for each node in codebook get distances to bmu and multiply it
          # with sample row: x(i)
