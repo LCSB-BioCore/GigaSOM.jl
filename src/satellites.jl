@@ -231,26 +231,6 @@ Best Matching Unit and bmuIdx is the index of this vector in the SOM
 - `sample`: row in dataset / trainingsset
 
 """
-# function findBmu(codes::Array{Float64,2}, sample::Array{Float64,1})::Int64
-#
-#     dist = floatmax()
-#     winner = 1
-#     n = size(codes,1)
-#
-#     for i in 1:n
-#
-#         d::Float64 = euclidean(sample, codes[i,:])
-#
-#         if (d < dist)
-#             dist = d
-#             winner = i
-#         end
-#     end
-#     # get the code vector of the bmu
-#     # bmuVec = codes[winner,:]
-#     return winner
-# end
-
 function findBmu(codes::Array{Float64,2}, sample::Array{Float64,1})::Int64
 
     x = Distances.colwise(Euclidean(), sample, codes')
