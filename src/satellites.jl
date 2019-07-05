@@ -38,7 +38,11 @@ for same values of r).
 # Arguments
 
 """
-function gaussianKernel(x::Float64, r::Float64)::Float64
+# function gaussianKernel(x::Float64, r::Float64)::Float64
+#
+#     return Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
+# end
+function gaussianKernel(x::Array{Float64, 1}, r::Float64)::Array{Float64, 1}
 
     return Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
 end
