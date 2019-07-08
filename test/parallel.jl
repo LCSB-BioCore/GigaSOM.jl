@@ -1,9 +1,13 @@
 #fix the seed
 Random.seed!(1)
 
+if nprocs() <= 2
 p = addprocs(2)
+end
 @everywhere using DistributedArrays
 @everywhere using GigaSOM
+@everywhere using Distances
+
 
 # only use lineageMarkers for clustering
 (lineageMarkers,)= getMarkers(panel)
@@ -26,9 +30,9 @@ som2 = initGigaSOM(dfSom, 10, 10)
     @test som2.numCodes == 100
 end
 
-@time som2 = trainGigaSOM(som2, dfSom, epochs = 2, r = 6.0)
+som2 = trainGigaSOM(som2, dfSom, epochs = 2, r = 6.0)
 
-@time winners = mapToGigaSOM(som2, dfSom)
+winners = mapToGigaSOM(som2, dfSom)
 
 @testset "Parallel" begin
     codes = som2.codes
