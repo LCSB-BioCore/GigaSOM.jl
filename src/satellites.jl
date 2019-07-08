@@ -29,7 +29,7 @@ end
 
 
 """
-    gaussianKernel(x::Float64, r::Float64)::Float64
+    gaussianKernel(x::Array{Float64, 1}, r::Float64)::Array{Float64, 1}
 
 Return Gaussian(x) for μ=0.0 and σ = r/3.
 (a value of σ = r/3 makes the training results comparable between different kernels
@@ -38,10 +38,6 @@ for same values of r).
 # Arguments
 
 """
-# function gaussianKernel(x::Float64, r::Float64)::Float64
-#
-#     return Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
-# end
 function gaussianKernel(x::Array{Float64, 1}, r::Float64)::Array{Float64, 1}
 
     return Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
@@ -137,7 +133,6 @@ function visual(codes::Array{Float64,2}, x::Array{Float64,2})
     for i in 1:size(x,1)
 
         vis[i] = findBmu(codes, x[i, : ])
-
     end
 
     return vis
@@ -223,7 +218,7 @@ end
 
 
 """
-    findBmu(codes, sample)
+    findBmu(codes::Array{Float64,2}, sample::Array{Float64,1})::Int64
 
 Find the best matching unit for a given vector, row_t, in the SOM
 
