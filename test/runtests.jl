@@ -9,4 +9,5 @@ using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed
 
     #apply the parallel GigaSOM algorithm to the data, train it and test it
     include("parallel.jl")
+
 end

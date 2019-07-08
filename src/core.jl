@@ -103,8 +103,6 @@ function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel
          # distribution across workers
          R = Array{Future}(undef,nWorkers, 1)
           @sync for p in workers()
-
-              println("worker: $p")
               @async R[p] = @spawnat p begin
                  doEpoch(localpart(dTrain), codes, dm, kernelFun, r, false)
               end
@@ -117,7 +115,6 @@ function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel
           end
      else
          # only batch mode
-         println("In batch mode: ")
          sumNumerator, sumDenominator = doEpoch(localpart(dTrain), codes, dm,
                                                     kernelFun, r, false)
 
@@ -134,12 +131,8 @@ function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel
      codes = globalSumNumerator ./ globalSumDenominator
     end
 
-    # map training samples to SOM and calc. neuron population:
-    vis = visual(codes, train)
-    population = makePopulation(som.numCodes, vis)
-    # update SOM object:
     som.codes[:,:] = codes[:,:]
-    som.population[:] = population[:]
+
     return som
 end
 
@@ -201,16 +194,40 @@ every row in data.
 Data must have the same number of dimensions as the training dataset
 and will be normalised with the same parameters.
 """
-function mapToGigaSOM(som::Som, data)
+function mapToGigaSOM(som::Som, data::DataFrame)
 
-    data = convertTrainingData(data)
-
+    data::Array{Float64,2} = convertTrainingData(data)
     if size(data,2) != size(som.codes,2)
         println("    data: $(size(data,2)), codes: $(size(som.codes,2))")
         error(SOM_ERRORS[:ERR_COL_NUM])
     end
 
-    vis = visual(som.codes, data)
+    nWorkers = nprocs()
+    dData = distribute(data)
+    vis = Int64[]
+
+    if nWorkers > 1
+        # distribution across workers
+        R = Array{Future}(undef,nWorkers, 1)
+         @sync for p in workers()
+
+             println("worker: $p")
+             @async R[p] = @spawnat p begin
+                visual(som.codes, localpart(dData))
+             end
+         end
+
+         @sync begin myworkers = workers()
+             sort!(myworkers)
+             println(myworkers)
+             for p in myworkers
+                 append!(vis, fetch(R[p]))
+             end
+         end
+    else
+        vis = visual(som.codes, data)
+    end
+
     x = [som.indices[i,:X] for i in vis]
     y = [som.indices[i,:Y] for i in vis]
 

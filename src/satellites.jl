@@ -127,11 +127,13 @@ in x (row-wise).
 - `codes`: Codebook
 - `x`: training Data
 """
-function visual(codes, x)
+function visual(codes::Array{Float64,2}, x::Array{Float64,2})
 
     vis = zeros(Int, size(x,1))
     for i in 1:size(x,1)
-        (vis[i],) = findBmu(codes, [x[i, col] for col in 1:size(x, 2)])
+
+        (vis[i], ) = findBmu(codes, x[i, : ])
+
     end
 
     return vis
@@ -229,7 +231,7 @@ Best Matching Unit and bmuIdx is the index of this vector in the SOM
 - `sample`: row in dataset / trainingsset
 
 """
-function findBmu(codes, sample)
+function findBmu(codes::Array{Float64,2}, sample::Array{Float64,1})
 
     dist = floatmax()
     winner = 1
@@ -237,7 +239,8 @@ function findBmu(codes, sample)
 
     for i in 1:n
 
-        d = euclidean(sample, codes[i,:])
+        d::Float64 = euclidean(sample, codes[i,:])
+
         if (d < dist)
             dist = d
             winner = i
