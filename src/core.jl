@@ -167,7 +167,6 @@ function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, dm::Array{Float
      sumDenominator = zeros(Float64, size(codes)[1])
 
      # for each sample in dataset / trainingsset
-     sample = zeros(size(x,2))
      for s in 1:nRows
 
          sample = vec(x[s, : ])
@@ -176,12 +175,14 @@ function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, dm::Array{Float
          # for each node in codebook get distances to bmu and multiply it
          dist = kernelFun(dm[bmuIdx, :], r)
 
-         for i in size(dist)
+         # doing col wise update of the numerator
+         for i in 1:size(sumNumerator, 2)
              @inbounds @views begin
-                 sumNumerator[i,:] .+= sample .* dist[i]
+                 sumNumerator[:,i] .+= dist .* sample[i]
              end
-             sumDenominator[i] += dist[i]
+
          end
+         sumDenominator += dist
      end
 
      return sumNumerator, sumDenominator
