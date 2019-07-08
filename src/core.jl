@@ -103,8 +103,6 @@ function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel
          # distribution across workers
          R = Array{Future}(undef,nWorkers, 1)
           @sync for p in workers()
-
-              println("worker: $p")
               @async R[p] = @spawnat p begin
                  doEpoch(localpart(dTrain), codes, dm, kernelFun, r, false)
               end
@@ -117,7 +115,6 @@ function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel
           end
      else
          # only batch mode
-         println("In batch mode: ")
          sumNumerator, sumDenominator = doEpoch(localpart(dTrain), codes, dm,
                                                     kernelFun, r, false)
 
