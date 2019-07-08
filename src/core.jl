@@ -52,7 +52,7 @@ end
 
 
 """
-    trainGigaSOM(som::Som, train::Any, kernelFun = gaussianKernel,
+    trainGigaSOM(som::Som, train::DataFrame, kernelFun = gaussianKernel,
                         r = 0.0, epochs = 10)
 
 # Arguments:
@@ -229,9 +229,5 @@ function mapToGigaSOM(som::Som, data::DataFrame)
         vis = visual(som.codes, data)
     end
 
-    # x = [som.indices[i,:X] for i in vis]
-    # y = [som.indices[i,:Y] for i in vis]
-
-    # return DataFrame(X = x, Y = y, index = vis)
     return DataFrame(index = vis)
 end
