@@ -174,9 +174,6 @@ function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, dm::Array{Float
          bmuIdx = findBmu(codes, sample)
 
          # for each node in codebook get distances to bmu and multiply it
-         # with sample row: x(i)
-         # dist = 0.0
-
          dist = kernelFun(dm[bmuIdx, :], r)
 
          for i in size(dist)
@@ -185,18 +182,8 @@ function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, dm::Array{Float
              end
              sumDenominator[i] += dist[i]
          end
-
-
-
-         # for i in 1:nCodes
-         #     dist = kernelFun(dm[bmuIdx, i], r)
-         #
-         #     @inbounds @views begin
-         #         sumNumerator[i,:] .+= sample .* dist
-         #     end
-         #     sumDenominator[i] += dist
-         # end
      end
+
      return sumNumerator, sumDenominator
 end
 
