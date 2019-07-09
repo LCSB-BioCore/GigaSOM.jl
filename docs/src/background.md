@@ -3,7 +3,7 @@
 ## Introduction
 
 Flow cytometry clustering for several hundred million cells has long been hampered
-by software implementations. Julia allows us to go beyond these limits.
+by software limitations. Julia allows us to go beyond these limits.
 Through the high-performance GigaSOM.jl package, we gear up for huge-scale
 flow cytometry analysis, softening these limitations with an innovative approach
 on the existing algorithm, by implementing parallel computing with stable and
