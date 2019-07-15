@@ -11,7 +11,7 @@ makedocs(modules = [GigaSOM],
         pages = [
                 "Home" => "index.md",
                 "Background" => "background.md",
-                "Tutorial" => "tutorial.md",
+                #"Tutorial" => "tutorial.md",
                 "Functions" => "functions.md"
                 ],
         )
