@@ -8,6 +8,8 @@ FCS, we need to see what functionality is missing and
 extend this in the original package
 =#
 
+checkDir()
+
 #create genData and data folder and change dir to dataPath
 cwd = pwd()
 if occursin("jenkins", homedir()) || "TRAVIS" in keys(ENV)
@@ -82,7 +84,6 @@ CSV.write(genDataPath*"/daf.csv", daf.fcstable)
 end
 
 @testset "Checksums" begin
-    using SHA
     cd(dataPath)
     filesNames = readdir()
     for f in filesNames
@@ -94,15 +95,4 @@ end
     end
 end
 
-
-
-# #Create checksums files for testing
-# using SHA
-# cd(dataPath)
-# filesNames = readdir()
-# for f in filesNames
-#     cs = bytes2hex(sha256(f))
-#     list = open(cwd*"/checkSums/"*f*".txt", "w")
-#     println(list, cs)
-#     close(list)
-# end
+cd(cwd)
