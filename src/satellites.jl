@@ -341,3 +341,18 @@ function convertTrainingData(data)::Array{Float64,2}
 end
 
 prettyPrintArray(arr) = println("$(show(IOContext(STDOUT, limit=true), "text/plain", arr))")
+
+
+"""
+    checkDir()
+
+Checks if the `pwd()` is the `/test` directory, and if not it changes to it.
+
+"""
+function checkDir()
+
+    files = readdir()
+    if !in("runtests.jl", files) && !in("io.jl", files) && !in("batch.jl", files) && !in("parallel.jl", files)
+        cd("test")
+    end
+end
