@@ -1,8 +1,12 @@
+
+cd(cwd)
+checkDir()
+
 #fix the seed
 Random.seed!(1)
 
 if nprocs() <= 2
-p = addprocs(2)
+    p = addprocs(2)
 end
 @everywhere using DistributedArrays
 @everywhere using GigaSOM
@@ -21,7 +25,7 @@ for i in 1:n
     dfSom = vcat(dfSom, dfSom)
 end
 
-som2 = initGigaSOM(dfSom, 10, 10)
+@time som2 = initGigaSOM(dfSom, 10, 10)
 
 @testset "Dimensions - parallel" begin
     @test size(som2.codes) == (100,10)
@@ -61,3 +65,5 @@ winners = mapToGigaSOM(som2, dfSom)
     end
 
 end
+
+cd(cwd)
