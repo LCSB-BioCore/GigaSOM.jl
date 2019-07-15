@@ -80,3 +80,29 @@ CSV.write(genDataPath*"/daf.csv", daf.fcstable)
         end
     end
 end
+
+@testset "Checksums" begin
+    using SHA
+    cd(dataPath)
+    filesNames = readdir()
+    for f in filesNames
+        cs = bytes2hex(sha256(f))
+        csFile = open(cwd*"/checkSums/"*f*".txt", "r")
+        csTest = readlines(csFile)
+        @test cs == csTest[1]
+        close(csFile)
+    end
+end
+
+
+
+# #Create checksums files for testing
+# using SHA
+# cd(dataPath)
+# filesNames = readdir()
+# for f in filesNames
+#     cs = bytes2hex(sha256(f))
+#     list = open(cwd*"/checkSums/"*f*".txt", "w")
+#     println(list, cs)
+#     close(list)
+# end
