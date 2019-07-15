@@ -10,6 +10,8 @@ on the existing algorithm, by implementing parallel computing with stable and
 robust mathematical models that would run with an HPC cluster, allowing us to
 run cytometry datasets as big as 500 million cells.
 
+![GigaSOM](assets/gigasomlogotransp.ico)
+
 ## Flow Cytometry
 
 Immunology is a very important branch of the medical and biological sciences and
@@ -30,6 +32,9 @@ and allowing the simultaneous quantification of 40+ protein parameters within ea
 The ability of flow cytometry and mass cytometry to analyse individual cells at high-throughput
 scales makes them ideal for multi-parameter cell analysis and high-speed sorting. [[4]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4860251/)
 
+![FlowCytometry](assets/flowcytometry.png)\
+[https://www.creative-diagnostics.com/flow-cytometry-guide.htm](https://www.creative-diagnostics.com/flow-cytometry-guide.htm)
+
 ## Self-organising maps (SOMs)
 
 Self-organising maps (also referred to as SOMs or *Kohonen* maps) are
@@ -47,6 +52,9 @@ function, whilst the neighborhood nodes are also adjusted closer to the BMU. Thi
 repeated for each  row in the complete dataset. After each iteration (epoch) the radius of the
 neighborhood function is reduced. After n epochs, clusters of nodes should have formed and as a
 final step, consensus cluster is used to reduce the data (SOM nodes) into m clusters. [[5]](https://ieeexplore.ieee.org/document/58325)
+
+![SOMs](assets/soms.png)\
+[http://mnemstudio.org/neural-networks-kohonen-self-organizing-maps.htm](http://mnemstudio.org/neural-networks-kohonen-self-organizing-maps.htm)
 
 ## Implementation
 
@@ -79,3 +87,6 @@ and then each process independently tries to estimate the same parameters and th
 exchange their estimates with each other to come up with the right estimate.
 On this project, we use the Data Parallelism approaches because our nodes grid
 is too small for the Model Parallelism approach.
+
+![parallel](assets/parallel.png)\
+[https://www.slideshare.net/JunyoungPark22/common-design-for-distributed-machine-learning](https://www.slideshare.net/JunyoungPark22/common-design-for-distributed-machine-learning)
