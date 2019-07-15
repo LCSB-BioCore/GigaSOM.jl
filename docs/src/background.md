@@ -32,7 +32,8 @@ and allowing the simultaneous quantification of 40+ protein parameters within ea
 The ability of flow cytometry and mass cytometry to analyse individual cells at high-throughput
 scales makes them ideal for multi-parameter cell analysis and high-speed sorting. [[4]](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4860251/)
 
-![FlowCytometry](assets/flowcytometry.png)
+![FlowCytometry](assets/flowcytometry.png)\
+[https://www.creative-diagnostics.com/flow-cytometry-guide.htm](https://www.creative-diagnostics.com/flow-cytometry-guide.htm)
 
 ## Self-organising maps (SOMs)
 
@@ -52,7 +53,8 @@ repeated for each  row in the complete dataset. After each iteration (epoch) the
 neighborhood function is reduced. After n epochs, clusters of nodes should have formed and as a
 final step, consensus cluster is used to reduce the data (SOM nodes) into m clusters. [[5]](https://ieeexplore.ieee.org/document/58325)
 
-![SOMs](assets/soms.png)
+![SOMs](assets/soms.png)\
+[http://mnemstudio.org/neural-networks-kohonen-self-organizing-maps.htm](http://mnemstudio.org/neural-networks-kohonen-self-organizing-maps.htm)
 
 ## Implementation
 
@@ -86,4 +88,5 @@ exchange their estimates with each other to come up with the right estimate.
 On this project, we use the Data Parallelism approaches because our nodes grid
 is too small for the Model Parallelism approach.
 
-![parallel](assets/parallel.png)
+![parallel](assets/parallel.png)\
+[https://www.slideshare.net/JunyoungPark22/common-design-for-distributed-machine-learning](https://www.slideshare.net/JunyoungPark22/common-design-for-distributed-machine-learning)
