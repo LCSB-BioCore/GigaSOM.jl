@@ -1,4 +1,4 @@
-using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed, SHA
+using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed, SHA, JSON
 
 
 owd = pwd()
