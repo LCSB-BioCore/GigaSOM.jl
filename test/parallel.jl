@@ -25,7 +25,7 @@ for i in 1:n
     dfSom = vcat(dfSom, dfSom)
 end
 
-@time som2 = initGigaSOM(dfSom, 10, 10)
+som2 = initGigaSOM(dfSom, 10, 10)
 
 @testset "Dimensions - parallel" begin
     @test size(som2.codes) == (100,10)
