@@ -352,7 +352,7 @@ Checks if the `pwd()` is the `/test` directory, and if not it changes to it.
 function checkDir()
 
     files = readdir()
-    if !in("runtests.jl", files) && !in("io.jl", files) && !in("batch.jl", files) && !in("parallel.jl", files)
+    if !in("runtests.jl", files)
         cd("test")
     end
 end
