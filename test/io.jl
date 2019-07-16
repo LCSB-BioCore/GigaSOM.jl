@@ -86,13 +86,23 @@ end
 @testset "Checksums" begin
     cd(dataPath)
     filesNames = readdir()
+    csDict = Dict()
     for f in filesNames
         cs = bytes2hex(sha256(f))
-        csFile = open(cwd*"/checkSums/"*f*".txt", "r")
-        csTest = readlines(csFile)
-        @test cs == csTest[1]
-        close(csFile)
+        csDict[f] = cs
     end
+    cd(cwd*"/checkSums")
+    csTest = JSON.parsefile("csTest.json")
+    @test csDict == csTest
+    cd(cwd)
 end
 
 cd(cwd)
+
+
+# #creates JSON file for checksums test
+# csTest = JSON.json(csDict)
+# cd(cwd*"/checkSums")
+# open("csTest.json","w") do f
+#     write(f, csTest)
+# end
