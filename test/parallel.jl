@@ -1,5 +1,4 @@
 
-cd(cwd)
 checkDir()
 
 #fix the seed
@@ -66,4 +65,4 @@ winners = mapToGigaSOM(som2, dfSom)
 
 end
 
-cd(cwd)
+rmprocs(workers());
