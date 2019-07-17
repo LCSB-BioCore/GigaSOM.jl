@@ -42,5 +42,32 @@ Alternatively, you can use the package manager by hitting `]`:
 ## How to contribute
 
 If you want to contribute to the `GigaSOM` package, please fork the present repository and create a new branch from the `develop` branch.
+There are 2 ways that you can develop the package:
 
-Then, in order to develop the package locally and test it,
+### Way 1: clone and activate
+
+You can do this as follows from the command line:
+```bash
+$ git clone git@github.com:yourUsername/GigaSOM.jl.git GigaSOM.jl
+$ cd GigaSOM.jl
+$ git checkout -b yourNewBranch origin/develop
+```
+where `yourUsername` is your Github username and `yourNewBranch` is the name of a new branch.
+
+Then, in order to develop the package, you can install your cloned version as follows (make sure you are in the `GigaSOM.jl` directory):
+```julia
+(v1.1) pkg> add .
+```
+This adds the `GigaSOM.jl` package and all its dependencies. You can verify that the installation worked by typing:
+```julia
+(v1.1) pkg> status
+```
+If everything went smoothly, this should print something similar to:
+```julia
+(v1.1) pkg> status
+    Status `~/.julia/environments/v1.1/Project.toml`
+  [a03a9c34] GigaSOM v0.0.5 #yourNewBranch (.)
+```
+Now, you can readily start using `GigaSOM`.
+
+### Way 2: Use the Julia package manager
