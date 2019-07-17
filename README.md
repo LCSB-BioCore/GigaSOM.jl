@@ -68,6 +68,16 @@ If everything went smoothly, this should print something similar to:
     Status `~/.julia/environments/v1.1/Project.toml`
   [a03a9c34] GigaSOM v0.0.5 #yourNewBranch (.)
 ```
-Now, you can readily start using `GigaSOM`.
+Now, you can readily start using the `GigaSOM` module.
+
+:warning: Please note that you cannot use the dependencies of GigaSOM directly, unless they are installed separately or the environment has been activated:
+```
+(v1.1) pkg> activate .
+```
+Now, the environment is activated (you can see it with the prompt change `(GigaSOM) pkg>`). Now, you can use the dependency. For instance:
+```julia
+julia> using DataFrames
+```
+:warning: If you do not  `activate` the environment before using any of the dependencies, you will see a red error messages prompting you to install the dependency explicity.
 
 ### Way 2: Use the Julia package manager
