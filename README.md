@@ -40,7 +40,7 @@ Alternatively, you can use the package manager by hitting `]`:
 ```
 
 :warning: It is not advised to run indivual test files separately without expliciting activating the environment and loading the dependencies.
-If this is required for debugging purposes, please run the commands of the `test/runtests.jl` file sequentially.
+If this is required for debugging purposes, please activate the environment first and run the commands of the `test/runtests.jl` file sequentially.
 
 
 ## How to contribute
