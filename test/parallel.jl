@@ -65,4 +65,4 @@ winners = mapToGigaSOM(som2, dfSom)
 
 end
 
-rmprocs(workers());
+rmprocs(workers())
