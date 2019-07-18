@@ -43,12 +43,12 @@ Alternatively, you can use the package manager by hitting `]`:
 If this is required for debugging purposes, please activate the environment first and run the commands of the `test/runtests.jl` file sequentially.
 
 
-## How to contribute
+# How to contribute/develop GigaSOM
 
 If you want to contribute to the `GigaSOM` package, please fork the present repository and create a new branch from the `develop` branch.
 There are 2 ways that you can develop the package:
 
-### Way 1: clone and activate
+### Option 1: clone the fork
 
 You can do this as follows from the command line:
 
@@ -97,7 +97,7 @@ julia> using DataFrames
 
 :warning: If you do not  `activate` the environment before using any of the dependencies, you will see a red error messages prompting you to install the dependency explicity.
 
-### Way 2: Use the Julia package manager
+### Option 2: Use the Julia package manager
 
 When you are used to using the  Julia package manager for developing or contributing to packages, you can type:
 
@@ -115,7 +115,15 @@ This will install the `GigaSOM` package locally and check it out for development
 
 The default location of the package is `~/.julia/dev/GigaSOM`.
 
-You can then set your remote and checkout a branch:
+You can then set your remote by:
+
+```bash
+$ cd ~/.julia/dev/GigaSOM
+$ git remote rename origin upstream # renames the origin as upstream
+$ git remote add origin git@github.com:yourUsername/GigaSOM.jl.git
+```
+
+where `yourUsername` is your Github username. Then, checkout a branch `yourNewBranch`:
 
 ```bash
 $ cd ~/.julia/dev/GigaSOM
