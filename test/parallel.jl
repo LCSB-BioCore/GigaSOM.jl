@@ -2,7 +2,7 @@
 Random.seed!(1)
 
 if nprocs() <= 2
-p = addprocs(2)
+    p = addprocs(2)
 end
 @everywhere using DistributedArrays
 @everywhere using GigaSOM
@@ -34,6 +34,7 @@ som2 = trainGigaSOM(som2, dfSom, epochs = 2, r = 6.0)
 
 winners = mapToGigaSOM(som2, dfSom)
 
+#test parallel
 @testset "Parallel" begin
     codes = som2.codes
     @test size(codes) == (100,10)
@@ -49,11 +50,13 @@ winners = mapToGigaSOM(som2, dfSom)
 
     # load the generated data
     parallelDfCodes = CSV.File(genDataPath*"/parallelDfCodes.csv") |> DataFrame
+    parallelDfCodesTest = first(parallelDfCodes, 10)
     parallelWinners = CSV.File(genDataPath*"/parallelWinners.csv") |> DataFrame
+    parallelWinnersTest = first(parallelWinners, 10)
 
     # test the generated data against the reference data
-    @test refParallelWinners == parallelWinners
-    @test refParallelDfCodes == parallelDfCodes
+    @test refParallelWinners == parallelWinnersTest
+    @test refParallelDfCodes == parallelDfCodesTest
 
     #test parallel
     for (i, j) in zip(parallelDfCodes[:,1], refParallelDfCodes[:,1])
