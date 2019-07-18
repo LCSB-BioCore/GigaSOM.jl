@@ -1,7 +1,6 @@
 
-cd(cwd)
 checkDir()
-
+cwd = pwd()
 #fix the seed
 Random.seed!(1)
 
@@ -49,4 +48,4 @@ winners = mapToGigaSOM(som2, dfSom)
     @test refBatchWinners == batchWinnersTest
 end
 
-cd(cwd)
+cd(cdw)
