@@ -1,5 +1,6 @@
 
 checkDir()
+cdw = pwd()
 
 #fix the seed
 Random.seed!(1)
@@ -66,3 +67,5 @@ winners = mapToGigaSOM(som2, dfSom)
 end
 
 rmprocs(workers())
+
+cd(cdw)
