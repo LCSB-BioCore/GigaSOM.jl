@@ -16,6 +16,8 @@
 
 Once `julia` has been installed, follow [these instructions](https://docs.julialang.org/en/v1/manual/getting-started/) to get started.
 
+:bulb: If you are a complete beginner with Julia, you can follow an extensive tutorial [here]. Primarily, you should familiarize yourself with the [Julia package manager](https://julialang.github.io/Pkg.jl/v1/getting-started/).
+
 ## Installation
 
 At the Julia prompt, add the `GigaSOM` package:
@@ -50,12 +52,15 @@ Alternatively, you can use the package manager by hitting `]`:
 If this is required for debugging purposes, please activate the environment first and run the commands of the `test/runtests.jl` file sequentially.
 
 
-# How to contribute/develop GigaSOM
+# How to contribute to/develop GigaSOM
 
-If you want to contribute to the `GigaSOM` package, please fork the present repository and create a new branch from the `develop` branch.
-There are 2 ways that you can develop the package:
+If you want to contribute to the `GigaSOM` package, please fork the present repository. Instructions how to this can be found [here](https://help.github.com/en/articles/fork-a-repo).
 
-### Option 1: clone the fork
+## Step 1: Retrieve a local version of GigaSOM
+
+There are 2 ways that you can retrieve a local copy of the package: one is to manually clone the forked repository, and the second one is to use the intergrated Julia package manager.
+
+### Option 1: Manually clone the fork
 
 You can do this as follows from the command line:
 
@@ -87,22 +92,11 @@ If everything went smoothly, this should print something similar to:
   [a03a9c34] GigaSOM v0.0.5 #yourNewBranch (.)
 ```
 
-Now, you can readily start using the `GigaSOM` module.
-
-:warning: Please note that you cannot use the dependencies of GigaSOM directly, unless they are installed separately or the environment has been activated:
+Now, you can readily start using the `GigaSOM` module:
 
 ```julia
-(v1.1) pkg> activate .
-(GigaSOM) pkg> instantiate
+julia> using GigaSOM
 ```
-
-Now, the environment is activated (you can see it with the prompt change `(GigaSOM) pkg>`). Now, you can use the dependency. For instance:
-
-```julia
-julia> using DataFrames
-```
-
-:warning: If you do not  `activate` the environment before using any of the dependencies, you will see a red error messages prompting you to install the dependency explicity.
 
 ### Option 2: Use the Julia package manager
 
@@ -149,9 +143,19 @@ After making changes, precompile the package:
 (v1.1) pkg> precompile
 ```
 
-You can activate the environment by running:
+## Step 2: Activate GigaSOM
+
+:warning: Please note that you cannot use the dependencies of GigaSOM directly, unless they are installed separately or the environment has been activated:
 
 ```julia
-(v1.1) pkg> activate GigaSOM
+(v1.1) pkg> activate .
 (GigaSOM) pkg> instantiate
 ```
+
+Now, the environment is activated (you can see it with the prompt change `(GigaSOM) pkg>`). Now, you can use the dependency. For instance:
+
+```julia
+julia> using DataFrames
+```
+
+:warning: If you do not  `activate` the environment before using any of the dependencies, you will see a red error messages prompting you to install the dependency explicity.
