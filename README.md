@@ -86,6 +86,7 @@ Now, you can readily start using the `GigaSOM` module.
 
 ```julia
 (v1.1) pkg> activate .
+(GigaSOM) pkg> instantiate
 ```
 
 Now, the environment is activated (you can see it with the prompt change `(GigaSOM) pkg>`). Now, you can use the dependency. For instance:
@@ -97,3 +98,45 @@ julia> using DataFrames
 :warning: If you do not  `activate` the environment before using any of the dependencies, you will see a red error messages prompting you to install the dependency explicity.
 
 ### Way 2: Use the Julia package manager
+
+When you are used to using the  Julia package manager for developing or contributing to packages, you can type:
+
+```julia
+(v1.1) pkg> dev GigaSOM
+```
+
+This will install the `GigaSOM` package locally and check it out for development. You can check the location of the package with:
+
+```julia
+(v1.1) pkg> status
+    Status `~/.julia/environments/v1.1/Project.toml`
+  [a03a9c34] GigaSOM v0.0.5 [`~/.julia/dev/GigaSOM`]
+```
+
+The default location of the package is `~/.julia/dev/GigaSOM`.
+
+You can then set your remote and checkout a branch:
+
+```bash
+$ cd ~/.julia/dev/GigaSOM
+$ git checkout -b yourNewBranch origin/develop
+```
+
+Then, you can readily use the `GigaSOM` package:
+
+```julia
+julia> using GigaSOM
+```
+
+After making changes, precompile the package:
+
+```julia
+(v1.1) pkg> precompile
+```
+
+You can activate the environment by running:
+
+```julia
+(v1.1) pkg> activate GigaSOM
+(GigaSOM) pkg> instantiate
+```
