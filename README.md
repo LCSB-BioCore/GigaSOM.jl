@@ -9,6 +9,13 @@
 
 # How to get started
 
+## Prerequisites
+
+- Use Linux (Debian and centOS), macOS X, or Windows 10 as your operating system. `GigaSOM` has been tested on these systems.
+- In order to use `GigaSOM`, you need to install Julia 1.0 or higher. You can find the download and installation instructions for Julia [here](https://julialang.org/downloads/).
+
+Once `julia` has been installed, follow [these instructions](https://docs.julialang.org/en/v1/manual/getting-started/) to get started.
+
 ## Installation
 
 At the Julia prompt, add the `GigaSOM` package:
@@ -23,7 +30,7 @@ Use the `GigaSOM` module by running:
 julia> using GigaSOM
 ```
 
-## Testing
+## Test the installation
 
 `GigaSOM` has been tested on Linux (Ubuntu and centOS), macOS, and Windows.
 
