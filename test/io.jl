@@ -98,11 +98,3 @@ end
 end
 
 cd(cwd)
-
-
-# #creates JSON file for checksums test
-# csTest = JSON.json(csDict)
-# cd(cwd*"/checkSums")
-# open("csTest.json","w") do f
-#     write(f, csTest)
-# end
