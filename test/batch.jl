@@ -30,14 +30,19 @@ winners = mapToGigaSOM(som2, dfSom)
     CSV.write(genDataPath*"/batchDfCodes.csv", dfCodes)
     CSV.write(genDataPath*"/batchWinners.csv", winners)
 
-
-    #preparing batch for testing
+    #load the ref data
     refBatchDfCodes = CSV.File(refDataPath*"/refBatchDfCodes.csv") |> DataFrame
     refBatchWinners = CSV.File(refDataPath*"/refBatchWinners.csv") |> DataFrame
+
+    #load the generated data
     batchDfCodes = CSV.File(genDataPath*"/batchDfCodes.csv") |> DataFrame
     batchDfCodesTest = first(batchDfCodes, 10)
     batchWinners = CSV.File(genDataPath*"/batchWinners.csv") |> DataFrame
     batchWinnersTest = first(batchWinners, 10)
+
+    # test the generated data against the reference data
+    @test refBatchWinners == batchWinnersTest
+    @test refBatchDfCodes == batchDfCodesTest
 
     for (i, j) in zip(batchDfCodesTest[:,1], refBatchDfCodes[:,1])
         @test isapprox(i, j; atol = 0.001)
