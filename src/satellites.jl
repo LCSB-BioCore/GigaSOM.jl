@@ -353,6 +353,6 @@ function checkDir()
 
     files = readdir()
     if !in("runtests.jl", files)
-        cd("test")
+        cd(dirname(dirname(pathof(GigaSOM))))
     end
 end
