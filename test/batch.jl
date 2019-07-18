@@ -47,5 +47,3 @@ winners = mapToGigaSOM(som2, dfSom)
     end
     @test refBatchWinners == batchWinnersTest
 end
-
-cd(cdw)
