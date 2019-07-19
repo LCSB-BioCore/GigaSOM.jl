@@ -61,7 +61,7 @@ julia> lineageMarkers, functionalMarkers = getMarkers(panel)
 Read FCS files `readFlowset()`:
 
 ```julia
-julia> fcsRaw = GigaSOM.FCSFiles.readFlowset(md.file_name)
+julia> fcsRaw = readFlowset(md.file_name)
 ```
 
 `readFlowset()` is a wrapper function around [FCSFiles.jl](https://github.com/tlnagy/FCSFiles.jl). Please note the current limitations

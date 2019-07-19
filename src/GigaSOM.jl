@@ -15,7 +15,6 @@ module GigaSOM
     using FileIO
     using DistributedArrays
     using XLSX
-    using FCSFiles
 
     include("structs.jl")
     include("core.jl")
