@@ -1,8 +1,12 @@
+
+checkDir()
+cdw = pwd()
+
 #fix the seed
 Random.seed!(1)
 
 if nprocs() <= 2
-p = addprocs(2)
+    p = addprocs(2)
 end
 @everywhere using DistributedArrays
 @everywhere using GigaSOM
@@ -61,3 +65,7 @@ winners = mapToGigaSOM(som2, dfSom)
     end
 
 end
+
+rmprocs(workers())
+
+cd(cdw)

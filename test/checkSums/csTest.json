@@ -1,0 +1,21 @@
+{
+    "PBMC8_30min_patient8_Reference.fcs":"97f6a1bcaecd8466a9be32c7ff459763fd353cd827d49bf6efe8e8f8604aa729",
+    "PBMC8_30min_patient2_BCR-XL.fcs":"9e2b10cba52f8e17e4a371c0bfddbb3d8a1ba150ff97fbfc9baf09a1ef7ba394",
+    "PBMC8_30min_patient5_BCR-XL.fcs":"2775ecc416e2d5cc58d1e06dc64565b0627c8936d5061305982834d711b8bb6a",
+    "PBMC8_30min_patient1_Reference.fcs":"9b8f9c551bec58610e002b96f99cae2f600752f23b8d708a052a5c43769d455b",
+    "PBMC8_30min_patient6_BCR-XL.fcs":"4253aab55983175c0c2f1fafbdc6a102b6268eb0b481a643fa9bbe9baeed2ea1",
+    "PBMC8_30min_patient4_Reference.fcs":"3f446fd46256df26a5e55e7d6e8e9c3da6566cd601ef4414732466d236c088e6",
+    "PBMC8_30min_patient3_BCR-XL.fcs":"f574d284a2da8a119eda5645985ef2b9e66bda00f4f304d70488f7f32f5c24c2",
+    "PBMC8_30min_patient7_Reference.fcs":"136d56ecbc59eeb08eb8f9d515fb9ad6e1d4e8794912876ef1d30e454374f9d4",
+    "PBMC8_30min_patient1_BCR-XL.fcs":"d1cffcd71374e661010d583795f2a4b9ff721169fac7cd549a687b62bc452648",
+    "PBMC8_30min_patient5_Reference.fcs":"e68a36966f76dacad6919bbc8312eaa09d279429ef21c61768cb2eb78ea9d645",
+    "PBMC8_30min_patient6_Reference.fcs":"4f981a9cde9d386d37ad66741491c3417c7064101a27452619389aa549a0d3c8",
+    "PBMC8_30min_patient7_BCR-XL.fcs":"e70f58f789ba0e036e229e620bdb400030664d5d08e9259e8571ba7c34a8c80f",
+    "PBMC8_panel.xlsx":"d49ad1d8ec338f60fc8d8af9d39cb0705b161ea1a3443a0501c0f674846a6936",
+    "PBMC8_30min_patient2_Reference.fcs":"59fc1b85be294a5b8d3399ef6010ee859130a06c06dd1f6c90ac236f40c0515f",
+    "PBMC8_fcs_files.zip":"95bccb858e4cfc62dfa47fa80475d0fb91685865217aa74eb6f5a955f4dd6ee7",
+    "PBMC8_30min_patient3_Reference.fcs":"ed60c687eae65747432dd2022492aa5be56862aa9944e8a45d41ce46dc934e6d",
+    "PBMC8_30min_patient8_BCR-XL.fcs":"f8bf7791ca707ce3247acf20823efc075a96afeb5a7864443662a51ee531eff5",
+    "PBMC8_30min_patient4_BCR-XL.fcs":"a2fdca39e51e0857f4555e7c570ef1eabf873b2e1291e022939d854d349722be",
+    "PBMC8_metadata.xlsx":"98fb1b9e40b4f96fff75e1ba0a8fe26c29bbcbf8ddf216e265a5844971f05946"
+}

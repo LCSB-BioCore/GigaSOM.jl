@@ -1,3 +1,6 @@
+
+checkDir()
+cwd = pwd()
 #fix the seed
 Random.seed!(1)
 

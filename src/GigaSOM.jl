@@ -50,7 +50,8 @@ module GigaSOM
     export #satellites
     cleanNames!,
     createDaFrame,
-    getMarkers
+    getMarkers,
+    checkDir
 
     export # plotting
         plotCounts,
