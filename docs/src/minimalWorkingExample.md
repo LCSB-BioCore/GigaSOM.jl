@@ -82,14 +82,26 @@ julia> daf = createDaFrame(fcsRaw, md, panel)
 
 ## Creating a Self Organizing MAP (SOM)
 
-The main advantage of `GigaSOM.jl` is the capability of parallel processing. Without
-the explicit declaration of multiple *workers* GigaSOM will train the som grid in single core
-modus. Therefore we will add some workers and make sure that some packages are accessible to
+The main advantage of `GigaSOM.jl` is the capability of parallel processing.
+In order to activate this dependency, please activate the GigaSOM environment:
+
+```julia
+julia> import Pkg; Pkg.activate("GigaSOM")
+```
+
+Alternatively, you can also activate the `GigaSOM` environment by typing `]`:
+
+```julia
+v(1.1) pkg> activate GigaSOM
+```
+
+Without the explicit declaration of multiple workers, `GigaSOM` will train the SOM grid on a single
+core. Therefore, we will add some workers and make sure that `GigaSOM` is accessible to
 all the workers:
 
 ```julia
 julia> using Distributed
-       addprocs(2)
+       addprocs(2) # the number of workers can be higher than 2
        @everywhere using GigaSOM
 ```
 
