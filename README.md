@@ -16,7 +16,9 @@
 
 Once `julia` has been installed, follow [these instructions](https://docs.julialang.org/en/v1/manual/getting-started/) to get started.
 
-:bulb: If you are a complete beginner with Julia, you can follow an extensive tutorial [here]. Primarily, you should familiarize yourself with the [Julia package manager](https://julialang.github.io/Pkg.jl/v1/getting-started/).
+:bulb: If you are a complete beginner with Julia, it is advised that you familiarize youself
+with the [full documentation](https://docs.julialang.org). You should also have a
+closer look at the [Julia package manager](https://julialang.github.io/Pkg.jl/v1/getting-started/).
 
 ## Installation
 
