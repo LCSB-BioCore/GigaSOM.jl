@@ -52,7 +52,7 @@ end
 
 
 """
-    trainGigaSOM(som::Som, train::Any, kernelFun = gaussianKernel,
+    trainGigaSOM(som::Som, train::DataFrame, kernelFun = gaussianKernel,
                         r = 0.0, epochs = 10)
 
 # Arguments:
@@ -68,7 +68,7 @@ can be provided to modify the distance-dependent training. The function must fit
 to the signature fun(x, r) where x is an arbitrary distance and r is a parameter
 controlling the function and the return value is between 0.0 and 1.0.
 """
-function trainGigaSOM(som::Som, train::Any; kernelFun::Function = gaussianKernel,
+function trainGigaSOM(som::Som, train::DataFrame; kernelFun::Function = gaussianKernel,
                     r = 0.0, epochs = 10)
 
     train = convertTrainingData(train)
@@ -151,11 +151,11 @@ vectors and the adjustment in radius after each epoch.
 - `r`: training radius
 - `toroidal`: if true, the SOM is toroidal.
 """
-function doEpoch(x::Array{Float64}, codes::Array{Float64}, dm::Array{Float64},
+function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, dm::Array{Float64, 2},
                 kernelFun::Function, r::Number, toroidal::Bool)
 
-     nRows = size(x, 1)
-     nCodes = size(codes, 1)
+     nRows::Int64 = size(x, 1)
+     nCodes::Int64 = size(codes, 1)
 
      # initialise numerator and denominator with 0's
      sumNumerator = zeros(Float64, size(codes))
@@ -163,20 +163,23 @@ function doEpoch(x::Array{Float64}, codes::Array{Float64}, dm::Array{Float64},
 
      # for each sample in dataset / trainingsset
      for s in 1:nRows
+
          sample = vec(x[s, : ])
-         bmuIdx, bmuVec = findBmu(codes, sample)
+         bmuIdx = findBmu(codes, sample)
 
          # for each node in codebook get distances to bmu and multiply it
-         # with sample row: x(i)
-         for i in 1:nCodes
-             dist = kernelFun(dm[bmuIdx, i], r)
+         dist = kernelFun(dm[bmuIdx, :], r)
 
+         # doing col wise update of the numerator
+         for i in 1:size(sumNumerator, 2)
              @inbounds @views begin
-                 sumNumerator[i,:] .+= sample .* dist
+                 sumNumerator[:,i] .+= dist .* sample[i]
              end
-             sumDenominator[i] += dist
+
          end
+         sumDenominator += dist
      end
+
      return sumNumerator, sumDenominator
 end
 
@@ -210,8 +213,6 @@ function mapToGigaSOM(som::Som, data::DataFrame)
         # distribution across workers
         R = Array{Future}(undef,nWorkers, 1)
          @sync for p in workers()
-
-             println("worker: $p")
              @async R[p] = @spawnat p begin
                 visual(som.codes, localpart(dData))
              end
@@ -228,8 +229,5 @@ function mapToGigaSOM(som::Som, data::DataFrame)
         vis = visual(som.codes, data)
     end
 
-    x = [som.indices[i,:X] for i in vis]
-    y = [som.indices[i,:Y] for i in vis]
-
-    return DataFrame(X = x, Y = y, index = vis)
+    return DataFrame(index = vis)
 end

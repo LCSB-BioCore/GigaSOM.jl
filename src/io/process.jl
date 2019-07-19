@@ -19,9 +19,7 @@ function transformData(flowframe, method = "asinh", cofactor = 5)
         fcsDf = flowframe[k]
         colnames = names(fcsDf) # keep the column names
         dMatrix = Matrix(fcsDf)
-        # singleFcs["data"] = [(asinh(x)/cofactor) for x in dMatrix]
-        dMatrix = [(asinh(x)/cofactor) for x in dMatrix]
-
+        dMatrix = asinh.(dMatrix / cofactor)
         ddf = DataFrame(dMatrix)
 
         names!(ddf, Symbol.(colnames))

@@ -29,7 +29,7 @@ end
 
 
 """
-    gaussianKernel(x::Float64, r::Float64)::Float64
+    gaussianKernel(x::Array{Float64, 1}, r::Float64)::Array{Float64, 1}
 
 Return Gaussian(x) for μ=0.0 and σ = r/3.
 (a value of σ = r/3 makes the training results comparable between different kernels
@@ -38,14 +38,14 @@ for same values of r).
 # Arguments
 
 """
-function gaussianKernel(x::Float64, r::Float64)::Float64
+function gaussianKernel(x::Array{Float64, 1}, r::Float64)::Array{Float64, 1}
 
     return Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
 end
 
 
 """
-    distMatrix(grid::Array, toroidal::Bool)
+    distMatrix(grid::Array, toroidal::Bool)::Array{Float64, 2}
 
 Return the distance matrix for a non-toroidal or toroidal SOM.
 
@@ -54,7 +54,7 @@ Return the distance matrix for a non-toroidal or toroidal SOM.
 with x-coordinates in 1st column and y-coordinates in 2nd column.
 - `toroidal`: true for a toroidal SOM.
 """
-function distMatrix(grid::Array, toroidal::Bool)
+function distMatrix(grid::Array, toroidal::Bool)::Array{Float64, 2}
 
     X = 1
     Y = 2
@@ -118,7 +118,7 @@ end
 
 
 """
-    visual(codes, x)
+    visual(codes::Array{Float64,2}, x::Array{Float64,2})
 
 Return the index of the winner neuron for each training pattern
 in x (row-wise).
@@ -132,8 +132,7 @@ function visual(codes::Array{Float64,2}, x::Array{Float64,2})
     vis = zeros(Int, size(x,1))
     for i in 1:size(x,1)
 
-        (vis[i], ) = findBmu(codes, x[i, : ])
-
+        vis[i] = findBmu(codes, x[i, : ])
     end
 
     return vis
@@ -219,11 +218,11 @@ end
 
 
 """
-    findBmu(codes, sample)
+    findBmu(codes::Array{Float64,2}, sample::Array{Float64,1})::Int64
 
 Find the best matching unit for a given vector, row_t, in the SOM
 
-Returns: A (bmu, bmuIdx) tuple where bmu is the high-dimensional
+Returns: Index of bmu
 Best Matching Unit and bmuIdx is the index of this vector in the SOM
 
 # Arguments
@@ -231,29 +230,17 @@ Best Matching Unit and bmuIdx is the index of this vector in the SOM
 - `sample`: row in dataset / trainingsset
 
 """
-function findBmu(codes::Array{Float64,2}, sample::Array{Float64,1})
+function findBmu(codes::Array{Float64,2}, sample::Array{Float64,1})::Int64
 
-    dist = floatmax()
-    winner = 1
-    n = size(codes,1)
+    x = Distances.colwise(Euclidean(), sample, codes')
 
-    for i in 1:n
+    return argmin(x)
 
-        d::Float64 = euclidean(sample, codes[i,:])
-
-        if (d < dist)
-            dist = d
-            winner = i
-        end
-    end
-    # get the code vector of the bmu
-    bmuVec = codes[winner,:]
-    return winner, bmuVec
 end
 
 
 """
-    normTrainData(x::DataFrame, normParams::DataFrame)
+    normTrainData(x::Array{Float64,2}, normParams)
 
 Normalise every column of training data with the params.
 
@@ -272,7 +259,7 @@ end
 
 
 """
-    normTrainData(train::DataFrame, norm::Symbol)
+    normTrainData(train::Array{Float64, 2}, norm::Symbol)
 
 Normalise every column of training data.
 
@@ -313,7 +300,7 @@ end
 
 
 """
-    convertTrainingData(data)
+    convertTrainingData(data)::Array{Float64,2}
 
 Converts the training data to an Array of type Float64.
 
