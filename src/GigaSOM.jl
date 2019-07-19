@@ -14,16 +14,7 @@ module GigaSOM
     using Distributions
     using FileIO
     using DistributedArrays
-
-    # using MultivariateStats
-    # using Statistics
-    # using StatsBase
-    # using StatsPlots
-    # using FCSFiles
-    # using JuliaInterpreter
-    # using LinearAlgebra
-    # using ProgressMeter
-    # using TensorToolbox
+    using XLSX
 
     include("structs.jl")
     include("core.jl")
