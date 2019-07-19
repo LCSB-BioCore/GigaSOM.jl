@@ -9,7 +9,7 @@ Manifest.toml
 /docs/build/
 docs/site/
 /docs/Manifest.toml
-*.ipynb
+*.ipynb_checkpoints
 *.csv
 !refBatchDfCodes.csv
 !refBatchWinners.csv
