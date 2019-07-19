@@ -14,6 +14,7 @@ module GigaSOM
     using Distributions
     using FileIO
     using DistributedArrays
+    using XLSX
 
     # using MultivariateStats
     # using Statistics
