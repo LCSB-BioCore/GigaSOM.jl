@@ -14,7 +14,9 @@
 - Use Linux (Debian and centOS), macOS X, or Windows 10 as your operating system. `GigaSOM` has been tested on these systems.
 - In order to use `GigaSOM`, you need to install Julia 1.0 or higher. You can find the download and installation instructions for Julia [here](https://julialang.org/downloads/).
 
-Once `julia` has been installed, follow [these instructions](https://docs.julialang.org/en/v1/manual/getting-started/) to get started.
+Once `julia` has been installed, follow [these
+instructions](https://docs.julialang.org/en/v1/manual/getting-started/) to get
+started.
 
 :bulb: If you are a complete beginner with Julia, it is advised that you familiarize youself
 with the [full documentation](https://docs.julialang.org). You should also have a
@@ -80,13 +82,15 @@ $ git checkout -b yourNewBranch origin/develop
 
 where `yourUsername` is your Github username and `yourNewBranch` is the name of a new branch.
 
-Then, in order to develop the package, you can install your cloned version as follows (make sure you are in the `GigaSOM.jl` directory):
+Then, in order to develop the package, you can install your cloned version as
+follows (make sure you are in the `GigaSOM.jl` directory):
 
 ```julia
 (v1.1) pkg> add .
 ```
 
-This adds the `GigaSOM.jl` package and all its dependencies. You can verify that the installation worked by typing:
+This adds the `GigaSOM.jl` package and all its dependencies. You can verify
+that the installation worked by typing:
 
 ```julia
 (v1.1) pkg> status
@@ -108,13 +112,15 @@ julia> using GigaSOM
 
 ### Option 2: Use the Julia package manager
 
-When you are used to using the  Julia package manager for developing or contributing to packages, you can type:
+When you are used to using the Julia package manager for developing or
+contributing to packages, you can type:
 
 ```julia
 (v1.1) pkg> dev GigaSOM
 ```
 
-This will install the `GigaSOM` package locally and check it out for development. You can check the location of the package with:
+This will install the `GigaSOM` package locally and check it out for
+development. You can check the location of the package with:
 
 ```julia
 (v1.1) pkg> status
@@ -124,7 +130,7 @@ This will install the `GigaSOM` package locally and check it out for development
 
 The default location of the package is `~/.julia/dev/GigaSOM`.
 
-You can then set your remote by:
+You can then set your remote by executing these commands in a regular shell:
 
 ```bash
 $ cd ~/.julia/dev/GigaSOM
@@ -153,14 +159,16 @@ After making changes, precompile the package:
 
 ## Step 2: Activate GigaSOM
 
-:warning: Please note that you cannot use the dependencies of GigaSOM directly, unless they are installed separately or the environment has been activated:
+:warning: Please note that you cannot use the dependencies of GigaSOM directly,
+unless they are installed separately or the environment has been activated:
 
 ```julia
 (v1.1) pkg> activate .
 (GigaSOM) pkg> instantiate
 ```
 
-Now, the environment is activated (you can see it with the prompt change `(GigaSOM) pkg>`). Now, you can use the dependency. For instance:
+Now, the environment is activated (you can see it with the prompt change
+`(GigaSOM) pkg>`). Now, you can use the dependency. For instance:
 
 ```julia
 julia> using DataFrames
