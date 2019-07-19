@@ -12,6 +12,12 @@ mononuclear cells (PBMCs) in unstimulated and stimulated conditions for 8 health
     - PBMC8_panel.xlsx (with Antigen name and columns for lineage markers and functional markers)
     - PBMC8_metadata.xlsx (file names, sample id, condition and patient id)
 
+Before running this minimum working example, make sure to use the package:
+
+```julia
+julia> using GigaSOM
+```
+
 ## Input and output
 
 The example data can be downloaded from [imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/](http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/)
@@ -55,7 +61,7 @@ julia> lineageMarkers, functionalMarkers = getMarkers(panel)
 Read FCS files `readFlowset()`:
 
 ```julia
-julia> fcsRaw = readFlowset(md.file_name)
+julia> fcsRaw = GigaSOM.FCSFiles.readFlowset(md.file_name)
 ```
 
 `readFlowset()` is a wrapper function around [FCSFiles.jl](https://github.com/tlnagy/FCSFiles.jl). Please note the current limitations
