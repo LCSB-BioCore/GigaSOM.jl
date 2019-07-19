@@ -66,7 +66,9 @@ There are two ways that you can retrieve a local copy of the package: one is to
 manually clone the forked repository, and the second one is to use the
 intergrated Julia package manager.
 
-### Option 1: Manually clone the fork
+### Option 1: Manually clone your fork
+
+:warning: Please make sure to have forked the repository as described above.
 
 You can do this as follows from the command line:
 
