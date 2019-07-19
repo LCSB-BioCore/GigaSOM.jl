@@ -136,9 +136,14 @@ You can then set your remote by executing these commands in a regular shell:
 $ cd ~/.julia/dev/GigaSOM
 $ git remote rename origin upstream # renames the origin as upstream
 $ git remote add origin git@github.com:yourUsername/GigaSOM.jl.git
+$ git fetch origin
 ```
 
-where `yourUsername` is your Github username. Then, checkout a branch `yourNewBranch`:
+where `yourUsername` is your Github username.
+
+:warning: Please make sure that your fork exists under `github.com/yourUsername/GigaSOM.jl`.
+
+Then, checkout a branch `yourNewBranch`:
 
 ```bash
 $ cd ~/.julia/dev/GigaSOM
