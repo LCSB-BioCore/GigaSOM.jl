@@ -50,13 +50,15 @@ Alternatively, you can use the package manager by hitting `]`:
 (v1.1) pkg> test GigaSOM
 ```
 
-:warning: It is not advised to run indivual test files separately without expliciting activating the environment and loading the dependencies.
-If this is required for debugging purposes, please activate the environment first and run the commands of the `test/runtests.jl` file sequentially.
-
+:warning: It is not advised to run indivual test files separately without
+expliciting activating the environment and loading the dependencies.  If this
+is required for debugging purposes, please activate the environment first and
+run the commands of the `test/runtests.jl` file sequentially.
 
 # How to contribute to/develop GigaSOM
 
-If you want to contribute to the `GigaSOM` package, please fork the present repository. Instructions how to this can be found [here](https://help.github.com/en/articles/fork-a-repo).
+If you want to contribute to the `GigaSOM` package, please fork the present
+repository by following [these instructions](https://help.github.com/en/articles/fork-a-repo).
 
 ## Step 1: Retrieve a local version of GigaSOM
 
