@@ -62,7 +62,9 @@ repository by following [these instructions](https://help.github.com/en/articles
 
 ## Step 1: Retrieve a local version of GigaSOM
 
-There are 2 ways that you can retrieve a local copy of the package: one is to manually clone the forked repository, and the second one is to use the intergrated Julia package manager.
+There are two ways that you can retrieve a local copy of the package: one is to
+manually clone the forked repository, and the second one is to use the
+intergrated Julia package manager.
 
 ### Option 1: Manually clone the fork
 
