@@ -88,7 +88,8 @@ modus. Therefore we will add some workers and make sure that some packages are a
 all the workers:
 
 ```julia
-julia> addprocs(2)
+julia> using Distributed
+       addprocs(2)
        @everywhere using GigaSOM
 ```
 

@@ -10,7 +10,6 @@ module GigaSOM
     using CSV
     using DataFrames
     using Distances
-    using Distributed
     using Distributions
     using FileIO
     using DistributedArrays
