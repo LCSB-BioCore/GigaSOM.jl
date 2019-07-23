@@ -21,6 +21,6 @@ deploydocs(
     repo = "github.com/LCSB-BioCore/GigaSOM.jl.git",
     target = "build",
     branch = "gh-pages",
-    devbranch = "develop",
+    devbranch = "origin/develop",
     versions = "stable" => "v^",
     )
