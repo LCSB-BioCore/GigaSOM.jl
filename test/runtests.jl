@@ -1,47 +1,19 @@
-using GigaSOM
-using Test
-using Random
+using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed, SHA, JSON
 
-#fix the seed
-Random.seed!(1)
 
-include("Fcs_load_and_transform.jl")
+owd = pwd()
 
-#BATCH & PARALLEL
+checkDir()
 
-# only use lineage_markers for clustering
-(lineage_markers,)= getMarkers(panel)
+@testset "GigaSOM test suite" begin
+    #load and transform the .fcs data to be ready for computing
+    include("io.jl")
 
-cc = map(Symbol, lineage_markers)
+    #apply the batch GigaSOM algorithm to the data, train it and test it
+    include("batch.jl")
 
-df_som = daf.fcstable[:,cc]
-df_som_large = vcat(df_som,df_som)
-df_som_large = vcat(df_som_large, df_som)
-# topology is now always rectangular
+    #apply the parallel GigaSOM algorithm to the data, train it and test it
+    include("parallel.jl")
+end
 
-som2 = initSOM_parallel(df_som, 10, 10)
-# som2 = initSOM_parallel(df_som_large, 10, 10)
-
-# using batch som with epochs
-# @time som2 = trainSOM_parallel(som2, df_som, size(df_som)[1], epochs = 1)
-@time som2 = trainSOM_parallel(som2, df_som_large, size(df_som_large)[1], epochs = 1)
-
-@time mywinners = mapToSOM(som2, df_som)
-
-codes = som2.codes
-df_codes = DataFrame(codes)
-names!(df_codes, Symbol.(som2.colNames))
-CSV.write(gendatapath*"/batch_df_codes.csv", df_codes)
-CSV.write(gendatapath*"/batch_mywinners.csv", mywinners)
-
-refDatapath = cwd*"/refData"
-
-ref_batch_df_codes = CSV.File(refDatapath*"/ref_batch_df_codes.csv") |> DataFrame
-ref_batch_mywinners = CSV.File(refDatapath*"/ref_batch_mywinners.csv") |> DataFrame
-batch_df_codes_test = CSV.File(gendatapath*"/batch_df_codes.csv") |> DataFrame
-batch_df_codes_test = first(batch_df_codes_test, 10)
-batch_mywinners_test = CSV.File(gendatapath*"/batch_mywinners.csv") |> DataFrame
-batch_mywinners_test = first(batch_mywinners_test, 10)
-
-@test ref_batch_df_codes == batch_df_codes_test
-@test ref_batch_mywinners == batch_mywinners_test
+cd(owd)

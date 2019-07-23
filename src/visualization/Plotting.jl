@@ -1,9 +1,18 @@
-"barplot of cell counts per sample"
-function plotcounts(fcs_raw, md, group_by = "condition")
+"""
+    plotCounts(fcsRaw, md, group_by = "condition")
+
+Barplot showing the number of cells per sample, used as a guide to identify samples where not enough cells were assayed
+
+# Arguments:
+- `fcsRaw`: raw FCS data
+- `md`: Metadata table
+"""
+
+function plotCounts(fcsRaw, md, group_by = "condition")
 
     df_barplot = DataFrame(filename = String[], size = Int[], condition = String[])
 
-    for (k,v) in fcs_raw
+    for (k,v) in fcsRaw
         sid = md.sample_id[k .== md.file_name]
         # println(sid[1])
         condition = md.condition[k .== md.file_name]
@@ -28,7 +37,7 @@ function plotPCA(daf, md)
 
     T = convert(Matrix, dfall_median)
     samples_ids = T[:,1]
-    T_reshaped = permutedims(convert(Matrix{Float32}, T[:, 2:10]), [2, 1])
+    T_reshaped = permutedims(convert(Matrix{Float64}, T[:, 2:10]), [2, 1])
 
     my_pca = StatsBase.fit(MultivariateStats.PCA, T_reshaped)
 
