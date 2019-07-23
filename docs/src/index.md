@@ -16,8 +16,6 @@ using HPC and increase the maximum number of cells that can be processed simulta
 
 Check the [Background](@ref) section for some insights on the theory behind our package
 
-On the [Tutorial](@ref) section you can find a guide explaining how to get started on GigaSOM.jl.
-
 See the [Functions](@ref) section for the complete list of documented functions and types.
 
 ## Contents
