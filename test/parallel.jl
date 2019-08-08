@@ -34,7 +34,7 @@ som2 = initGigaSOM(dfSom, 10, 10)
     @test som2.numCodes == 100
 end
 
-som2 = trainGigaSOM(som2, dfSom, epochs = 2, r = 6.0)
+som2 = trainGigaSOM(som2, dfSom, epochs = 2, rStart = 6.0)
 
 winners = mapToGigaSOM(som2, dfSom)
 
