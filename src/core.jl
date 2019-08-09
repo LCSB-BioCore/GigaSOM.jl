@@ -102,13 +102,13 @@ function trainGigaSOM(som::Som, train::DataFrame; kernelFun::Function = gaussian
      if nWorkers > 1
          # distribution across workers
          R = Array{Future}(undef,nWorkers, 1)
-          @sync for p in workers()
-              @async R[p] = @spawnat p begin
+          @sync for (p, pid) in enumerate(workers())
+              @async R[p] = @spawnat pid begin
                  doEpoch(localpart(dTrain), codes, dm, kernelFun, r, false)
               end
           end
 
-          @sync for p in workers()
+          @sync for (p, pid) in enumerate(workers())
               tmp = fetch(R[p])
               globalSumNumerator += tmp[1]
               globalSumDenominator += tmp[2]
@@ -212,16 +212,14 @@ function mapToGigaSOM(som::Som, data::DataFrame)
     if nWorkers > 1
         # distribution across workers
         R = Array{Future}(undef,nWorkers, 1)
-         @sync for p in workers()
-             @async R[p] = @spawnat p begin
+         @sync for (p, pid) in enumerate(workers())
+             @async R[p] = @spawnat pid begin
                 visual(som.codes, localpart(dData))
              end
          end
 
-         @sync begin myworkers = workers()
-             sort!(myworkers)
-             println(myworkers)
-             for p in myworkers
+         @sync begin
+             for (p, pid) in enumerate(sort!(workers()))
                  append!(vis, fetch(R[p]))
              end
          end
