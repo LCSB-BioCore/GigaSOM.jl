@@ -69,7 +69,7 @@ to the signature fun(x, r) where x is an arbitrary distance and r is a parameter
 controlling the function and the return value is between 0.0 and 1.0.
 """
 function trainGigaSOM(som::Som, train::DataFrame; kernelFun::Function = gaussianKernel,
-                    rStart = 0.0, epochs = 10)
+                    rStart = 0.0, epochs = 10, decay = "linear")
 
     train = convertTrainingData(train)
 
@@ -79,7 +79,6 @@ function trainGigaSOM(som::Som, train::DataFrame; kernelFun::Function = gaussian
         @info "The radius has been determined automatically."
     end
 
-    timeConstant = epochs/log(rStart)
 	r = rStart
 
     dm = distMatrix(som.grid, som.toroidal)
@@ -118,7 +117,7 @@ function trainGigaSOM(som::Som, train::DataFrame; kernelFun::Function = gaussian
         globalSumDenominator += sumDenominator
      end
 
-	 r = getRadius(rStart, j, timeConstant)
+	 r = getRadius(rStart, j, decay, epochs)
 
      println("Radius: $r")
      codes = globalSumNumerator ./ globalSumDenominator
@@ -223,8 +222,29 @@ function mapToGigaSOM(som::Som, data::DataFrame)
     return DataFrame(index = vis)
 end
 
+"""
+    getRadius(initRadius::Float64, iteration::Int64, decay::String, epochs::Int64)
 
-function getRadius(initRadius::Float64, iteration::Int64, timeConstant::Float64)
+Return a new neighbourhood radius
 
-	return initRadius * exp(-iteration / timeConstant)
+# Arguments
+- `initRadius`: Initial Radius
+- `iteration`: Training iteration
+- `decay`: Linear of Exponential decay
+- `epochs`: Total number of epochs
+
+Data must have the same number of dimensions as the training dataset
+and will be normalised with the same parameters.
+"""
+function getRadius(initRadius::Float64, iteration::Int64, decay::String, epochs::Int64)
+
+	if decay == "linear"
+		# timeConstant is delta R in previous code
+		timeConstant = (initRadius - 1.0) / epochs
+		return initRadius - (iteration * timeConstant)
+	elseif decay == "exp"
+		timeConstant = epochs / log(initRadius)
+		return initRadius * exp(-iteration / timeConstant)
+	end
+
 end
