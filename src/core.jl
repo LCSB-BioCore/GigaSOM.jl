@@ -69,28 +69,23 @@ to the signature fun(x, r) where x is an arbitrary distance and r is a parameter
 controlling the function and the return value is between 0.0 and 1.0.
 """
 function trainGigaSOM(som::Som, train::DataFrame; kernelFun::Function = gaussianKernel,
-                    r = 0.0, epochs = 10)
+                    rStart = 0.0, epochs = 10, decay = "linear")
 
     train = convertTrainingData(train)
 
     # set default radius:
-    if r == 0.0
-        r = √(som.xdim^2 + som.ydim^2) / 2
+    if rStart == 0.0
+        rStart = √(som.xdim^2 + som.ydim^2) / 2
         @info "The radius has been determined automatically."
     end
+
+	r = rStart
 
     dm = distMatrix(som.grid, som.toroidal)
 
     codes = som.codes
     globalSumNumerator = zeros(Float64, size(codes))
     globalSumDenominator = zeros(Float64, size(codes)[1])
-
-    # linear decay
-    if r < 1.5
-        Δr = 0.0
-    else
-        Δr = (r-1.0) / epochs
-    end
 
     nWorkers = nprocs()
     dTrain = distribute(train)
@@ -122,10 +117,7 @@ function trainGigaSOM(som::Som, train::DataFrame; kernelFun::Function = gaussian
         globalSumDenominator += sumDenominator
      end
 
-     r -= Δr
-     if r < 0.0
-         r = 0.0
-     end
+	 r = getRadius(rStart, j, decay, epochs)
 
      println("Radius: $r")
      codes = globalSumNumerator ./ globalSumDenominator
@@ -228,4 +220,31 @@ function mapToGigaSOM(som::Som, data::DataFrame)
     end
 
     return DataFrame(index = vis)
+end
+
+"""
+    getRadius(initRadius::Float64, iteration::Int64, decay::String, epochs::Int64)
+
+Return a new neighbourhood radius
+
+# Arguments
+- `initRadius`: Initial Radius
+- `iteration`: Training iteration
+- `decay`: Linear of Exponential decay
+- `epochs`: Total number of epochs
+
+Data must have the same number of dimensions as the training dataset
+and will be normalised with the same parameters.
+"""
+function getRadius(initRadius::Float64, iteration::Int64, decay::String, epochs::Int64)
+
+	if decay == "linear"
+		# timeConstant is delta R in previous code
+		timeConstant = (initRadius - 1.0) / epochs
+		return initRadius - (iteration * timeConstant)
+	elseif decay == "exp"
+		timeConstant = epochs / log(initRadius)
+		return initRadius * exp(-iteration / timeConstant)
+	end
+
 end
