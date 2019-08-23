@@ -44,10 +44,10 @@ module GigaSOM
         readFlowset
 
     export #satellites
-    cleanNames!,
-    createDaFrame,
-    getMarkers,
-    checkDir
+        cleanNames!,
+        createDaFrame,
+        getMarkers,
+        checkDir
 
     export # plotting
         plotCounts,
