@@ -84,43 +84,44 @@ function trainGigaSOM(som::Som, train::DataFrame; kernelFun::Function = gaussian
     dm = distMatrix(som.grid, som.toroidal)
 
     codes = som.codes
-    globalSumNumerator = zeros(Float64, size(codes))
-    globalSumDenominator = zeros(Float64, size(codes)[1])
 
     nWorkers = nprocs()
     dTrain = distribute(train)
 
     for j in 1:epochs
 
-     println("Epoch: $j")
+		globalSumNumerator = zeros(Float64, size(codes))
+		globalSumDenominator = zeros(Float64, size(codes)[1])
 
-     if nWorkers > 1
-         # distribution across workers
-         R = Array{Future}(undef,nWorkers, 1)
-          @sync for (p, pid) in enumerate(workers())
-              @async R[p] = @spawnat pid begin
-                 doEpoch(localpart(dTrain), codes, dm, kernelFun, r, false)
-              end
-          end
+		println("Epoch: $j")
 
-          @sync for (p, pid) in enumerate(workers())
-              tmp = fetch(R[p])
-              globalSumNumerator += tmp[1]
-              globalSumDenominator += tmp[2]
-          end
-     else
-         # only batch mode
-         sumNumerator, sumDenominator = doEpoch(localpart(dTrain), codes, dm,
-                                                    kernelFun, r, false)
+		if nWorkers > 1
+			# distribution across workers
+			R = Array{Future}(undef,nWorkers, 1)
+			@sync for (p, pid) in enumerate(workers())
+			  @async R[p] = @spawnat pid begin
+			     doEpoch(localpart(dTrain), codes, dm, kernelFun, r, false)
+			  end
+			end
 
-        globalSumNumerator += sumNumerator
-        globalSumDenominator += sumDenominator
-     end
+			@sync for (p, pid) in enumerate(workers())
+			  tmp = fetch(R[p])
+			  globalSumNumerator += tmp[1]
+			  globalSumDenominator += tmp[2]
+			end
+		else
+			 # only batch mode
+			 sumNumerator, sumDenominator = doEpoch(localpart(dTrain), codes, dm,
+			                                            kernelFun, r, false)
 
-	 r = getRadius(rStart, j, decay, epochs)
+			globalSumNumerator += sumNumerator
+			globalSumDenominator += sumDenominator
+		end
 
-     println("Radius: $r")
-     codes = globalSumNumerator ./ globalSumDenominator
+		r = getRadius(rStart, j, decay, epochs)
+
+		println("Radius: $r")
+		codes = globalSumNumerator ./ globalSumDenominator
     end
 
     som.codes[:,:] = codes[:,:]
