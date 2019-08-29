@@ -22,12 +22,12 @@ script:
 after_success:
 
     # submit coverage report
-    - if [ "$ARCH" == "Linux" ]; then
+    - if [ "$ARCH" == "Linux" && "$JULIA_VER" = "v1.2.0" ]; then
         $ARTENOLIS_SOFT_PATH/julia/$JULIA_VER/bin/julia --color=yes -e 'using Coverage; Codecov.submit(process_folder())';
       fi
 
     # deploy documentation
-    - if [[ "$ARCH" == "Linux" && "$JENKINS_PULL_REQUEST" != "True" ]]; then
+    - if [[ "$ARCH" == "Linux" && "$JENKINS_PULL_REQUEST" != "True" && "$JULIA_VER" = "v1.2.0" ]]; then
         export TRAVIS_BRANCH=$GIT_BRANCH;
         export TRAVIS_PULL_REQUEST=false;
         var=$GIT_URL; export TRAVIS_REPO_SLUG=${var:8:${#var}};
