@@ -34,9 +34,9 @@ function initGigaSOM( train, xdim, ydim = xdim;
     normParams = convert(DataFrame, normParams)
     names!(normParams, Symbol.(colNames))
 
-    # create X,y-indices for neurons:
+    # create X,Y-indices for neurons:
     #
-     x = y = collect(1:numCodes)
+    x = y = collect(1:numCodes)
     indices = DataFrame(X = x, Y = y)
 
     # make SOM object:
@@ -103,7 +103,7 @@ function trainGigaSOM(som::Som, train::DataFrame;
             R = Array{Future}(undef,nWorkers, 1)
              @sync for (p, pid) in enumerate(workers())
                  @async R[p] = @spawnat pid begin
-                    doEpoch(localpart(dTrain), codes, tree)
+                     doEpoch(localpart(dTrain), codes, tree)
                  end
              end
 
@@ -193,7 +193,7 @@ function mapToGigaSOM(som::Som, data::DataFrame)
         R = Array{Future}(undef,nWorkers, 1)
          @sync for (p, pid) in enumerate(workers())
              @async R[p] = @spawnat pid begin
-                visual(som.codes, localpart(dData))
+                 visual(som.codes, localpart(dData))
              end
          end
 
@@ -241,5 +241,4 @@ function getRadius(initRadius::Float64, finalRadius::Float64, iteration::Int64, 
     elseif decay == "exp"
         return initRadius^(1-scaledTime) * finalRadius^scaledTime
     end
-
 end
