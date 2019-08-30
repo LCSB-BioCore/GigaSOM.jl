@@ -76,10 +76,7 @@ Read in the fcs raw, add sample id, subset the columns and transform
 - `md`: Metadata table
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 """
-function createDaFrame(fcsRaw, md, panel)
-
-    # extract lineage markers
-    lineageMarkers, functionalMarkers = getMarkers(panel)
+function createDaFrame(fcsRaw, md, panel, lineageMarkers, functionalMarkers)
 
     transformData(fcsRaw)
 
@@ -94,6 +91,9 @@ function createDaFrame(fcsRaw, md, panel)
     end
     dfall = vcat(dfall...)
     cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
+    # markers can be lineage and functional at tthe same time
+    # therefore make cc unique
+    unique!(cc)
     push!(cc, :sample_id)
     # reduce the dataset to lineage (and later) functional (state) markers
     dfall = dfall[:, cc]
