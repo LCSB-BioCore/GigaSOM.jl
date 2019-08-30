@@ -80,7 +80,7 @@ function trainGigaSOM(som::Som, train::DataFrame;
     # set default radius:
 
     if rStart == 0.0
-        rStart = √(som.xdim^2 + som.ydim^2) / 3
+        rStart = √(som.xdim^2 + som.ydim^2) / 2
         @info "The radius has been determined automatically."
     end
 
