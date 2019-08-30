@@ -5,13 +5,14 @@ function getMetaData(f)
 
     # declarations and initializations
     meta = f.params
+    metaKeys = keys(meta)
     channel_properties = []
     defaultValue = "None"
 
     # determine the number of channels
     pars = parse(Int, strip(join(meta["\$PAR"])))
 
-    # Channel number count starts from 0
+    # determine the range of channel numbers
     channel_numbers = 1:pars
 
     # determine the channel properties
@@ -32,9 +33,9 @@ function getMetaData(f)
         # build first each row of the datatable
         tmpV = []
         for p in channel_properties
-            try
+            if "\$P$ch$p" in metaKeys
                 tmp = meta["\$P$ch$p"]
-            catch
+            else
                 tmp = defaultValue
             end
             push!(tmpV, tmp)
