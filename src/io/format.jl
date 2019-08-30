@@ -3,9 +3,10 @@ Collect the meta data information in a more user friendly format.
 """
 function getMetaData(f)
 
-    # initializations
+    # declarations and initializations
     meta = f.params
     channel_properties = []
+    defaultValue = "None"
 
     # determine the number of channels
     pars = parse(Int, strip(join(meta["\$PAR"])))
@@ -25,20 +26,26 @@ function getMetaData(f)
     # define the column names
     column_names = ["\$Pn$p" for p in channel_properties]
 
-    # Capture all the channel information in a list of lists -- used to create a data frame
+    # create a data frame
     df = DataFrame([Vector{Any}(undef, 0) for i = 1:length(column_names)])
     for ch in channel_numbers
-        push!(df, [meta["\$P$ch$p"] for p in channel_properties])
+        # build first each row of the datatable
+        tmpV = []
+        for p in channel_properties
+            try
+                tmp = meta["\$P$ch$p"]
+            catch
+                tmp = defaultValue
+            end
+            push!(tmpV, tmp)
+        end
+
+        # push the row to the dataframe
+        push!(df, tmpV)
     end
 
     # set the names of the df
     names!(df, Symbol.(column_names))
 
     return df
-
 end
-
-
-using FileIO, DataFrames, FCSFiles
-f = load("/Users/laurent.heirendt/Downloads/file1.fcs")
-meta = getMetaData(f)
