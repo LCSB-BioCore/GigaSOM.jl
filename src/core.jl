@@ -179,7 +179,8 @@ every row in data.
 Data must have the same number of dimensions as the training dataset
 and will be normalised with the same parameters.
 """
-function mapToGigaSOM(som::Som, data::DataFrame)
+function mapToGigaSOM(som::Som, data::DataFrame;
+                      knnTreeFun = BruteTree)
 
     data::Array{Float64,2} = convertTrainingData(data)
     if size(data,2) != size(som.codes,2)
@@ -188,15 +189,17 @@ function mapToGigaSOM(som::Som, data::DataFrame)
     end
 
     nWorkers = nprocs()
-    dData = distribute(data)
     vis = Int64[]
+    nnTree = knnTreeFun(Array{Float64,2}(transpose(som.codes)))
 
     if nWorkers > 1
         # distribution across workers
+        dData = distribute(data)
+
         R = Array{Future}(undef,nWorkers, 1)
          @sync for (p, pid) in enumerate(workers())
              @async R[p] = @spawnat pid begin
-                 visual(som.codes, localpart(dData))
+                 vcat(knn(nnTree, transpose(localpart(dData)), 1)[1]...)
              end
          end
 
@@ -206,7 +209,7 @@ function mapToGigaSOM(som::Som, data::DataFrame)
              end
          end
     else
-        vis = visual(som.codes, data)
+        vis = vcat(knn(nnTree, transpose(data), 1)[1]...)
     end
 
     return DataFrame(index = vis)
