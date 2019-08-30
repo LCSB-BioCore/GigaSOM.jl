@@ -29,6 +29,8 @@ function getMetaData(f)
 
     # create a data frame
     df = DataFrame([Vector{Any}(undef, 0) for i = 1:length(column_names)])
+
+    # fill the data frame
     for ch in channel_numbers
         # build first each row of the datatable
         tmpV = []
