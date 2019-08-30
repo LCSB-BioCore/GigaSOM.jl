@@ -72,7 +72,7 @@ controlling the function and the return value is between 0.0 and 1.0.
 function trainGigaSOM(som::Som, train::DataFrame;
                       kernelFun::Function = gaussianKernel,
                       knnTreeFun = BruteTree,
-                      rStart = 0.0, decay = "linear", rFinal=0.1,
+                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
                       epochs = 10)
 
     train = convertTrainingData(train)
@@ -119,8 +119,9 @@ function trainGigaSOM(som::Som, train::DataFrame;
             globalSumDenominator += sumDenominator
         end
 
-        r = getRadius(rStart, rFinal, j, decay, epochs)
+        r = radiusFun(rStart, rFinal, j, epochs)
         println("Radius: $r")
+        @assert r > 0
 
         wEpoch = kernelFun(dm, r)
         codes = (wEpoch*globalSumNumerator) ./ (wEpoch*globalSumDenominator)
@@ -209,36 +210,57 @@ function mapToGigaSOM(som::Som, data::DataFrame)
     return DataFrame(index = vis)
 end
 
+
 """
-    getRadius(initRadius::Float64, iteration::Int64, decay::String, epochs::Int64)
+    scaleEpochTime(iteration::Int64, epochs::Int64)
 
-Return a new neighbourhood radius
-
-# Arguments
-- `initRadius`: Initial Radius
-- `iteration`: Training iteration
-- `decay`: Linear of Exponential decay
-- `epochs`: Total number of epochs
-
-Data must have the same number of dimensions as the training dataset
-and will be normalised with the same parameters.
+Convert iteration ID and epoch number to relative time in training.
 """
-function getRadius(initRadius::Float64, finalRadius::Float64, iteration::Int64, decay::String, epochs::Int64)
-
-    # prevent various mathematical trouble
-    @assert initRadius > 0
-    @assert finalRadius > 0
-
-    # get the scaled time point in training (from 0.0 to 1.0)
+function scaleEpochTime(iteration::Int64, epochs::Int64)
     if epochs>1
         epochs -= 1
     end
 
-    scaledTime = Float64(iteration-1) / Float64(epochs)
+    return Float64(iteration-1) / Float64(epochs)
+end
 
-    if decay == "linear"
-        return initRadius*(1-scaledTime) + finalRadius*scaledTime
-    elseif decay == "exp"
+"""
+    linearRadius(initRadius::Float64, iteration::Int64, decay::String, epochs::Int64)
+
+Return a neighbourhood radius. Use as the `radiusFun` parameter for `trainGigaSOM`.
+
+# Arguments
+- `initRadius`: Initial Radius
+- `finalRadius`: Final Radius
+- `iteration`: Training iteration
+- `epochs`: Total number of epochs
+"""
+function linearRadius(initRadius::Float64, finalRadius::Float64, iteration::Int64, epochs::Int64)
+
+    scaledTime = scaleEpochTime(iteration,epochs)
+    return initRadius*(1-scaledTime) + finalRadius*scaledTime
+end
+
+"""
+    expRadius(steepness::Float64)
+
+Return a function to be used as a `radiusFun` of `trainGigaSOM`, which causes
+exponencial decay with the selected steepness.
+
+Use: `trainGigaSOM(..., radiusFun = expRadius(0.5))`
+
+# Arguments
+- `steepness`: Steepness of exponential descent (greater than 0).
+
+"""
+function expRadius(steepness::Float64 = 1.0)
+    return (initRadius::Float64, finalRadius::Float64, iteration::Int64, epochs::Int64) -> begin
+
+        scaledTime = steepness * scaleEpochTime(iteration,epochs)
+
+        @assert initRadius > 0
+        @assert finalRadius > 0
+
         return initRadius^(1-scaledTime) * finalRadius^scaledTime
     end
 end
