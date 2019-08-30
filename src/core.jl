@@ -96,14 +96,14 @@ function trainGigaSOM(som::Som, train::DataFrame;
         globalSumNumerator = zeros(Float64, size(codes))
         globalSumDenominator = zeros(Float64, size(codes)[1])
 
-        nnTree = knnTreeFun(Array{Float64,2}(transpose(codes)))
+        tree = knnTreeFun(Array{Float64,2}(transpose(codes)))
 
         if nWorkers > 1
             # distribution across workers
             R = Array{Future}(undef,nWorkers, 1)
              @sync for (p, pid) in enumerate(workers())
                  @async R[p] = @spawnat pid begin
-                    doEpoch(localpart(dTrain), codes, nnTree)
+                    doEpoch(localpart(dTrain), codes, tree)
                  end
              end
 
@@ -114,7 +114,7 @@ function trainGigaSOM(som::Som, train::DataFrame;
              end
         else
             # only batch mode
-            sumNumerator, sumDenominator = doEpoch(localpart(dTrain), codes, nnTree)
+            sumNumerator, sumDenominator = doEpoch(localpart(dTrain), codes, tree)
             globalSumNumerator += sumNumerator
             globalSumDenominator += sumDenominator
         end
@@ -133,16 +133,16 @@ end
 
 
 """
-    doEpoch(x::Array{Float64}, codes::Array{Float64}, nnTree)
+    doEpoch(x::Array{Float64}, codes::Array{Float64}, tree)
 
 vectors and the adjustment in radius after each epoch.
 
 # Arguments:
 - `x`: training Data
 - `codes`: Codebook
-- `nnTree`: knn-compatible tree built upon the codes
+- `tree`: knn-compatible tree built upon the codes
 """
-function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, nnTree)
+function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, tree)
 
      # initialise numerator and denominator with 0's
      sumNumerator = zeros(Float64, size(codes))
@@ -151,7 +151,7 @@ function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, nnTree)
      # for each sample in dataset / trainingsset
      for s in 1:size(x, 1)
 
-         (bmuIdx, bmuDist) = knn(nnTree, x[s, :], 1)
+         (bmuIdx, bmuDist) = knn(tree, x[s, :], 1)
 
          target = bmuIdx[1]
 

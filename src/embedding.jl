@@ -50,7 +50,7 @@ function embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
         k = Integer(som.xdim * som.ydim)
     end
 
-    t = knnTreeFun(Array{Float64,2}(transpose(som.codes)))
+    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)))
 
     ndata = size(data, 1)
     dim = size(data, 2)
@@ -59,16 +59,17 @@ function embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
     if nWorkers > 1
         dData = distribute(data)
 
-        dRes = [ (@spawnat w embedGigaSOM_internal(som, localpart(dData), t, k, adjust, boost)) for w in workers() ]
+        dRes = [ (@spawnat w embedGigaSOM_internal(som, localpart(dData), tree, k, adjust, boost)) for w in workers() ]
 
         #hopefully the data are separated to localparts in correct order...
         return vcat([fetch(r) for r in dRes]...)
     else
-        return embedGigaSOM_internal(som, data, t, k, adjust, boost)
+        return embedGigaSOM_internal(som, data, tree, k, adjust, boost)
     end
 end
 
-function embedGigaSOM_internal(som::GigaSOM.Som, data::Array{Float64,2}, t, k, adjust, boost)
+function embedGigaSOM_internal(som::GigaSOM.Som, data::Array{Float64,2},
+			       tree, k, adjust, boost)
     ndata=size(data,1)
     dim=size(data,2)
 
@@ -79,7 +80,7 @@ function embedGigaSOM_internal(som::GigaSOM.Som, data::Array{Float64,2}, t, k, a
     for di in 1:size(data,1)
 
         # find the nearest neighbors and put them into correct order
-        (knidx,kndist) = knn(t, data[di,:], k)
+        (knidx,kndist) = knn(tree, data[di,:], k)
         sortperm!(sp, kndist)
         knidx=knidx[sp]
         kndist=kndist[sp]
