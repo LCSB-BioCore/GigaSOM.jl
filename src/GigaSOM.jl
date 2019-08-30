@@ -31,7 +31,9 @@ module GigaSOM
     export #core
         initGigaSOM,
         trainGigaSOM,
-        mapToGigaSOM
+        mapToGigaSOM,
+        linearRadius,
+        expRadius
     
     export #embedding
         embedGigaSOM
