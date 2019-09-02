@@ -11,6 +11,7 @@ module GigaSOM
     using DataFrames
     using Distances
     using Distributed
+    using Distributions
     using FileIO
     using DistributedArrays
     using XLSX
