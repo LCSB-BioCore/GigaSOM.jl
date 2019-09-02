@@ -13,8 +13,10 @@ docs/site/
 *.csv
 !refBatchDfCodes.csv
 !refBatchWinners.csv
+!refBatchEmbedded.csv
 !refParallelDfCodes.csv
 !refParallelWinners.csv
+!refParallelEmbedded.csv
 *.py
 __pycache__
 data/

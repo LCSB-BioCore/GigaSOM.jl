@@ -23,6 +23,8 @@ som2 = trainGigaSOM(som2, dfSom, epochs = 1)
 
 winners = mapToGigaSOM(som2, dfSom)
 
+embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.0, adjust=0.5)
+
 #test batch
 @testset "Batch" begin
     codes = som2.codes
@@ -30,25 +32,30 @@ winners = mapToGigaSOM(som2, dfSom)
 
     dfCodes = DataFrame(codes)
     names!(dfCodes, Symbol.(som2.colNames))
+    dfEmbed = DataFrame(embed)
     CSV.write(genDataPath*"/batchDfCodes.csv", dfCodes)
     CSV.write(genDataPath*"/batchWinners.csv", winners)
+    CSV.write(genDataPath*"/batchEmbedded.csv", dfEmbed)
 
     #load the ref data
     refBatchDfCodes = CSV.File(refDataPath*"/refBatchDfCodes.csv") |> DataFrame
     refBatchWinners = CSV.File(refDataPath*"/refBatchWinners.csv") |> DataFrame
+    refBatchEmbedded = CSV.File(refDataPath*"/refBatchEmbedded.csv") |> DataFrame
 
     #load the generated data
     batchDfCodes = CSV.File(genDataPath*"/batchDfCodes.csv") |> DataFrame
     batchDfCodesTest = first(batchDfCodes, 10)
     batchWinners = CSV.File(genDataPath*"/batchWinners.csv") |> DataFrame
     batchWinnersTest = first(batchWinners, 10)
+    batchEmbedded = CSV.File(genDataPath*"/batchEmbedded.csv") |> DataFrame
+    batchEmbeddedTest = first(batchEmbedded, 10)
 
     # test the generated data against the reference data
     @test refBatchWinners == batchWinnersTest
     @test refBatchDfCodes == batchDfCodesTest
+    @test Array{Float64,2}(refBatchEmbedded) ≈ Array{Float64,2}(batchEmbeddedTest) atol=1e-4
 
     for (i, j) in zip(batchDfCodesTest[:,1], refBatchDfCodes[:,1])
         @test isapprox(i, j; atol = 0.001)
     end
-    @test refBatchWinners == batchWinnersTest
 end
