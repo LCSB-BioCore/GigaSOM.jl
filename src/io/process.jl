@@ -85,7 +85,6 @@ function createDaFrame(fcsRaw, md, panel)
 
     for i in eachindex(md.file_name)
         df = fcsRaw[md.file_name[i]]
-        # df[:sample_id] = string(md.sample_id[i])
         insertcols!(df, 1, sample_id = string(md.sample_id[i]))
     end
 
