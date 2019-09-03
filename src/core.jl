@@ -190,26 +190,30 @@ function mapToGigaSOM(som::Som, data::DataFrame;
 
     nWorkers = nprocs()
     vis = Int64[]
-    nnTree = knnTreeFun(Array{Float64,2}(transpose(som.codes)))
+    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)))
 
     if nWorkers > 1
         # distribution across workers
         dData = distribute(data)
 
         R = Array{Future}(undef,nWorkers, 1)
-         @sync for (p, pid) in enumerate(workers())
-             @async R[p] = @spawnat pid begin
-                 vcat(knn(nnTree, transpose(localpart(dData)), 1)[1]...)
-             end
-         end
+        @sync for (p, pid) in enumerate(workers())
+            @async R[p] = @spawnat pid begin
+                # knn() returns a tuple of 2 arrays of arrays (one with indexes
+                # that we take out, the second with distances that we discard
+                # here). vcat() nicely squashes the arrays-in-arrays into a
+                # single vector.
+                vcat(knn(tree, transpose(localpart(dData)), 1)[1]...)
+            end
+        end
 
-         @sync begin
-             for (p, pid) in enumerate(sort!(workers()))
-                 append!(vis, fetch(R[p]))
-             end
-         end
+        @sync begin
+            for (p, pid) in enumerate(sort!(workers()))
+                append!(vis, fetch(R[p]))
+            end
+        end
     else
-        vis = vcat(knn(nnTree, transpose(data), 1)[1]...)
+        vis = vcat(knn(tree, transpose(data), 1)[1]...)
     end
 
     return DataFrame(index = vis)
