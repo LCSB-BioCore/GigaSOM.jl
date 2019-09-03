@@ -47,12 +47,12 @@ end
 
 md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1")...)
 panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1")...)
-panel[:Isotope] = map(string, panel[:Isotope])
-panel[:Metal] = map(string, panel[:Metal])
-panel[:Antigen] = map(string, panel[:Antigen])
+panel.Isotope = map(string, panel.Isotope)
+panel.Metal = map(string, panel.Metal)
+panel.Antigen = map(string, panel.Antigen)
 panel.Metal[1]=""
 
-insertcols!(panel,4,:fcs_colname => map((x,y,z)->x.*"(".*y.*z.*")".*"Dd",panel[:Antigen],panel[:Metal],panel[:Isotope]))
+insertcols!(panel,4,:fcs_colname => map((x,y,z)->x.*"(".*y.*z.*")".*"Dd",panel.Antigen,panel.Metal,panel.Isotope))
 print(panel.fcs_colname)
 
 lineageMarkers, functionalMarkers = getMarkers(panel)
