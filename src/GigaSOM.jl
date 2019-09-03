@@ -15,10 +15,12 @@ module GigaSOM
     using FileIO
     using DistributedArrays
     using XLSX
+    using NearestNeighbors
 
     include("structs.jl")
     include("core.jl")
     include("satellites.jl")
+    include("embedding.jl")
 
     # include IO files
     include("io/input.jl")
@@ -30,7 +32,12 @@ module GigaSOM
     export #core
         initGigaSOM,
         trainGigaSOM,
-        mapToGigaSOM
+        mapToGigaSOM,
+        linearRadius,
+        expRadius
+    
+    export #embedding
+        embedGigaSOM
 
     export # structs
         daFrame
@@ -39,10 +46,10 @@ module GigaSOM
         readFlowset
 
     export #satellites
-    cleanNames!,
-    createDaFrame,
-    getMarkers,
-    checkDir
+        cleanNames!,
+        createDaFrame,
+        getMarkers,
+        checkDir
 
     export # plotting
         plotCounts,
