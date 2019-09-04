@@ -1,5 +1,3 @@
-
-
 # Load and transform
 # build the general workflow to have the data ready
 
@@ -23,6 +21,9 @@ else
     dataPath = cwd*"/data"
 end
 
+refDataPath = cwd*"/refData"
+cd(dataPath)
+
 # fetch the required data for testing and download the zip archive and unzip it
 dataFiles = ["PBMC8_metadata.xlsx", "PBMC8_panel.xlsx", "PBMC8_fcs_files.zip"]
 for f in dataFiles
@@ -34,6 +35,24 @@ for f in dataFiles
     else
     end
 end
+
+md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
+panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
+
+lineageMarkers, functionalMarkers = getMarkers(panel)
+
+fcsRaw = readFlowset(md.file_name)
+cleanNames!(fcsRaw)
+
+# create daFrame file
+daf = createDaFrame(fcsRaw, md, panel)
+
+# change the directory back to the current directory
+cd(cwd)
+
+#check if the markers from panel file are the same as loaded from the fcs file
+
+CSV.write(genDataPath*"/daf.csv", daf.fcstable)
 
 @testset "Checksums" begin
     cd(dataPath)
@@ -48,23 +67,3 @@ end
     @test csDict == csTest
     cd(cwd)
 end
-
-dataPath = ("../PBMC8_fcs_files")
-cd(dataPath)
-md = DataFrame(XLSX.readtable("metadata.xlsx", "Sheet1", infer_eltypes=true)...)
-panel = DataFrame(XLSX.readtable("panel.xlsx", "Sheet1", infer_eltypes=true)...)
-
-lineageMarkers = vec(panel.Antigen[panel.Lineage .== 1, : ])
-cleanNames!(lineageMarkers)
-functionalMarkers = vec(panel.Antigen[panel.Functional .== 1, : ])
-cleanNames!(functionalMarkers)
-
-# check if all lineageMarkers are in markers
-# issubset(lineageMarkers, markers)
-# issubset(functionalMarkers, markers)
-
-fcsRaw = readFlowset(md, fcsparser)
-
-# create daFrame file
-daf = createDaFrame(fcsRaw, md, panel, lineageMarkers, functionalMarkers)
-CSV.write("daf.csv", daf.fcstable)
