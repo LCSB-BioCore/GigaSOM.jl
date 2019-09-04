@@ -67,3 +67,5 @@ CSV.write(genDataPath*"/daf.csv", daf.fcstable)
     @test csDict == csTest
     cd(cwd)
 end
+
+cd(cwd)
