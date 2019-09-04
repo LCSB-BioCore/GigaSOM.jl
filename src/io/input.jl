@@ -6,32 +6,24 @@ Create a dictionary with filenames as keys and daFrame as values
 # Arguments:
 - `filenames`: Array of type string
 """
-function readFlowset(md, fcsparser)
-
+function readFlowset(filenames)
 
     flowFrame = Dict()
 
-    # get the meta data from the first file
-    meta, data = fcsparser.parse(md.file_name[1], reformat_meta=true)
-    # get the channel names
-    df = meta["_channels_"]."\$PnS"
-    markers = String[]
-    for i in df.values
-        if i == nothing
-            push!(markers, "nothing") # replace empty with nothing string
-        else
-            push!(markers, convert(String, i))
-        end
-    end
-
-    cleanNames!(markers)
     # read all FCS files into flowFrame
-    for name in md.file_name
+    for name in filenames # file list
+        flowrun = FileIO.load(name) # FCS file
 
-        meta, data = fcsparser.parse(name, reformat_meta=true)
-        data = DataFrame(data.values)
-        names!(data, Symbol.(markers), makeunique=true)
-        flowFrame[name] = data
+        # get metadata
+        meta = getMetaData(flowrun)
+        markers = meta[:,1]
+        flowDF = DataFrame(flowrun.data)
+        flowFrame[name] = flowDF
+
+        cleanNames!(markers)
+
+        names!(flowrun.data, Symbol.(markers), makeunique=true)
+        flowFrame[name] = flowDF
     end
 
     return flowFrame
