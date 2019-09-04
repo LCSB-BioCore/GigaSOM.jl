@@ -1,6 +1,8 @@
 # Load and transform
 # build the general workflow to have the data ready
 
+checkDir()
+
 #create genData and data folder and change dir to dataPath
 cwd = pwd()
 if occursin("jenkins", homedir()) || "TRAVIS" in keys(ENV)
