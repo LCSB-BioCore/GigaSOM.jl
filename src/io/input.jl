@@ -18,7 +18,6 @@ function readFlowset(filenames)
         meta = getMetaData(flowrun)
         markers = meta[:,1]
         flowDF = DataFrame(flowrun.data)
-        flowFrame[name] = flowDF
 
         cleanNames!(markers)
 
