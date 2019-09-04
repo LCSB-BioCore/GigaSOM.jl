@@ -22,7 +22,7 @@ function readFlowset(filenames)
 
         cleanNames!(markers)
 
-        names!(flowrun.data, Symbol.(markers), makeunique=true)
+        names!(flowDF, Symbol.(markers), makeunique=true)
         flowFrame[name] = flowDF
     end
 

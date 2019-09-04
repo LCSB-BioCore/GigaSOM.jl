@@ -112,8 +112,8 @@ Returns the `lineageMarkers` and `functionalMarkers` on a given panel
 function getMarkers(panel)
 
     # extract lineage markers
-    lineageMarkers = panel.fcs_colname[panel.Lineage .== 1, : ]
-    functionalMarkers = panel.fcs_colname[panel.Functional .== 1, :]
+    lineageMarkers = panel.Antigen[panel.Lineage .== 1, : ]
+    functionalMarkers = panel.Antigen[panel.Functional .== 1, : ]
 
     # lineageMarkers are 2d array,
     # flatten this array by using vec:
