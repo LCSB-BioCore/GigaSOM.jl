@@ -41,3 +41,4 @@ after_success:
 after_script:
     # clean up the build directory
     - cd .. && rm -rf GigaSOM
+    - rm -rf ~/.julia
