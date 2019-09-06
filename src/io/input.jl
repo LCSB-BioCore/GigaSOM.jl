@@ -23,7 +23,7 @@ function readFlowset(filenames)
         markersIsotope = meta[:,5]
         flowDF = DataFrame(flowrun.data)
         # sort the DF according to the marker list
-        flowDF = flowDF[Symbol.(markersIsotope)]
+        flowDF = flowDF[:, Symbol.(markersIsotope)]
         cleanNames!(markers)
 
         names!(flowDF, Symbol.(markers), makeunique=true)
