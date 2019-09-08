@@ -34,9 +34,11 @@ som2 = initGigaSOM(dfSom, 10, 10)
     @test som2.numCodes == 100
 end
 
-som2 = trainGigaSOM(som2, dfSom, epochs = 2, r = 6.0)
+som2 = trainGigaSOM(som2, dfSom, epochs = 2, rStart = 6.0)
 
 winners = mapToGigaSOM(som2, dfSom)
+
+embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.0, adjust=0.5)
 
 #test parallel
 @testset "Parallel" begin
@@ -45,22 +47,28 @@ winners = mapToGigaSOM(som2, dfSom)
 
     dfCodes = DataFrame(codes)
     names!(dfCodes, Symbol.(som2.colNames))
+    dfEmbed = DataFrame(embed)
     CSV.write(genDataPath*"/parallelDfCodes.csv", dfCodes)
     CSV.write(genDataPath*"/parallelWinners.csv", winners)
+    CSV.write(genDataPath*"/parallelEmbedded.csv", dfEmbed)
 
     # load the ref data
     refParallelDfCodes = CSV.File(refDataPath*"/refParallelDfCodes.csv") |> DataFrame
     refParallelWinners = CSV.File(refDataPath*"/refParallelWinners.csv") |> DataFrame
+    refParallelEmbedded = CSV.File(refDataPath*"/refParallelEmbedded.csv") |> DataFrame
 
     # load the generated data
     parallelDfCodes = CSV.File(genDataPath*"/parallelDfCodes.csv") |> DataFrame
     parallelDfCodesTest = first(parallelDfCodes, 10)
     parallelWinners = CSV.File(genDataPath*"/parallelWinners.csv") |> DataFrame
     parallelWinnersTest = first(parallelWinners, 10)
+    parallelEmbedded = CSV.File(genDataPath*"/parallelEmbedded.csv") |> DataFrame
+    parallelEmbeddedTest = first(parallelEmbedded, 10)
 
     # test the generated data against the reference data
     @test refParallelWinners == parallelWinnersTest
     @test refParallelDfCodes == parallelDfCodesTest
+    @test Array{Float64,2}(refParallelEmbedded) ≈ Array{Float64,2}(parallelEmbeddedTest) atol=1e-4
 
     #test parallel
     for (i, j) in zip(parallelDfCodes[:,1], refParallelDfCodes[:,1])

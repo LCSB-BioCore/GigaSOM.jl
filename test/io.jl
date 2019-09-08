@@ -1,13 +1,6 @@
 # Load and transform
 # build the general workflow to have the data ready
 
-#=
-using FCSFiles for loading
-as this function is only the basic parsing of the binary
-FCS, we need to see what functionality is missing and
-extend this in the original package
-=#
-
 checkDir()
 
 #create genData and data folder and change dir to dataPath
@@ -45,15 +38,8 @@ for f in dataFiles
     end
 end
 
-md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1")...)
-panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1")...)
-panel[:Isotope] = map(string, panel[:Isotope])
-panel[:Metal] = map(string, panel[:Metal])
-panel[:Antigen] = map(string, panel[:Antigen])
-panel.Metal[1]=""
-
-insertcols!(panel,4,:fcs_colname => map((x,y,z)->x.*"(".*y.*z.*")".*"Dd",panel[:Antigen],panel[:Metal],panel[:Isotope]))
-print(panel.fcs_colname)
+md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
+panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
 
 lineageMarkers, functionalMarkers = getMarkers(panel)
 
@@ -66,22 +52,9 @@ daf = createDaFrame(fcsRaw, md, panel)
 # change the directory back to the current directory
 cd(cwd)
 
-CSV.write(genDataPath*"/daf.csv", daf.fcstable)
+#check if the markers from panel file are the same as loaded from the fcs file
 
-@testset "Cleaning names" begin
-    for i in eachindex(lineageMarkers)
-        @test !in("-",i)
-    end
-    for i in eachindex(functionalMarkers)
-        @test !in("-",i)
-    end
-    for (k,v) in fcsRaw
-        colnames = names(v)
-        for i in eachindex(colnames)
-            @test !in("-",i)
-        end
-    end
-end
+CSV.write(genDataPath*"/daf.csv", daf.fcstable)
 
 @testset "Checksums" begin
     cd(dataPath)

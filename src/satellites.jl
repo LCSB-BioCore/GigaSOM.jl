@@ -29,7 +29,7 @@ end
 
 
 """
-    gaussianKernel(x::Array{Float64, 1}, r::Float64)::Array{Float64, 1}
+    gaussianKernel(x, r::Float64)
 
 Return Gaussian(x) for μ=0.0 and σ = r/3.
 (a value of σ = r/3 makes the training results comparable between different kernels
@@ -38,7 +38,7 @@ for same values of r).
 # Arguments
 
 """
-function gaussianKernel(x::Array{Float64, 1}, r::Float64)::Array{Float64, 1}
+function gaussianKernel(x, r::Float64)
 
     return Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
 end
