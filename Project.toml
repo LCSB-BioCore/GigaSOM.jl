@@ -1,6 +1,6 @@
 name = "GigaSOM"
 uuid = "a03a9c34-069e-5582-a11c-5c984cab887c"
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
