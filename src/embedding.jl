@@ -12,6 +12,8 @@ Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
   approximations)
 - `smooth`: approximation smoothness (the higher the value, the larger the
   neighborhood of approximate local linearity of the projection)
+- `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
+- `metric`: Passed as metric argument to the KNN-tree constructor
 
 Example:
 
@@ -35,6 +37,7 @@ and will be normalised with the same parameters.
 """
 function embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
                       knnTreeFun = BruteTree,
+                      metric = Euclidean(),
                       k::Int64=0, adjust::Float64=1.0, smooth::Float64=0.0)
 
     data::Array{Float64,2} = convertTrainingData(data)
@@ -57,7 +60,7 @@ function embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
     end
 
     # prepare the kNN-tree for lookups
-    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)))
+    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
 
     # run the distributed computation
     nWorkers = nprocs()
