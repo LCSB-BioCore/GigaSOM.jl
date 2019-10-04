@@ -60,9 +60,14 @@ end
 - `train`: training data
 - `kernel::function`: optional distance kernel; one of (`bubbleKernel, gaussianKernel`)
             default is `gaussianKernel`
-- `r`: optional training radius.
+- `rStart`: optional training radius.
        If r is not specified, it defaults to (xdim+ydim)/3
 - `rFinal`: target radius at the last epoch, defaults to 0.1
+- `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
+- `metric`: Passed as metric argument to the KNN-tree constructor
+- `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
+- `epochs`: number of SOM training iterations (default 10)
+
 Training data must be convertable to Array{Float34,2} with `convert()`.
 Training samples are row-wise; one sample per row. An alternative kernel function
 can be provided to modify the distance-dependent training. The function must fit
@@ -71,6 +76,7 @@ controlling the function and the return value is between 0.0 and 1.0.
 """
 function trainGigaSOM(som::Som, train::DataFrame;
                       kernelFun::Function = gaussianKernel,
+                      metric = Euclidean(),
                       knnTreeFun = BruteTree,
                       rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
                       epochs = 10)
@@ -96,22 +102,21 @@ function trainGigaSOM(som::Som, train::DataFrame;
         globalSumNumerator = zeros(Float64, size(codes))
         globalSumDenominator = zeros(Float64, size(codes)[1])
 
-        tree = knnTreeFun(Array{Float64,2}(transpose(codes)))
+        tree = knnTreeFun(Array{Float64,2}(transpose(codes)), metric)
 
-        if nWorkers > 1
-            # distribution across workers
-            R = Array{Future}(undef,nWorkers, 1)
-             @sync for (p, pid) in enumerate(workers())
-                 @async R[p] = @spawnat pid begin
-                     doEpoch(localpart(dTrain), codes, tree)
-                 end
-             end
+        if nworkers() > 1
 
-             @sync for (p, pid) in enumerate(workers())
-                 tmp = fetch(R[p])
-                 globalSumNumerator += tmp[1]
-                 globalSumDenominator += tmp[2]
-             end
+            R = Vector{Any}(undef,nworkers())
+
+            @sync begin
+                for (idx, pid) in enumerate(workers())
+                    @async begin
+                        R[idx] =  fetch(@spawnat pid begin doEpoch(localpart(dTrain), codes, tree) end)
+                        globalSumNumerator += R[idx][1]
+                        globalSumDenominator += R[idx][2]
+                    end
+                end
+            end
         else
             # only batch mode
             sumNumerator, sumDenominator = doEpoch(localpart(dTrain), codes, tree)
@@ -175,12 +180,15 @@ every row in data.
 # Arguments
 - `som`: a trained SOM
 - `data`: Array or DataFrame with training data.
+- `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
+- `metric`: Passed as metric argument to the KNN-tree constructor
 
 Data must have the same number of dimensions as the training dataset
 and will be normalised with the same parameters.
 """
 function mapToGigaSOM(som::Som, data::DataFrame;
-                      knnTreeFun = BruteTree)
+                      knnTreeFun = BruteTree,
+                      metric = Euclidean())
 
     data::Array{Float64,2} = convertTrainingData(data)
     if size(data,2) != size(som.codes,2)
@@ -190,7 +198,7 @@ function mapToGigaSOM(som::Som, data::DataFrame;
 
     nWorkers = nprocs()
     vis = Int64[]
-    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)))
+    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
 
     if nWorkers > 1
         # distribution across workers
