@@ -49,6 +49,28 @@ cleanNames!(fcsRaw)
 # create daFrame file
 daf = createDaFrame(fcsRaw, md, panel)
 
+@testset "Sort and reduce test" begin
+
+    df = DataFrame(Col1 = rand(5), Col2 = rand(5), None = rand(5))
+    namesDF = names(df)
+    cc = [:Col1, :Col2]
+    
+    # testing reduce by column names
+    dfReduce = GigaSOM.sortReduce(df, cc, true, true)
+    @test namesDF != names(dfReduce)
+ 
+    # testing :None removal
+    df = DataFrame(Col1 = rand(5), Col2 = rand(5), None = rand(5))
+    dfNoneRemoved = GigaSOM.sortReduce(df, cc, false, true)
+    @test cc == names(dfNoneRemoved)
+ 
+    # testing column sorting and none removing
+    df = DataFrame(Col2 = rand(5), Col1 = rand(5), None = rand(5))
+    dfSorted = GigaSOM.sortReduce(df, cc, false, true)
+    @test names(dfSorted) == cc
+
+end
+
 # change the directory back to the current directory
 cd(cwd)
 

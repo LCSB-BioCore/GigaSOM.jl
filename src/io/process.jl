@@ -96,30 +96,12 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
 
     dfall = []
     colnames = []
-    # for i in eachindex(md.file_name)
+
     for (k, v) in fcsRaw
-        # df = fcsRaw[md.file_name[i]]
-        df = v
         
-        if reduce
-            df = df[:, cc]
-        else
-            for n in names(df)
-            # remove the None columns if the columns are not reduced
-                if occursin(r"None", string(n))
-                    delete!(df, n)
-                end
-            end
-        end
+        df = v
+        df = sortReduce(df, cc, reduce, sort)
 
-        # sort columns because the order is not garantiert
-        if sort
-            n = names(df)
-            sort!(n)
-            permutecols!(df, n)
-        end
-
-        # insertcols!(df, 1, sample_id = string(md.sample_id[i]))
         insertcols!(df, 1, sample_id = string(k))
         push!(dfall,df)
         # collect the column names of each file for order check
@@ -133,6 +115,39 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
 
     dfall = vcat(dfall...)
     daf = daFrame(dfall, md, panel)
+end
+
+
+"""
+    sortReduce(df, cc, reduce, sort)
+
+Sorts the columns and/or reduces them to sleected markers
+
+# Arguments:
+- `df`: FCS dataframe
+- `cc`: Columns to reduce to
+- `reduce`: Boolean
+- `sort`: Boolean
+"""
+function sortReduce(df, cc, reduce, sort)
+
+    if reduce
+        df = df[:, cc]
+    else
+        for n in names(df)
+        # remove the None columns if the columns are not reduced
+            if occursin(r"None", string(n))
+                select!(df, Not(n))
+            end
+        end
+    end
+
+    # sort columns because the order is not garantiert
+    if sort
+        n = names(df)
+        sort!(n)
+        permutecols!(df, n)
+    end
 end
 
 
