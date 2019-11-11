@@ -9,7 +9,7 @@ Tansforms FCS data. Currently only asinh
 - `method`: transformation method, default arcsinh, optional
 - `cofactor`: Cofactor for transformation, default 5, optional
 """
-function transformData(flowframe; method = "asinh", cofactor = 5)
+function transformData(flowframe, method, cofactor)
     # loop through every file in dict
     # get the dataframe
     # convert to matrix
@@ -75,13 +75,15 @@ Read in the fcs raw, add sample id, subset the columns and transform
 - `fcsRaw`: raw FCS data
 - `md`: Metadata table
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
+- `method`: transformation method, default arcsinh, optional
+- `cofactor`: Cofactor for transformation, default 5, optional
 """
-function createDaFrame(fcsRaw, md, panel)
+function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5)
 
     # extract lineage markers
     lineageMarkers, functionalMarkers = getMarkers(panel)
 
-    transformData(fcsRaw)
+    transformData(fcsRaw, method, cofactor)
 
     for i in eachindex(md.file_name)
         df = fcsRaw[md.file_name[i]]
