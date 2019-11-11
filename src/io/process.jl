@@ -6,8 +6,8 @@ Tansforms FCS data. Currently only asinh
 
 # Arguments:
 - `flowframe`: Flowframe containing daFrame per sample
-- `method`: transformation method, default arcsinh, optional
-- `cofactor`: Cofactor for transformation, default 5, optional
+- `method`: transformation method, default arcsinh
+- `cofactor`: Cofactor for transformation, default 5
 """
 function transformData(flowframe, method, cofactor)
     # loop through every file in dict
@@ -77,8 +77,10 @@ Read in the fcs raw, add sample id, subset the columns and transform
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 - `method`: transformation method, default arcsinh, optional
 - `cofactor`: Cofactor for transformation, default 5, optional
+- `reduce`: Selected only columns which are defined by lineage and functional, optional, default: true
+- `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true 
 """
-function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5)
+function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce = true, sort = true)
 
     # extract lineage markers
     lineageMarkers, functionalMarkers = getMarkers(panel)
