@@ -106,8 +106,9 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
         else
             for n in names(df)
             # remove the None columns if the columns are not reduced
-            if (occursin(r"None", string(n)))
-                delete!(df, n)
+                if (occursin(r"None", string(n)))
+                    delete!(df, n)
+                end
             end
         end
 
