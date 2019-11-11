@@ -85,25 +85,68 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
     # extract lineage markers
     lineageMarkers, functionalMarkers = getMarkers(panel)
 
-    transformData(fcsRaw, method, cofactor)
-
-    for i in eachindex(md.file_name)
-        df = fcsRaw[md.file_name[i]]
-        insertcols!(df, 1, sample_id = string(md.sample_id[i]))
-    end
-
-    dfall = []
-    for (k,v) in fcsRaw
-        push!(dfall,v)
-    end
-    dfall = vcat(dfall...)
     cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
     # markers can be lineage and functional at tthe same time
     # therefore make cc unique
     unique!(cc)
-    push!(cc, :sample_id)
-    # reduce the dataset to lineage (and later) functional (state) markers
-    dfall = dfall[:, cc]
+    # push!(cc, :sample_id)
+    # # reduce the dataset to lineage (and later) functional (state) markers
+    # dfall = dfall[:, cc]
+    # mm = vcat(lineageMarkers, functionalMarkers)
+    # mm = unique(mm)
+    # mm = map(Symbol, mm)
+
+    transformData(fcsRaw, method, cofactor)
+
+    dfall = []
+    colnames = []
+    for i in eachindex(md.file_name)
+        df = fcsRaw[md.file_name[i]]
+
+        if reduce
+            df = df[:, cc]
+        end
+
+        # # remove the None columns
+        # if :None in names(df)
+        #     delete!(df, :None)
+        # end
+        # if :None_1 in names(df)
+        #     delete!(df, :None_1)
+        # end
+        # if :None_2 in names(df)
+        #     println(names(df))
+        #     delete!(df, :None_2)
+        # end
+
+        # sort columns because the order is not garantiert
+        if sort
+            n = names(df)
+            sort!(n)
+            permutecols!(df, n)
+        end
+
+        insertcols!(df, 1, sample_id = string(md.sample_id[i]))
+
+        push!(dfall,df)
+        # collect the column names of each file for order check
+        push!(colnames, names(df))
+    end
+
+    tmp = colnames[1]
+    for c in colnames
+        if c != tmp
+            println(c)
+            println(tmp)
+        end
+    end
+
+    # # check if all the column names are in the same order
+    if !(all(y->y==colnames[1], colnames))
+        throw(UndefVarError(:TheColumnOrderIsNotEqual))
+    end
+
+    dfall = vcat(dfall...)
     daf = daFrame(dfall, md, panel)
 end
 
