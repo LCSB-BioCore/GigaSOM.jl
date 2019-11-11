@@ -104,16 +104,10 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
         if reduce
             df = df[:, cc]
         else
+            for n in names(df)
             # remove the None columns if the columns are not reduced
-            if :None in names(df)
-                delete!(df, :None)
-            end
-            if :None_1 in names(df)
-                delete!(df, :None_1)
-            end
-            if :None_2 in names(df)
-                println(names(df))
-                delete!(df, :None_2)
+            if (occursin(r"None", string(n)))
+                delete!(df, n)
             end
         end
 
@@ -129,14 +123,6 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
         push!(dfall,df)
         # collect the column names of each file for order check
         push!(colnames, names(df))
-    end
-
-    tmp = colnames[1]
-    for c in colnames
-        if c != tmp
-            println(c)
-            println(tmp)
-        end
     end
 
     # # check if all the column names are in the same order
