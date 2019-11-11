@@ -1,15 +1,15 @@
 
 """
-    transformData(flowframe, method = "asinh", cofactor = 5)
+    transformData(flowframe; method = "asinh", cofactor = 5)
 
 Tansforms FCS data. Currently only asinh
 
 # Arguments:
 - `flowframe`: Flowframe containing daFrame per sample
-- `method`: transformation method
-- `cofactor`: Cofactor for transformation
+- `method`: transformation method, default arcsinh, optional
+- `cofactor`: Cofactor for transformation, default 5, optional
 """
-function transformData(flowframe, method = "asinh", cofactor = 5)
+function transformData(flowframe; method = "asinh", cofactor = 5)
     # loop through every file in dict
     # get the dataframe
     # convert to matrix
