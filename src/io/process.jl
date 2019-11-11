@@ -89,20 +89,15 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
     # markers can be lineage and functional at tthe same time
     # therefore make cc unique
     unique!(cc)
-    # push!(cc, :sample_id)
-    # # reduce the dataset to lineage (and later) functional (state) markers
-    # dfall = dfall[:, cc]
-    # mm = vcat(lineageMarkers, functionalMarkers)
-    # mm = unique(mm)
-    # mm = map(Symbol, mm)
 
     transformData(fcsRaw, method, cofactor)
 
     dfall = []
     colnames = []
-    for i in eachindex(md.file_name)
-        df = fcsRaw[md.file_name[i]]
-
+    # for i in eachindex(md.file_name)
+    for (k, v) in fcsRaw
+        # df = fcsRaw[md.file_name[i]]
+        df = v
         if reduce
             df = df[:, cc]
         end
@@ -126,8 +121,8 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
             permutecols!(df, n)
         end
 
-        insertcols!(df, 1, sample_id = string(md.sample_id[i]))
-
+        # insertcols!(df, 1, sample_id = string(md.sample_id[i]))
+        insertcols!(df, 1, sample_id = string(k))
         push!(dfall,df)
         # collect the column names of each file for order check
         push!(colnames, names(df))
