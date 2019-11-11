@@ -98,21 +98,22 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
     for (k, v) in fcsRaw
         # df = fcsRaw[md.file_name[i]]
         df = v
+        
         if reduce
             df = df[:, cc]
+        else
+            # remove the None columns if the columns are not reduced
+            if :None in names(df)
+                delete!(df, :None)
+            end
+            if :None_1 in names(df)
+                delete!(df, :None_1)
+            end
+            if :None_2 in names(df)
+                println(names(df))
+                delete!(df, :None_2)
+            end
         end
-
-        # # remove the None columns
-        # if :None in names(df)
-        #     delete!(df, :None)
-        # end
-        # if :None_1 in names(df)
-        #     delete!(df, :None_1)
-        # end
-        # if :None_2 in names(df)
-        #     println(names(df))
-        #     delete!(df, :None_2)
-        # end
 
         # sort columns because the order is not garantiert
         if sort
