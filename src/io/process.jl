@@ -77,7 +77,9 @@ Read in the fcs raw, add sample id, subset the columns and transform
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 - `method`: transformation method, default arcsinh, optional
 - `cofactor`: Cofactor for transformation, default 5, optional
-- `reduce`: Selected only columns which are defined by lineage and functional, optional, default: true
+- `reduce`: Selected only columns which are defined by lineage and functional, optional, 
+    default: true. If false the check for any none columns to be removed (none columns can appear 
+    after concatenating FCS files as well as parameter like: time, event length)
 - `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true 
 """
 function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce = true, sort = true)
