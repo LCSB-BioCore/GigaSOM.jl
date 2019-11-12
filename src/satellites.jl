@@ -148,15 +148,15 @@ Return a vector of neuron populations.
 - `numCodes`: total number of neurons
 - `vis`: index of the winner neuron for each training pattern in x
 """
-function makePopulation(numCodes, vis)
+# function makePopulation(numCodes, vis)
 
-    population = zeros(Int, numCodes)
-    for i in 1:size(vis,1)
-        population[vis[i]] += 1
-    end
+#     population = zeros(Int, numCodes)
+#     for i in 1:size(vis,1)
+#         population[vis[i]] += 1
+#     end
 
-    return population
-end
+#     return population
+# end
 
 
 """
