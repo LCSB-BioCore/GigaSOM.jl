@@ -14,6 +14,8 @@ checkDir()
 
     #apply the parallel GigaSOM algorithm to the data, train it and test it
     include("parallel.jl")
+
+    include("functionTest.jl")
 end
 
 cd(owd)
