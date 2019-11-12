@@ -1,5 +1,4 @@
-# Testing 
-
+# Testing Functions
 
 @testset "Test Satellite Functions" begin
 
@@ -18,6 +17,13 @@
         g = GigaSOM.gridRectangular(2,2)
         dm = GigaSOM.distMatrix(g, false)
         @test size(dm) == (4,4)
+    end
+
+    @testset "normTrainData" begin
+        g = zeros(2,2)
+        x, normParams = GigaSOM.normTrainData(g, :none)
+        # Test if none keeps the data unchanged
+        @test x == g
     end
 
     @testset "convertTrainingData" begin
