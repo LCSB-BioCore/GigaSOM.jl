@@ -6,13 +6,16 @@ using Distributed, XLSX, DataFrames, FileIO
 md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
 panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
 
+@info "md and panel files read"
+
 cd("fcs")
 
 # local read data function
 nWorkers = 2
-
 addprocs(nWorkers)
 @everywhere using GigaSOM,  DataFrames, FCSFiles
+
+@info "processes added"
 
 @everywhere function loadData(md, panel)
 
@@ -31,16 +34,21 @@ addprocs(nWorkers)
     return daf.fcstable[rand(1:nSamples, nSamples), :]
 end
 
+@info "loadData function defined"
+
 #lineageMarkers, functionalMarkers = getMarkers(panel)
 R = Vector{Any}(undef,nworkers())
 
+@info "loop started"
 # load files in parallel
 N = convert(Int64, length(md.file_name)/nWorkers)
-@sync begin
-        for (idx, pid) in enumerate(workers())
+@time @sync begin
+        @async for (idx, pid) in enumerate(workers())
             R[idx] =  fetch(@spawnat pid loadData(md[(idx-1)*N+1:idx*N, :], panel))
         end
 end
+
+@info "loop ended"
 
 cd("..")
 rmprocs(workers())
