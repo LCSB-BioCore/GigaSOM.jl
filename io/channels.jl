@@ -1,8 +1,5 @@
 using Distributed, XLSX, DataFrames, FileIO
 
-# read directory
-#listFiles = readdir("fcs")
-
 md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
 panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
 
@@ -22,7 +19,6 @@ end
 @everywhere function loadData(ch, fn)
 
     # load FCS file
-    #@show fn
     fcsRaw = readFlowset(fn)
 
     # clean names
@@ -33,13 +29,10 @@ end
 
     # return a random sample
     gridSize = 100
-    #nSamples = 10
     nSamples = convert(Int64, floor(gridSize/nworkers()))
-    #@show nSamples
-    #@show daf[rand(1:nSamples, nSamples), :]
-    #put!(ch, rand(1:nSamples, nSamples))
+
     put!(ch, Object(daf[rand(1:nSamples, nSamples), :]))
-    #return daf.fcstable[rand(1:nSamples, nSamples), :]
+
 end
 
 function distributed_channel_load(fileload_func, filenames; ctype=Any, csize=2^10)
@@ -66,7 +59,7 @@ function test_loading(channel_load)
     take!(inchannel)
 end
 
-@time out = test_loading(distributed_channel_load)
+@time test_loading(distributed_channel_load)
 cd("..")
 rmprocs(workers())
 
