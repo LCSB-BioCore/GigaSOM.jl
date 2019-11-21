@@ -12,8 +12,8 @@ cd("fcs")
 
 addprocs(2)
 @everywhere using GigaSOM, FileIO, DataFrames
-@everywhere md=$md
-@everywhere panel=$panel
+
+@info "packages loaded"
 
 @everywhere struct Object
     table::DataFrame
@@ -66,7 +66,7 @@ function test_loading(channel_load)
     take!(inchannel)
 end
 
-@time b = test_loading(distributed_channel_load)
+@time out = test_loading(distributed_channel_load)
 cd("..")
 rmprocs(workers())
 
