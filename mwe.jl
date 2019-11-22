@@ -1,3 +1,15 @@
+try
+    using Distributed
+    using FileIO
+    using CSVFiles
+catch
+    import Pkg;
+    Pkg.add("Distributed")
+    Pkg.add("FileIO")
+    Pkg.add("CSVFiles")
+end
+
+
 using Distributed, FileIO
 
 # prepare the workers
