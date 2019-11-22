@@ -13,7 +13,7 @@ end
 using Distributed, FileIO
 
 # prepare the workers
-nWorkers = 4
+nWorkers = 2
 addprocs(nWorkers)
 @everywhere using FileIO
 
@@ -36,7 +36,7 @@ N = convert(Int64, length(content)/nWorkers)
     end
 end
 
-R
+@info R
 
 rmprocs(workers())
 
