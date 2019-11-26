@@ -40,6 +40,29 @@ N = convert(Int64, length(md.file_name)/nWorkers)
 rmprocs(workers())
 
 
+using Distributed
 
+p = addprocs(2)
+R2 = @spawnat 11 a = 5
 
+@everywhere function getRefBack(data)
 
+    myRef = Ref{Int}(data)
+    
+end
+
+@everywhere function addMe(m, n)
+    return m+n
+end
+
+data = 3
+
+R1 = @spawnat 2 getRefBack(data)
+
+x = fetch(R1)
+
+m = 2
+
+R2 = @spawnat 2 addMe(m, x)
+
+y = fetch(R2)
