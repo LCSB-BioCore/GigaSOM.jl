@@ -33,7 +33,8 @@ function readFlowset(filenames)
     return flowFrame
 end
 
-@everywhere function loadData(fn, md,panel)
+function loadData(fn, md,panel; method = "asinh", cofactor = 5, 
+                            reduce = true, sort = true)
 
     fcsRaw = readFlowset(fn)
     println(keys(fcsRaw))
@@ -72,8 +73,8 @@ end
     return dfall
 
     # return a random sample
-    return ones(1,1)
-    #gridSize = 100
-    #nSamples = convert(Int64, floor(gridSize/nworkers()))
-    #return daf.fcstable[rand(1:nSamples, nSamples), :]
+    # return ones(1,1)
+    gridSize = 100
+    nSamples = convert(Int64, floor(gridSize/nworkers()))
+    return daf.fcstable[rand(1:nSamples, nSamples), :]
 end
