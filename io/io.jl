@@ -14,13 +14,9 @@ lineageMarkers, functionalMarkers = getMarkers(panel)
 
 nWorkers = 2
 addprocs(nWorkers)
-@everywhere using GigaSOM
+@everywhere using GigaSOM, FCSFiles
 
 @info "processes added"
-
-
-
-@info "loadData function defined"
 
 R = Vector{Any}(undef,nworkers())
 
