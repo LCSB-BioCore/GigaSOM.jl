@@ -77,5 +77,5 @@ function loadData(fn, md,panel; method = "asinh", cofactor = 5,
     gridSize = 100
     nSamples = convert(Int64, floor(gridSize/nworkers()))
 
-    return (dfall[rand(1:nSamples, nSamples), :], dfallRef)
+    return (dfall[rand(1:nSamples, 2), :], dfallRef)
 end
