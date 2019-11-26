@@ -18,21 +18,7 @@ addprocs(nWorkers)
 
 @info "processes added"
 
- @everywhere function loadData(fn, md,panel)
 
-    fcsRaw = readFlowset(fn)
-    println(keys(fcsRaw))
-    cleanNames!(fcsRaw)
-
-    # create daFrame
-    daf = createDaFrame(fcsRaw,md, panel)
-
-    # return a random sample
-    return ones(1,1)
-    #gridSize = 100
-    #nSamples = convert(Int64, floor(gridSize/nworkers()))
-    #return daf.fcstable[rand(1:nSamples, nSamples), :]
-end
 
 @info "loadData function defined"
 
