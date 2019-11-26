@@ -43,7 +43,6 @@ rmprocs(workers())
 using Distributed
 
 p = addprocs(2)
-R2 = @spawnat 11 a = 5
 
 @everywhere function getRefBack(data)
 
@@ -57,12 +56,12 @@ end
 
 data = 3
 
-R1 = @spawnat 2 getRefBack(data)
+R1 = @spawnat p[1] getRefBack(data)
 
 x = fetch(R1)
 
 m = 2
 
-R2 = @spawnat 2 addMe(m, x)
+R2 = @spawnat p[1] addMe(m, x.x)
 
 y = fetch(R2)
