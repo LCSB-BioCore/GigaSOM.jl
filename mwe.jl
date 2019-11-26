@@ -11,34 +11,37 @@ catch
     Pkg.add("FCSFiles")
 end
 
-
-using Distributed, FileIO
-
 # prepare the workers
+using Distributed
 nWorkers = 2
-type = "fcs"
-addprocs(nWorkers) #, topology=:master_worker)
-@everywhere using FileIO #, FCSFiles
+type = "fcs" #csv
+addprocs(nWorkers, topology=:master_worker)
+@everywhere using FileIO
 
+# information about workers
 @info "Number of workers: $nWorkers"
 
 # define a custom load function
 @everywhere function loadData(id, fn, type)
     @time in = FileIO.load(type*"/"*fn)
-    return ones(id, id)
+    return id
 end
 
-R = Vector{Any}(undef,nworkers())
+# get the files
 content = readdir(type)
+L = length(content)
+
+# define an array of references
+R = Vector{Any}(undef, L)
 
 # load files in parallel
-N = convert(Int64, length(content)/nWorkers)
+N = convert(Int64, L/nWorkers)
 
 @info "Benchmarking ..."
 
 @time @sync for (idx, pid) in enumerate(workers())
     @async for k in (idx-1)*N+1:idx*N
-        R[idx] = fetch(@spawnat pid loadData(idx, content[k], type) )
+        R[k] = fetch(@spawnat pid loadData(idx, content[k], type) )
     end
 end
 
