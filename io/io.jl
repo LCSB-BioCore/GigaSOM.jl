@@ -5,10 +5,10 @@ checkDir()
 #create genData and data folder and change dir to dataPath
 cwd = pwd()
 #
-dataPath = "/Users/ohunewald/work/GigaSOM.jl/test/data"
+dataPath = "/Users/ohunewald/work/data_felD1/"
 cd(dataPath)
-md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
-panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
+md = DataFrame(XLSX.readtable("metadata.xlsx", "Sheet1", infer_eltypes=true)...)
+panel = DataFrame(XLSX.readtable("panel.xlsx", "Sheet1", infer_eltypes=true)...)
 #
 lineageMarkers, functionalMarkers = getMarkers(panel)
 
@@ -18,14 +18,14 @@ addprocs(nWorkers)
 
 @info "processes added"
 
- @everywhere function loadData(fn, md, panel)
+ @everywhere function loadData(fn, md,panel)
 
     fcsRaw = readFlowset(fn)
-
+    println(keys(fcsRaw))
     cleanNames!(fcsRaw)
 
     # create daFrame
-    daf = createDaFrame(fcsRaw, md, panel)
+    daf = createDaFrame(fcsRaw,md, panel)
 
     # return a random sample
     return ones(1,1)
@@ -34,11 +34,8 @@ addprocs(nWorkers)
     #return daf.fcstable[rand(1:nSamples, nSamples), :]
 end
 
-
-
 @info "loadData function defined"
 
-#lineageMarkers, functionalMarkers = getMarkers(panel)
 R = Vector{Any}(undef,nworkers())
 
 @info "loop started"
@@ -49,7 +46,7 @@ N = convert(Int64, length(md.file_name)/nWorkers)
             #@show idx
             #@show pid
             @async R[idx] = @spawnat pid begin
-                loadData(md.file_name[(idx-1)*N+1:idx*N], md, panel)
+                loadData(md.file_name[(idx-1)*N+1:idx*N],md, panel)
             end
     end
 
