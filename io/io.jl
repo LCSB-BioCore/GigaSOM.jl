@@ -25,9 +25,11 @@ R = Vector{Any}(undef,nworkers())
 N = convert(Int64, length(md.file_name)/nWorkers)
 
 @time @sync for (idx, pid) in enumerate(workers())
-    @async R[idx] = @spawnat pid begin
-        loadData(md.file_name[(idx-1)*N+1:idx*N],md, panel)
-    end
+    @async R[idx] = fetch(@spawnat pid begin loadData(md.file_name[(idx-1)*N+1:idx*N],md, panel) end)
+end
+
+for i in R
+    println(i[1])
 end
 
 rmprocs(workers())
