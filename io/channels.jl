@@ -26,9 +26,19 @@ end
 
     # load FCS file
     fcsRaw = readFlowset(fn)
-    println(keys(fcsRaw))
+    # println(keys(fcsRaw))
     # clean names
     cleanNames!(fcsRaw)
+
+    # extract lineage markers
+    lineageMarkers, functionalMarkers = getMarkers(panel)
+
+    cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
+    # markers can be lineage and functional at tthe same time
+    # therefore make cc unique
+    unique!(cc)
+
+    # transformData(fcsRaw, method, cofactor)
 
     # create daFrame
     # daf = fcsRaw.vals[1] #createDaFrame(fcsRaw)
