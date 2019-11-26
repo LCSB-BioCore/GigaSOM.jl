@@ -32,3 +32,48 @@ function readFlowset(filenames)
 
     return flowFrame
 end
+
+@everywhere function loadData(fn, md,panel)
+
+    fcsRaw = readFlowset(fn)
+    println(keys(fcsRaw))
+    cleanNames!(fcsRaw)
+
+    # extract lineage markers
+    lineageMarkers, functionalMarkers = getMarkers(panel)
+
+    cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
+    # markers can be lineage and functional at tthe same time
+    # therefore make cc unique
+    unique!(cc)
+
+    transformData(fcsRaw, method, cofactor)
+
+    dfall = []
+    colnames = []
+
+    for (k, v) in fcsRaw
+        
+        df = v
+        df = sortReduce(df, cc, reduce, sort)
+
+        insertcols!(df, 1, sample_id = string(k))
+        push!(dfall,df)
+        # collect the column names of each file for order check
+        push!(colnames, names(df))
+    end
+
+    # # check if all the column names are in the same order
+    if !(all(y->y==colnames[1], colnames))
+        throw(UndefVarError(:TheColumnOrderIsNotEqual))
+    end
+
+    dfall = vcat(dfall...)
+    return dfall
+
+    # return a random sample
+    return ones(1,1)
+    #gridSize = 100
+    #nSamples = convert(Int64, floor(gridSize/nworkers()))
+    #return daf.fcstable[rand(1:nSamples, nSamples), :]
+end
