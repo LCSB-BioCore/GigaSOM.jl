@@ -70,11 +70,10 @@ function loadData(fn, md,panel; method = "asinh", cofactor = 5,
     end
 
     dfall = vcat(dfall...)
-    return dfall
 
-    # return a random sample
-    # return ones(1,1)
+    # return random samples for init Grid
     gridSize = 100
     nSamples = convert(Int64, floor(gridSize/nworkers()))
-    return daf.fcstable[rand(1:nSamples, nSamples), :]
+
+    return dfall[rand(1:nSamples, nSamples), :]
 end
