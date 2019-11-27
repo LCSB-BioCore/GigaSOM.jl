@@ -71,7 +71,7 @@ can be provided to modify the distance-dependent training. The function must fit
 to the signature fun(x, r) where x is an arbitrary distance and r is a parameter
 controlling the function and the return value is between 0.0 and 1.0.
 """
-function trainGigaSOM(som::Som, train, cc;
+function trainGigaSOM(som::Som, trainRef, cc;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
                       knnTreeFun = BruteTree,
@@ -82,8 +82,8 @@ function trainGigaSOM(som::Som, train, cc;
     # display(train.x[1:5, 1:5])
     
     # define the columns to be used for som training
-    trainDF = convertTrainingData(train.x[:,cc]) # de-reference train
-    println(size(trainDF))
+    # de-reference train
+    # println(size(trainDF))
 
     # set default radius:
     if rStart == 0.0
@@ -101,11 +101,19 @@ function trainGigaSOM(som::Som, train, cc;
         globalSumDenominator = zeros(Float64, size(codes)[1])
 
         tree = knnTreeFun(Array{Float64,2}(transpose(codes)), metric)
-
+        R = Vector{Any}(undef,nworkers())
         # only batch mode
-        sumNumerator, sumDenominator = doEpoch(trainDF, codes, tree)
-        globalSumNumerator += sumNumerator
-        globalSumDenominator += sumDenominator
+        # train is of type Ref{DataFrame}
+        @sync begin
+            for (idx, pid) in enumerate(workers())
+                @async begin
+                    # @info pid
+                    R[idx] =  fetch(@spawnat pid begin doEpoch(trainRef[idx][2], codes, tree, cc) end)
+                    globalSumNumerator += R[idx][1]
+                    globalSumDenominator += R[idx][2]
+                end
+            end
+        end        
 
         r = radiusFun(rStart, rFinal, j, epochs)
         println("Radius: $r")
@@ -133,24 +141,28 @@ vectors and the adjustment in radius after each epoch.
 - `codes`: Codebook
 - `tree`: knn-compatible tree built upon the codes
 """
-function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, tree)
+function doEpoch(x, codes::Array{Float64, 2}, tree, cc)
 
-     # initialise numerator and denominator with 0's
-     sumNumerator = zeros(Float64, size(codes))
-     sumDenominator = zeros(Float64, size(codes)[1])
+    # display(x.x[1:5, 1:5])
+    # display(size(x.x))
+    # data = x.x
+    # display()
+    # x = convertTrainingData(train.x[:,cc]) 
+    # initialise numerator and denominator with 0's
+    sumNumerator = zeros(Float64, size(codes))
+    sumDenominator = zeros(Float64, size(codes)[1])
 
-     # for each sample in dataset / trainingsset
-     for s in 1:size(x, 1)
+    for s in 1:size(x.x, 1)
 
-         (bmuIdx, bmuDist) = knn(tree, x[s, :], 1)
+        (bmuIdx, bmuDist) = knn(tree, x.x[s, :], 1)
 
-         target = bmuIdx[1]
+        target = bmuIdx[1]
 
-         sumNumerator[target, :] .+= x[s, :]
-         sumDenominator[target] += 1
-     end
+        sumNumerator[target, :] .+= x.x[s, :]
+        sumDenominator[target] += 1
+    end
 
-     return sumNumerator, sumDenominator
+    return sumNumerator, sumDenominator
 end
 
 

@@ -89,7 +89,8 @@ function loadData(fn, md,panel; method = "asinh", cofactor = 5,
     dfall = vcat(dfall...)
 
     # return a reference to dfall to be used by trainGigaSOM
-    dfallRef = Ref{DataFrame}(dfall)
+    dfallRefMatrix = convertTrainingData(dfall[:, cc])
+    dfallRef = Ref{Array{Float64, 2}}(dfallRefMatrix)
     # return random samples for init Grid
     gridSize = 100
     nSamples = convert(Int64, floor(gridSize/nworkers()))
