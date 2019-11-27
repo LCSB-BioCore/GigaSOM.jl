@@ -28,9 +28,7 @@ N = convert(Int64, length(md.file_name)/nWorkers)
     @async R[idx] = fetch(@spawnat pid begin loadData(md.file_name[(idx-1)*N+1:idx*N],md, panel) end)
 end
 
-for i in R
-    println(i[1])
-end
+
 
 rmprocs(workers())
 
