@@ -68,14 +68,14 @@ can be provided to modify the distance-dependent training. The function must fit
 to the signature fun(x, r) where x is an arbitrary distance and r is a parameter
 controlling the function and the return value is between 0.0 and 1.0.
 """
-function trainGigaSOM(som::Som, train::DataFrame;
+function trainGigaSOM(som::Som, train;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
                       knnTreeFun = BruteTree,
                       rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
                       epochs = 10)
 
-    train = convertTrainingData(train)
+    # train = convertTrainingData(train)
 
     # set default radius:
 
@@ -88,9 +88,6 @@ function trainGigaSOM(som::Som, train::DataFrame;
 
     codes = som.codes
 
-    nWorkers = nprocs()
-    dTrain = distribute(train)
-
     for j in 1:epochs
 
         globalSumNumerator = zeros(Float64, size(codes))
@@ -98,25 +95,11 @@ function trainGigaSOM(som::Som, train::DataFrame;
 
         tree = knnTreeFun(Array{Float64,2}(transpose(codes)), metric)
 
-        if nworkers() > 1
+        # only batch mode
+        sumNumerator, sumDenominator = doEpoch(train, codes, tree)
+        globalSumNumerator += sumNumerator
+        globalSumDenominator += sumDenominator
 
-            R = Vector{Any}(undef,nworkers())
-
-            @sync begin
-                for (idx, pid) in enumerate(workers())
-                    @async begin
-                        R[idx] =  fetch(@spawnat pid begin doEpoch(localpart(dTrain), codes, tree) end)
-                        globalSumNumerator += R[idx][1]
-                        globalSumDenominator += R[idx][2]
-                    end
-                end
-            end
-        else
-            # only batch mode
-            sumNumerator, sumDenominator = doEpoch(localpart(dTrain), codes, tree)
-            globalSumNumerator += sumNumerator
-            globalSumDenominator += sumDenominator
-        end
 
         r = radiusFun(rStart, rFinal, j, epochs)
         println("Radius: $r")
