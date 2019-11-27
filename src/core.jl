@@ -107,7 +107,6 @@ function trainGigaSOM(som::Som, train, cc;
         globalSumNumerator += sumNumerator
         globalSumDenominator += sumDenominator
 
-
         r = radiusFun(rStart, rFinal, j, epochs)
         println("Radius: $r")
         if r <= 0
