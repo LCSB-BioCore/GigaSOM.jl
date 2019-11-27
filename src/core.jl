@@ -33,6 +33,9 @@ function initGigaSOM( randMatrix, xdim, ydim = xdim;
     x = y = collect(1:numCodes)
     indices = DataFrame(X = x, Y = y)
 
+    # TODO: simulate colnames for testing only !!!
+    colNames = ["a", "b", "c"]
+    normParams = DataFrame()
     # make SOM object:
     som = Som(codes = codes, colNames = colNames,
            normParams = normParams, norm = norm,
@@ -68,17 +71,21 @@ can be provided to modify the distance-dependent training. The function must fit
 to the signature fun(x, r) where x is an arbitrary distance and r is a parameter
 controlling the function and the return value is between 0.0 and 1.0.
 """
-function trainGigaSOM(som::Som, train;
+function trainGigaSOM(som::Som, train, cc;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
                       knnTreeFun = BruteTree,
                       rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
                       epochs = 10)
-
-    # train = convertTrainingData(train)
+    
+    # display(size(train.x))
+    # display(train.x[1:5, 1:5])
+    
+    # define the columns to be used for som training
+    trainDF = convertTrainingData(train.x[:,cc]) # de-reference train
+    println(size(trainDF))
 
     # set default radius:
-
     if rStart == 0.0
         rStart = √(som.xdim^2 + som.ydim^2) / 2
         @info "The radius has been determined automatically."
@@ -96,7 +103,7 @@ function trainGigaSOM(som::Som, train;
         tree = knnTreeFun(Array{Float64,2}(transpose(codes)), metric)
 
         # only batch mode
-        sumNumerator, sumDenominator = doEpoch(train, codes, tree)
+        sumNumerator, sumDenominator = doEpoch(trainDF, codes, tree)
         globalSumNumerator += sumNumerator
         globalSumDenominator += sumDenominator
 
