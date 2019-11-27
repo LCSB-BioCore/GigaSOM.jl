@@ -11,24 +11,18 @@ Initialises a SOM.
 - `norm`: optional normalisation; one of :`minmax, :zscore or :none`
 - `toroidal`: optional flag; if true, the SOM is toroidal.
 """
-function initGigaSOM( train, xdim, ydim = xdim;
+function initGigaSOM( randMatrix, xdim, ydim = xdim;
              norm::Symbol = :none, toroidal = false)
-
-    if typeof(train) == DataFrame
-        colNames = [String(x) for x in names(train)]
-    else
-        colNames = ["x$i" for i in 1:size(train,2)]
-    end
-
-    train = convertTrainingData(train)
 
     numCodes = xdim * ydim
 
     # normalise training data:
+    # TODO: Normalization need to be adjusted for independence
+    # because of the fragmented dataset
     train, normParams = normTrainData(train, norm)
 
     # initialise the codes with random samples
-    codes = train[rand(1:size(train,1), numCodes),:]
+    codes = randMatrix
     grid = gridRectangular(xdim, ydim)
 
     normParams = convert(DataFrame, normParams)
