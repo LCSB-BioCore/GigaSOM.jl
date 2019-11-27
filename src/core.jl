@@ -19,14 +19,14 @@ function initGigaSOM( randMatrix, xdim, ydim = xdim;
     # normalise training data:
     # TODO: Normalization need to be adjusted for independence
     # because of the fragmented dataset
-    train, normParams = normTrainData(train, norm)
+    # train, normParams = normTrainData(train, norm)
 
     # initialise the codes with random samples
     codes = randMatrix
     grid = gridRectangular(xdim, ydim)
 
-    normParams = convert(DataFrame, normParams)
-    names!(normParams, Symbol.(colNames))
+    # normParams = convert(DataFrame, normParams)
+    # names!(normParams, Symbol.(colNames))
 
     # create X,Y-indices for neurons:
     #
