@@ -29,40 +29,44 @@ N = convert(Int64, length(md.file_name)/nWorkers)
 end
 
 # Simulate the concatenation of return samples for testing only
-allRand = rand(10,10)
+# init codes: size is 10x10 x number of params
+# each code contains vector of params -> 100 x length(lineageMarkers)
+allRand = rand(100, length(lineageMarkers))
 
 som = initGigaSOM(allRand, 10, 10)
 
-# som2 = trainGigaSOM()
+#------ trainGigaSOM() -------------------------
+# define the columns to be used for som training
+cc = map(Symbol, lineageMarkers)
 Rsom = Vector{Any}(undef,nworkers())
 @time @sync for (idx, pid) in enumerate(workers())
-    @async Rsom[idx] = fetch(@spawnat pid begin trainGigaSOM(som, R[idx][2]) end) 
+    @async Rsom[idx] = fetch(@spawnat pid begin trainGigaSOM(som, R[idx][2], cc) end) 
 end
 
 rmprocs(workers())
 
-using Distributed
+# using Distributed
 
-p = addprocs(2)
+# p = addprocs(2)
 
-@everywhere function getRefBack(data)
+# @everywhere function getRefBack(data)
 
-    myRef = Ref{Int}(data)
+#     myRef = Ref{Int}(data)
     
-end
+# end
 
-@everywhere function addMe(m, n)
-    return m+n
-end
+# @everywhere function addMe(m, n)
+#     return m+n
+# end
 
-data = 3
+# data = 3
 
-R1 = @spawnat p[1] getRefBack(data)
+# R1 = @spawnat p[1] getRefBack(data)
 
-x = fetch(R1)
+# x = fetch(R1)
 
-m = 2
+# m = 2
 
-R2 = @spawnat p[1] addMe(m, x.x)
+# R2 = @spawnat p[1] addMe(m, x.x)
 
-y = fetch(R2)
+# y = fetch(R2)
