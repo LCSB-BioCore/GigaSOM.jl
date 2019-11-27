@@ -39,9 +39,16 @@ som = initGigaSOM(allRand, 10, 10)
 #------ trainGigaSOM() -------------------------
 # define the columns to be used for som training
 cc = map(Symbol, lineageMarkers)
-Rsom = Vector{Any}(undef,nworkers())
-@time @sync for (idx, pid) in enumerate(workers())
-    @async Rsom[idx] = fetch(@spawnat pid begin trainGigaSOM(som, R[idx][2], cc) end) 
-end
+# Rsom = Vector{Any}(undef,nworkers())
+
+@time som = trainGigaSOM(som, R, cc) 
+
+# for j in 1:epochs
+
+#     @time @sync for (idx, pid) in enumerate(workers())
+#         @async Rsom[idx] = fetch(@spawnat pid begin trainGigaSOM(som, R[idx][2], cc) end) 
+#     end
+
+# end
 
 rmprocs(workers())
