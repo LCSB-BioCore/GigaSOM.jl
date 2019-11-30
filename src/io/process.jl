@@ -1,6 +1,6 @@
 
 """
-    transformData(flowframe, method = "asinh", cofactor = 5)
+    transformData(flowframe, method, cofactor)
 
 Tansforms FCS data. Currently only asinh
 
@@ -9,7 +9,7 @@ Tansforms FCS data. Currently only asinh
 - `method`: transformation method
 - `cofactor`: Cofactor for transformation
 """
-function transformData(flowframe, method = "asinh", cofactor = 5)
+function transformData(flowframe, method, cofactor)
     # loop through every file in dict
     # get the dataframe
     # convert to matrix
@@ -75,32 +75,79 @@ Read in the fcs raw, add sample id, subset the columns and transform
 - `fcsRaw`: raw FCS data
 - `md`: Metadata table
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
+- `method`: transformation method, default arcsinh, optional
+- `cofactor`: Cofactor for transformation, default 5, optional
+- `reduce`: Selected only columns which are defined by lineage and functional, optional, 
+    default: true. If false the check for any none columns to be removed (none columns can appear 
+    after concatenating FCS files as well as parameter like: time, event length)
+- `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true 
 """
-function createDaFrame(fcsRaw, md, panel)
+function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce = true, sort = true)
 
     # extract lineage markers
     lineageMarkers, functionalMarkers = getMarkers(panel)
 
-    transformData(fcsRaw)
-
-    for i in eachindex(md.file_name)
-        df = fcsRaw[md.file_name[i]]
-        insertcols!(df, 1, sample_id = string(md.sample_id[i]))
-    end
-
-    dfall = []
-    for (k,v) in fcsRaw
-        push!(dfall,v)
-    end
-    dfall = vcat(dfall...)
     cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
     # markers can be lineage and functional at tthe same time
     # therefore make cc unique
     unique!(cc)
-    push!(cc, :sample_id)
-    # reduce the dataset to lineage (and later) functional (state) markers
-    dfall = dfall[:, cc]
+
+    transformData(fcsRaw, method, cofactor)
+
+    dfall = []
+    colnames = []
+
+    for (k, v) in fcsRaw
+        
+        df = v
+        df = sortReduce(df, cc, reduce, sort)
+
+        insertcols!(df, 1, sample_id = string(k))
+        push!(dfall,df)
+        # collect the column names of each file for order check
+        push!(colnames, names(df))
+    end
+
+    # # check if all the column names are in the same order
+    if !(all(y->y==colnames[1], colnames))
+        throw(UndefVarError(:TheColumnOrderIsNotEqual))
+    end
+
+    dfall = vcat(dfall...)
     daf = daFrame(dfall, md, panel)
+end
+
+
+"""
+    sortReduce(df, cc, reduce, sort)
+
+Sorts the columns and/or reduces them to sleected markers
+
+# Arguments:
+- `df`: FCS dataframe
+- `cc`: Columns to reduce to
+- `reduce`: Boolean
+- `sort`: Boolean
+"""
+function sortReduce(df, cc, reduce, sort)
+
+    if reduce
+        df = df[:, cc]
+    else
+        for n in names(df)
+        # remove the None columns if the columns are not reduced
+            if occursin(r"None", string(n))
+                select!(df, Not(n))
+            end
+        end
+    end
+
+    # sort columns because the order is not garantiert
+    if sort
+        n = names(df)
+        sort!(n)
+        permutecols!(df, n)
+    end
 end
 
 
