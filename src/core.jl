@@ -1,14 +1,13 @@
 """
-        initGigaSOM(train, xdim, ydim = xdim;  norm = :none, toroidal = false)
+    function initGigaSOM(initMatrix, xdim, ydim = xdim;
+        norm::Symbol = :none, toroidal = false)
 
 Initialises a SOM.
 
 # Arguments:
-- `train`: training data
+- `initMatrix`: codeBook vector as random input matrix from random workers
 - `xdim, ydim`: geometry of the SOM
-           If DataFrame, the column names will be used as attribute names.
-           Codebook vectors will be sampled from the training data.
-- `norm`: optional normalisation; one of :`minmax, :zscore or :none`
+- `norm`: optional normalisation
 - `toroidal`: optional flag; if true, the SOM is toroidal.
 """
 function initGigaSOM(initMatrix, xdim, ydim = xdim;
