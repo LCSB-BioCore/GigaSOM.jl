@@ -15,20 +15,14 @@ function initGigaSOM(initMatrix, xdim, ydim = xdim;
 
     numCodes = xdim * ydim
 
-    # normalise training data:
-    # TODO: Normalization need to be adjusted for independence
-    # because of the fragmented dataset
-    # train, normParams = normTrainData(train, norm)
+    # TODO: Normalization need to be adjusted for distributed loading
+    # normParams = convert(DataFrame, normParams)
 
-    # initialise the codes with random samples
+    # initialise the codes with random samples from workers
     codes = initMatrix
     grid = gridRectangular(xdim, ydim)
 
-    # normParams = convert(DataFrame, normParams)
-    # names!(normParams, Symbol.(colNames))
-
     # create X,Y-indices for neurons:
-    #
     x = y = collect(1:numCodes)
     indices = DataFrame(X = x, Y = y)
 
@@ -68,12 +62,6 @@ end
 - `rFinal`: target radius at the last epoch, defaults to 0.1
 - `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
 - `epochs`: number of SOM training iterations (default 10)
-
-Training data must be convertable to Array{Float34,2} with `convert()`.
-Training samples are row-wise; one sample per row. An alternative kernel function
-can be provided to modify the distance-dependent training. The function must fit
-to the signature fun(x, r) where x is an arbitrary distance and r is a parameter
-controlling the function and the return value is between 0.0 and 1.0.
 """
 function trainGigaSOM(som::Som, trainRef, cc;
                       kernelFun::Function = gaussianKernel,
@@ -81,13 +69,6 @@ function trainGigaSOM(som::Som, trainRef, cc;
                       knnTreeFun = BruteTree,
                       rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
                       epochs = 10)
-    
-    # display(size(train.x))
-    # display(train.x[1:5, 1:5])
-    
-    # define the columns to be used for som training
-    # de-reference train
-    # println(size(trainDF))
 
     # set default radius:
     if rStart == 0.0
