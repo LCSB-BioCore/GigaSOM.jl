@@ -2,15 +2,14 @@
 using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed, SHA, JSON
 
 checkDir()
-#create genData and data folder and change dir to dataPath
 cwd = pwd()
-#
+
 # dataPath = "/Users/ohunewald/work/data_felD1/"
 dataPath = "/Users/ohunewald/work/artificial_data_cytof/"
 cd(dataPath)
 md = DataFrame(XLSX.readtable("metadata.xlsx", "Sheet1", infer_eltypes=true)...)
 panel = DataFrame(XLSX.readtable("panel.xlsx", "Sheet1", infer_eltypes=true)...)
-#
+
 lineageMarkers, functionalMarkers = getMarkers(panel)
 
 nWorkers = 2
@@ -21,8 +20,6 @@ addprocs(nWorkers, topology=:master_worker)
 
 R = Vector{Any}(undef,nworkers())
 
-@info "loop started"
-# load files in parallel
 N = convert(Int64, (length(md.file_name)/nWorkers))
 
 @time @sync for (idx, pid) in enumerate(workers())
@@ -39,16 +36,7 @@ som = initGigaSOM(allRand, 10, 10)
 #------ trainGigaSOM() -------------------------
 # define the columns to be used for som training
 cc = map(Symbol, lineageMarkers)
-# Rsom = Vector{Any}(undef,nworkers())
-
+# R holds the reference to the dataset for each worker
 @time som = trainGigaSOM(som, R, cc) 
-
-# for j in 1:epochs
-
-#     @time @sync for (idx, pid) in enumerate(workers())
-#         @async Rsom[idx] = fetch(@spawnat pid begin trainGigaSOM(som, R[idx][2], cc) end) 
-#     end
-
-# end
 
 rmprocs(workers())
