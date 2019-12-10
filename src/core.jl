@@ -49,19 +49,24 @@ end
 
 
 """
-    trainGigaSOM(som::Som, train::DataFrame, kernelFun = gaussianKernel,
-                        r = 0.0, epochs = 10)
+    function trainGigaSOM(som::Som, trainRef, cc;
+        kernelFun::Function = gaussianKernel,
+        metric = Euclidean(),
+        knnTreeFun = BruteTree,
+        rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
+        epochs = 10)
 
 # Arguments:
 - `som`: object of type Som with an initialised som
-- `train`: training data
-- `kernel::function`: optional distance kernel; one of (`bubbleKernel, gaussianKernel`)
+- `trainRef`: reference to data on each worker
+- `cc`: list of columns to be used in training
+- `kernelFun::function`: optional distance kernel; one of (`bubbleKernel, gaussianKernel`)
             default is `gaussianKernel`
+- `metric`: Passed as metric argument to the KNN-tree constructor
+- `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
 - `rStart`: optional training radius.
        If r is not specified, it defaults to (xdim+ydim)/3
 - `rFinal`: target radius at the last epoch, defaults to 0.1
-- `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
-- `metric`: Passed as metric argument to the KNN-tree constructor
 - `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
 - `epochs`: number of SOM training iterations (default 10)
 
