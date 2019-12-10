@@ -11,7 +11,7 @@ Initialises a SOM.
 - `norm`: optional normalisation; one of :`minmax, :zscore or :none`
 - `toroidal`: optional flag; if true, the SOM is toroidal.
 """
-function initGigaSOM( randMatrix, xdim, ydim = xdim;
+function initGigaSOM(initMatrix, xdim, ydim = xdim;
              norm::Symbol = :none, toroidal = false)
 
     numCodes = xdim * ydim
@@ -22,7 +22,7 @@ function initGigaSOM( randMatrix, xdim, ydim = xdim;
     # train, normParams = normTrainData(train, norm)
 
     # initialise the codes with random samples
-    codes = randMatrix
+    codes = initMatrix
     grid = gridRectangular(xdim, ydim)
 
     # normParams = convert(DataFrame, normParams)
