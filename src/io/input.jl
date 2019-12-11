@@ -34,6 +34,7 @@ function readFlowset(filenames)
 end
 
 
+# TODO: add function header
 function readSingleFlowFrame(filename)
 
     flowrun = FileIO.load(filename) # FCS file
@@ -48,11 +49,12 @@ function readSingleFlowFrame(filename)
     flowDF = DataFrame(flowrun.data)
     # sort the DF according to the marker list
     flowDF = flowDF[:, Symbol.(markersIsotope)]
-    # cleanNamesPmap!(markers)
+    cleanNames!(markers)
     names!(flowDF, Symbol.(markers), makeunique=true)
 
     return flowDF
 end
+
 
 """
     loadData(fn, md,panel; method = "asinh", cofactor = 5, 
