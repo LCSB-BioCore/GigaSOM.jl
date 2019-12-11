@@ -18,11 +18,54 @@ addprocs(nWorkers, topology=:master_worker)
 
 
 @everywhere begin
-    function rand_det(n)
-        println(n)
+    function loadDataPmap(fn, md,panel; method = "asinh", cofactor = 5, 
+                            reduce = true, sort = true)
+        
+        fcsRaw = readFlowFrame(fn)
+        cleanNamesPmap!(fcsRaw)
         return 1
     end
 end
+
+@everywhere begin
+    function cleanNamesPmap!(myFile)
+        # replace chritical characters
+        # put "_" in front of colname in case it starts with a number
+        # println(typeof(mydata))
+        for j in eachindex(myFile)
+            myFile[j] = replace(myFile[j], "-"=>"_")
+            if isnumeric(first(myFile[j]))
+                myFile[j] = "_" * myFile[j]
+            end
+        end
+    end
+end
+
+@everywhere begin
+
+    function readFlowFrame(filename)
+
+        flowrun = FileIO.load(filename) # FCS file
+
+        # get metadata
+        # FCSFiles returns a dict with coumn names as key
+        # As the dict is not in order, use the name column form meta
+        # to sort the Dataframe after cast.
+        meta = getMetaData(flowrun)
+        markers = meta[:,1]
+        markersIsotope = meta[:,5]
+        flowDF = DataFrame(flowrun.data)
+        # sort the DF according to the marker list
+        flowDF = flowDF[:, Symbol.(markersIsotope)]
+        cleanNamesPmap!(markers)
+        names!(flowDF, Symbol.(markers), makeunique=true)
+
+        return flowDF
+    end
+end
+
+
+
 
 
 determinants = pmap(rand_det, 1:10)
