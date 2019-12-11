@@ -33,6 +33,27 @@ function readFlowset(filenames)
     return flowFrame
 end
 
+
+function readSingleFlowFrame(filename)
+
+    flowrun = FileIO.load(filename) # FCS file
+
+    # get metadata
+    # FCSFiles returns a dict with coumn names as key
+    # As the dict is not in order, use the name column form meta
+    # to sort the Dataframe after cast.
+    meta = getMetaData(flowrun)
+    markers = meta[:,1]
+    markersIsotope = meta[:,5]
+    flowDF = DataFrame(flowrun.data)
+    # sort the DF according to the marker list
+    flowDF = flowDF[:, Symbol.(markersIsotope)]
+    # cleanNamesPmap!(markers)
+    names!(flowDF, Symbol.(markers), makeunique=true)
+
+    return flowDF
+end
+
 """
     loadData(fn, md,panel; method = "asinh", cofactor = 5, 
             reduce = true, sort = true)
