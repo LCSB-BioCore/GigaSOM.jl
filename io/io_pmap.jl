@@ -14,61 +14,66 @@ lineageMarkers, functionalMarkers = getMarkers(panel)
 
 nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
-@everywhere using GigaSOM, FCSFiles
+@everywhere using GigaSOM, FCSFiles, FileIO
 
 
 @everywhere begin
-    function loadDataPmap(fn, md,panel; method = "asinh", cofactor = 5, 
-                            reduce = true, sort = true)
-        
-        fcsRaw = readFlowFrame(fn)
-        cleanNamesPmap!(fcsRaw)
-        return 1
+    function initRemoteData()
+        return Ref{Array{Float64, 2}}()
     end
 end
 
+
 @everywhere begin
-    function cleanNamesPmap!(myFile)
-        # replace chritical characters
-        # put "_" in front of colname in case it starts with a number
-        # println(typeof(mydata))
-        for j in eachindex(myFile)
-            myFile[j] = replace(myFile[j], "-"=>"_")
-            if isnumeric(first(myFile[j]))
-                myFile[j] = "_" * myFile[j]
+    function loadDataPmap(fn)
+
+        fcsRaw = readSingleFlowFrame(fn)
+        fcsRawMatrix = GigaSOM.convertTrainingData(fcsRaw)
+        fcsData = Ref{Array{Float64, 2}}(fcsRawMatrix)
+        # if !@isdefined(fcsData)
+        #     # fcsData = Ref{Array{Float64, 2}}(fcsRawMatrix)
+        #     println("not defined")
+        #     return 0
+        # else
+        #     fcsData.x = vcat(fcsData.x, fcsRawMatrix)
+        # end
+        return fcsData, myid()
+    end
+end
+
+fn = md.file_name
+# loadDataPmap(fn, md,panel; method = "asinh", cofactor = 5, reduce = true, sort = true)
+# wp = CachingPool(workers())
+wp = WorkerPool(workers())
+# pmap(md -> loadDataPmap(md),wp, fn)
+
+# for name in fn
+#     remotecall(loadDataPmap, wp, name)
+#     println(name, wp)
+# end
+n = nworkers()
+# refs = pmap(initRemoteData, 1:n)
+fcsData = pmap(loadDataPmap, wp, fn)
+
+@everywhere begin
+    function mergeData(fcsData, md, panel)
+        dfall = []
+        for i in 1:size(fcsData, 1)
+            # check if the data ref belongs to the worker id
+            if fcsData[i][2] == myid()
+                dfall = vcat(dfall, fcsData[i][1].x)
             end
         end
+        return Ref{Array{Float64, 2}}(dfall)
+        
     end
 end
 
-@everywhere begin
-
-    function readFlowFrame(filename)
-
-        flowrun = FileIO.load(filename) # FCS file
-
-        # get metadata
-        # FCSFiles returns a dict with coumn names as key
-        # As the dict is not in order, use the name column form meta
-        # to sort the Dataframe after cast.
-        meta = getMetaData(flowrun)
-        markers = meta[:,1]
-        markersIsotope = meta[:,5]
-        flowDF = DataFrame(flowrun.data)
-        # sort the DF according to the marker list
-        flowDF = flowDF[:, Symbol.(markersIsotope)]
-        cleanNamesPmap!(markers)
-        names!(flowDF, Symbol.(markers), makeunique=true)
-
-        return flowDF
-    end
+Rmerged = Vector{Any}(undef,nworkers())
+@time @sync for (idx, pid) in enumerate(workers())
+    @async Rmerged[idx] = fetch(@spawnat pid begin mergeData(fcsData, md, panel) end)
 end
 
-
-
-
-
-determinants = pmap(rand_det, 1:10)
 
 @info "processes added"
 
