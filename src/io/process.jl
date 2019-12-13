@@ -22,7 +22,7 @@ function transformData(flowframe, method, cofactor)
 
     names!(ddf, Symbol.(colnames))
     # singleFcs["data"] = ddf
-    flowframe = ddf
+    return ddf
 
 end
 
