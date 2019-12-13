@@ -57,7 +57,7 @@ end
 
 
 """
-    loadData(fn, md,panel; method = "asinh", cofactor = 5, 
+    loadData(fn, md,panel; method = "asinh", cofactor = 5,
             reduce = true, sort = true)
 
 Load the data in parallel
@@ -68,16 +68,15 @@ Load the data in parallel
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 - `method`: transformation method, default arcsinh, optional
 - `cofactor`: Cofactor for transformation, default 5, optional
-- `reduce`: Selected only columns which are defined by lineage and functional, optional, 
-    default: true. If false the check for any none columns to be removed (none columns can appear 
+- `reduce`: Selected only columns which are defined by lineage and functional, optional,
+    default: true. If false the check for any none columns to be removed (none columns can appear
     after concatenating FCS files as well as parameter like: time, event length)
-- `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true 
+- `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true
 """
-function loadData(fn, md,panel; method = "asinh", cofactor = 5, 
+function loadData(idx, fn, md, panel; method = "asinh", cofactor = 5,
                             reduce = true, sort = true)
 
-    fcsRaw = readFlowset(fn)
-    println(keys(fcsRaw))
+    fcsRaw = readSingleFlowFrame(fn) #readFlowset(fn)
     cleanNames!(fcsRaw)
 
     # extract lineage markers
@@ -88,21 +87,20 @@ function loadData(fn, md,panel; method = "asinh", cofactor = 5,
     # therefore make cc unique
     unique!(cc)
 
+    #=
     transformData(fcsRaw, method, cofactor)
 
     dfall = []
     colnames = []
 
-    for (k, v) in fcsRaw
-        
-        df = v
-        df = sortReduce(df, cc, reduce, sort)
+    df = fcsRaw
+    df = sortReduce(df, cc, reduce, sort)
 
-        insertcols!(df, 1, sample_id = string(k))
-        push!(dfall,df)
-        # collect the column names of each file for order check
-        push!(colnames, names(df))
-    end
+    insertcols!(df, 1, sample_id = string(k))
+    push!(dfall,df)
+
+    # collect the column names of each file for order check
+    push!(colnames, names(df))
 
     # # check if all the column names are in the same order
     if !(all(y->y==colnames[1], colnames))
@@ -110,13 +108,15 @@ function loadData(fn, md,panel; method = "asinh", cofactor = 5,
     end
 
     dfall = vcat(dfall...)
-
+=#
     # return a reference to dfall to be used by trainGigaSOM
-    dfallRefMatrix = convertTrainingData(dfall[:, cc])
+    #dfallRefMatrix = convertTrainingData(dfall[:, cc])
+    dfallRefMatrix = convertTrainingData(fcsRaw[:, cc])
     dfallRef = Ref{Array{Float64, 2}}(dfallRefMatrix)
+
     # return random samples for init Grid
-    gridSize = 100
-    nSamples = convert(Int64, floor(gridSize/nworkers()))
+    #gridSize = 100
+    #nSamples = convert(Int64, floor(gridSize/nworkers()))
 
     # return (dfall[rand(1:nSamples, 2), :], dfallRef)
     return (dfallRef)
