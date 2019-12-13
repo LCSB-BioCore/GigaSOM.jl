@@ -42,14 +42,23 @@ function cleanNames!(mydata)
     # replace chritical characters
     # put "_" in front of colname in case it starts with a number
     # println(typeof(mydata))
-    colnames = names(mydata)
-    for i in eachindex(colnames)
-        colnames[i] = Symbol(replace(String(colnames[i]), "-"=>"_"))
-        if isnumeric(first(String(colnames[i])))
-            colnames[i] = Symbol("_" * String(colnames[i]))
+    if typeof(mydata) == DataFrame
+        colnames = names(mydata)
+        for i in eachindex(colnames)
+            colnames[i] = Symbol(replace(String(colnames[i]), "-"=>"_"))
+            if isnumeric(first(String(colnames[i])))
+                colnames[i] = Symbol("_" * String(colnames[i]))
+            end
+        end
+        names!(mydata, colnames)
+    else
+        for j in eachindex(mydata)
+            mydata[j] = replace(mydata[j], "-"=>"_")
+            if isnumeric(first(mydata[j]))
+                mydata[j] = "_" * mydata[j]
+            end
         end
     end
-    names!(mydata, colnames)
 end
 
 
