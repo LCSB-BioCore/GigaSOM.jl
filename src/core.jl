@@ -93,12 +93,12 @@ function trainGigaSOM(som::Som, trainRef, cc;
             for (idx, pid) in enumerate(workers())
                 @async begin
                     # @info pid
-                    R[idx] =  fetch(@spawnat pid begin doEpoch(trainRef[idx][2], codes, tree, cc) end)
+                    R[idx] =  fetch(@spawnat pid begin doEpoch(trainRef[idx], codes, tree, cc) end)
                     globalSumNumerator += R[idx][1]
                     globalSumDenominator += R[idx][2]
                 end
             end
-        end        
+        end
 
         r = radiusFun(rStart, rFinal, j, epochs)
         println("Radius: $r")
@@ -132,7 +132,7 @@ function doEpoch(x, codes::Array{Float64, 2}, tree, cc)
     # display(size(x.x))
     # data = x.x
     # display()
-    # x = convertTrainingData(train.x[:,cc]) 
+    # x = convertTrainingData(train.x[:,cc])
     # initialise numerator and denominator with 0's
     sumNumerator = zeros(Float64, size(codes))
     sumDenominator = zeros(Float64, size(codes)[1])
