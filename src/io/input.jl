@@ -87,37 +87,17 @@ function loadData(idx, fn, md, panel; method = "asinh", cofactor = 5,
     # therefore make cc unique
     unique!(cc)
 
-    #=
-    transformData(fcsRaw, method, cofactor)
+    fcsData = transformData(fcsRaw, method, cofactor)
+    fcsData = sortReduce(fcsData, cc, reduce, sort)
 
-    dfall = []
-    colnames = []
+    # get the sample_id from md 
+    # return value is an array with only one entry -> take [1]
+    sid = md.sample_id[md.file_name .== fn][1]
+    insertcols!(fcsData, 1, sample_id = sid)
 
-    df = fcsRaw
-    df = sortReduce(df, cc, reduce, sort)
-
-    insertcols!(df, 1, sample_id = string(k))
-    push!(dfall,df)
-
-    # collect the column names of each file for order check
-    push!(colnames, names(df))
-
-    # # check if all the column names are in the same order
-    if !(all(y->y==colnames[1], colnames))
-        throw(UndefVarError(:TheColumnOrderIsNotEqual))
-    end
-
-    dfall = vcat(dfall...)
-=#
     # return a reference to dfall to be used by trainGigaSOM
-    #dfallRefMatrix = convertTrainingData(dfall[:, cc])
-    dfallRefMatrix = convertTrainingData(fcsRaw[:, cc])
+    dfallRefMatrix = convertTrainingData(fcsData[:, cc])
     dfallRef = Ref{Array{Float64, 2}}(dfallRefMatrix)
 
-    # return random samples for init Grid
-    #gridSize = 100
-    #nSamples = convert(Int64, floor(gridSize/nworkers()))
-
-    # return (dfall[rand(1:nSamples, 2), :], dfallRef)
     return (dfallRef, myid())
 end
