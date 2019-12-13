@@ -1,16 +1,17 @@
 
-using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed, SHA, JSON
+using GigaSOM, DataFrames, XLSX, Test, Random, Distributed, SHA, JSON
 
 checkDir()
 cwd = pwd()
 
 # dataPath = "/Users/ohunewald/work/data_felD1/"
-dataPath = "/Users/ohunewald/work/artificial_data_cytof/"
+dataPath = "artificial_data_cytof/"
 cd(dataPath)
 md = DataFrame(XLSX.readtable("metadata.xlsx", "Sheet1", infer_eltypes=true)...)
 panel = DataFrame(XLSX.readtable("panel.xlsx", "Sheet1", infer_eltypes=true)...)
 
 lineageMarkers, functionalMarkers = getMarkers(panel)
+
 
 nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
@@ -18,13 +19,26 @@ addprocs(nWorkers, topology=:master_worker)
 
 @info "processes added"
 
-R = Vector{Any}(undef,nworkers())
+# read directory
+content = md.file_name
+L = length(content)
+
+R =  Vector{Any}(undef,L)
 
 N = convert(Int64, (length(md.file_name)/nWorkers))
 
+#R[1] = loadData(1, content[1], md, panel)
+
 @time @sync for (idx, pid) in enumerate(workers())
-    @async R[idx] = fetch(@spawnat pid begin loadData(md.file_name[(idx-1)*N+1:idx*N],md, panel) end)
+    @async for k in (idx-1)*N+1:idx*N
+         R[k] = fetch(@spawnat pid loadData(idx, content[k], md, panel))
+    end
 end
+
+#=
+#@time @sync for (idx, pid) in enumerate(workers())
+#    @async R[idx] = fetch(@spawnat pid begin loadData(md.file_name[(idx-1)*N+1:idx*N],md, panel) end)
+#end
 
 # Get n random samples from m workers in R:
 samplesPerWorker = Int(length(R))
@@ -47,6 +61,6 @@ som = initGigaSOM(X, 10, 10)
 # define the columns to be used for som training
 cc = map(Symbol, lineageMarkers)
 # R holds the reference to the dataset for each worker
-@time som = trainGigaSOM(som, R, cc) 
-
+#@time som = trainGigaSOM(som, R, cc)
+=#
 rmprocs(workers())
