@@ -42,26 +42,14 @@ function cleanNames!(mydata)
     # replace chritical characters
     # put "_" in front of colname in case it starts with a number
     # println(typeof(mydata))
-    if mydata isa Dict{Any, Any}
-        for (k,v) in mydata
-            colnames = names(v)
-            for i in eachindex(colnames)
-                colnames[i] = Symbol(replace(String(colnames[i]), "-"=>"_"))
-                if isnumeric(first(String(colnames[i])))
-                    colnames[i] = Symbol("_" * String(colnames[i]))
-                end
-            end
-            names!(v, colnames)
-        end
-    else
-        for j in eachindex(mydata)
-            mydata[j] = replace(mydata[j], "-"=>"_")
-            if isnumeric(first(mydata[j]))
-                mydata[j] = "_" * mydata[j]
-            end
+    colnames = names(mydata)
+    for i in eachindex(colnames)
+        colnames[i] = Symbol(replace(String(colnames[i]), "-"=>"_"))
+        if isnumeric(first(String(colnames[i])))
+            colnames[i] = Symbol("_" * String(colnames[i]))
         end
     end
-
+    names!(mydata, colnames)
 end
 
 
@@ -77,10 +65,10 @@ Read in the fcs raw, add sample id, subset the columns and transform
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 - `method`: transformation method, default arcsinh, optional
 - `cofactor`: Cofactor for transformation, default 5, optional
-- `reduce`: Selected only columns which are defined by lineage and functional, optional, 
-    default: true. If false the check for any none columns to be removed (none columns can appear 
+- `reduce`: Selected only columns which are defined by lineage and functional, optional,
+    default: true. If false the check for any none columns to be removed (none columns can appear
     after concatenating FCS files as well as parameter like: time, event length)
-- `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true 
+- `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true
 """
 function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce = true, sort = true)
 
@@ -98,7 +86,7 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
     colnames = []
 
     for (k, v) in fcsRaw
-        
+
         df = v
         df = sortReduce(df, cc, reduce, sort)
 
@@ -115,7 +103,7 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
 
     dfall = vcat(dfall...)
     return dfall
-    
+
 end
 
 
