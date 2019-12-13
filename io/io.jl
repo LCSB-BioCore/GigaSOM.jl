@@ -53,8 +53,11 @@ for i in 1:length(sampleList)
     X[i, :] = vec(Y)
 end
 
-workerIDs = workers()
+som = initGigaSOM(X, 10, 10)
 
+# Merge the list of references into an Array grouped by
+# worker ID
+workerIDs = workers()
 Rc = [Ref[], Ref[]]
 
 # Collect all references into an array of Ref Data
@@ -64,7 +67,7 @@ for k in 1:L
     push!(Rc[localID[1]], R[k][1])
 end
 
-som = initGigaSOM(X, 10, 10)
+
 
 #=
 #@time @sync for (idx, pid) in enumerate(workers())
