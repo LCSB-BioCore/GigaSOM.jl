@@ -35,6 +35,22 @@ N = convert(Int64, (length(md.file_name)/nWorkers))
     end
 end
 
+workerIDs = workers()
+
+#Rc = Vector{Any}(undef, nWorkers)
+Rc = [Ref[], Ref[]]
+Rc1 = fill(Ref[],nWorkers)
+#Rc2 = Array{Array{Ref,1},1}
+Rc == Rc1
+for k in 1:L
+    id = R[k][2]
+    localID = findall(isequal(id), workerIDs)
+    push!(Rc[localID[1]], R[k][1])
+    push!(Rc1[localID[1]], R[k][1])
+    #push!(Rc2[localID[1]], R[k][1])
+end
+Rc == Rc1
+
 #=
 #@time @sync for (idx, pid) in enumerate(workers())
 #    @async R[idx] = fetch(@spawnat pid begin loadData(md.file_name[(idx-1)*N+1:idx*N],md, panel) end)

@@ -119,5 +119,5 @@ function loadData(idx, fn, md, panel; method = "asinh", cofactor = 5,
     #nSamples = convert(Int64, floor(gridSize/nworkers()))
 
     # return (dfall[rand(1:nSamples, 2), :], dfallRef)
-    return (dfallRef)
+    return (dfallRef, myid())
 end
