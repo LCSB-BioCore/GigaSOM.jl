@@ -67,6 +67,32 @@ for k in 1:L
     push!(Rc[localID[1]], R[k][1])
 end
 
+# try to merge from master on workers
+for i in 1:length(Rc[1])
+    Rc[1][1].x = vcat(Rc[1][1].x , Rc[1][i].x)
+end
+Rc[1][1].x = vcat(Rc[1][1].x , Rc[1][2].x)
+
+#
+@everywhere function mergeData(refWorker)
+    refWorker[1].x = vcat(refWorker[1].x, refWorker[2].x)
+    return refWorker[1]
+end
+
+# merging can be done in parallel by each worker
+Rmerged = Vector{Any}(undef,nworkers())
+@time @sync for (idx, pid) in enumerate(workers())
+    @async begin
+         Rmerged[idx] = fetch(@spawnat pid mergeData(Rc[idx]))
+    end
+end
+
+# call trainGigaSOM with the list of references per worker
+#------ trainGigaSOM() -------------------------
+# define the columns to be used for som training
+cc = map(Symbol, lineageMarkers)
+@time som = trainGigaSOM(som, Rc, cc)
+
 
 
 #=
@@ -91,10 +117,5 @@ end
 
 
 
-#------ trainGigaSOM() -------------------------
-# define the columns to be used for som training
-cc = map(Symbol, lineageMarkers)
-# R holds the reference to the dataset for each worker
-#@time som = trainGigaSOM(som, R, cc)
-=#
+
 rmprocs(workers())
