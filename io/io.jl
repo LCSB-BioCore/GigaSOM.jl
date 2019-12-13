@@ -35,18 +35,36 @@ N = convert(Int64, (length(md.file_name)/nWorkers))
     end
 end
 
+# Now sample from all refences randomly for the som grid
+# initialization
+# Get n random samples from m workers in R:
+samplesPerWorker = Int(length(R))
+# sampleList defines wich data in R ref has to return one random sample
+# TODO: put this into core.jl
+sampleList = rand(1:samplesPerWorker, 100)
+X = zeros(100, length(lineageMarkers))
+
+for i in 1:length(sampleList)
+    element = sampleList[i]
+    # dereference and get one random sample from matrix
+    # R is a tuple (Ref, myid)
+    Y = R[element][1].x[rand(1:size(R[element][1].x, 1), 1),:]
+    # convert Y into vector
+    X[i, :] = vec(Y)
+end
+
 workerIDs = workers()
 
-#Rc = Vector{Any}(undef, nWorkers)
 Rc = [Ref[], Ref[]]
-# Rc1 = fill(Ref[],nWorkers)
-#Rc2 = Array{Array{Ref,1},1}
+
 # Collect all references into an array of Ref Data
 for k in 1:L
     id = R[k][2]
     localID = findall(isequal(id), workerIDs)
     push!(Rc[localID[1]], R[k][1])
 end
+
+som = initGigaSOM(X, 10, 10)
 
 #=
 #@time @sync for (idx, pid) in enumerate(workers())
@@ -68,7 +86,7 @@ for i in 1:length(sampleList)
     X[i, :] = vec(Y)
 end
 
-som = initGigaSOM(X, 10, 10)
+
 
 #------ trainGigaSOM() -------------------------
 # define the columns to be used for som training
