@@ -10,22 +10,20 @@ Tansforms FCS data. Currently only asinh
 - `cofactor`: Cofactor for transformation
 """
 function transformData(flowframe, method, cofactor)
-    # loop through every file in dict
     # get the dataframe
     # convert to matrix
     # arcsinh transformation
     # convert back to dataframe
-    for (k,v) in flowframe
-        fcsDf = flowframe[k]
-        colnames = names(fcsDf) # keep the column names
-        dMatrix = Matrix(fcsDf)
-        dMatrix = asinh.(dMatrix / cofactor)
-        ddf = DataFrame(dMatrix)
+    fcsDf = flowframe
+    colnames = names(fcsDf) # keep the column names
+    dMatrix = Matrix(fcsDf)
+    dMatrix = asinh.(dMatrix / cofactor)
+    ddf = DataFrame(dMatrix)
 
-        names!(ddf, Symbol.(colnames))
-        # singleFcs["data"] = ddf
-        flowframe[k] = ddf
-    end
+    names!(ddf, Symbol.(colnames))
+    # singleFcs["data"] = ddf
+    flowframe = ddf
+
 end
 
 
