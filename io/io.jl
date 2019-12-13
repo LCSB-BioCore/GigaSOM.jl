@@ -4,8 +4,8 @@ using GigaSOM, DataFrames, XLSX, Test, Random, Distributed, SHA, JSON
 checkDir()
 cwd = pwd()
 
-# dataPath = "/Users/ohunewald/work/data_felD1/"
-dataPath = "artificial_data_cytof/"
+dataPath = "/Users/ohunewald/work/artificial_data_cytof"
+# dataPath = "artificial_data_cytof/"
 cd(dataPath)
 md = DataFrame(XLSX.readtable("metadata.xlsx", "Sheet1", infer_eltypes=true)...)
 panel = DataFrame(XLSX.readtable("panel.xlsx", "Sheet1", infer_eltypes=true)...)
@@ -39,17 +39,14 @@ workerIDs = workers()
 
 #Rc = Vector{Any}(undef, nWorkers)
 Rc = [Ref[], Ref[]]
-Rc1 = fill(Ref[],nWorkers)
+# Rc1 = fill(Ref[],nWorkers)
 #Rc2 = Array{Array{Ref,1},1}
-Rc == Rc1
+
 for k in 1:L
     id = R[k][2]
     localID = findall(isequal(id), workerIDs)
     push!(Rc[localID[1]], R[k][1])
-    push!(Rc1[localID[1]], R[k][1])
-    #push!(Rc2[localID[1]], R[k][1])
 end
-Rc == Rc1
 
 #=
 #@time @sync for (idx, pid) in enumerate(workers())
