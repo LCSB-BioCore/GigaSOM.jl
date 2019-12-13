@@ -41,7 +41,7 @@ workerIDs = workers()
 Rc = [Ref[], Ref[]]
 # Rc1 = fill(Ref[],nWorkers)
 #Rc2 = Array{Array{Ref,1},1}
-
+# Collect all references into an array of Ref Data
 for k in 1:L
     id = R[k][2]
     localID = findall(isequal(id), workerIDs)
