@@ -37,19 +37,12 @@ end
 
 workerIDs = workers()
 
-#Rc = Vector{Any}(undef, nWorkers)
-Rc = [Ref[], Ref[]]
-Rc1 = fill(Ref[],nWorkers)
-#Rc2 = Array{Array{Ref,1},1}
-Rc == Rc1
+Rc = [Ref[] for i=1:nWorkers]
 for k in 1:L
     id = R[k][2]
     localID = findall(isequal(id), workerIDs)
     push!(Rc[localID[1]], R[k][1])
-    push!(Rc1[localID[1]], R[k][1])
-    #push!(Rc2[localID[1]], R[k][1])
 end
-Rc == Rc1
 
 #=
 #@time @sync for (idx, pid) in enumerate(workers())
