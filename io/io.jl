@@ -27,17 +27,17 @@ R =  Vector{Any}(undef,L)
 
 N = convert(Int64, (length(md.file_name)/nWorkers))
 
-#R[1] = loadData(1, content[1], md, panel)
-
 @time @sync for (idx, pid) in enumerate(workers())
     @async for k in (idx-1)*N+1:idx*N
          R[k] = fetch(@spawnat pid loadData(idx, content[k], md, panel))
     end
 end
 
+# define and declare a concatenated array
 workerIDs = workers()
-
 Rc = [Ref[] for i=1:nWorkers]
+
+# concatenate the references
 for k in 1:L
     id = R[k][2]
     localID = findall(isequal(id), workerIDs)
