@@ -26,7 +26,7 @@ function readFlowset(filenames)
         flowDF = flowDF[:, Symbol.(markersIsotope)]
         cleanNames!(markers)
 
-        names!(flowDF, Symbol.(markers), makeunique=true)
+        rename!(flowDF, Symbol.(markers), makeunique=true)
         flowFrame[name] = flowDF
     end
 
@@ -50,7 +50,7 @@ function readSingleFlowFrame(filename)
     # sort the DF according to the marker list
     flowDF = flowDF[:, Symbol.(markersIsotope)]
     cleanNames!(markers)
-    names!(flowDF, Symbol.(markers), makeunique=true)
+    rename!(flowDF, Symbol.(markers), makeunique=true)
 
     return flowDF
 end
