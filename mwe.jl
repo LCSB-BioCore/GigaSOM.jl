@@ -2,40 +2,50 @@ try
     using Distributed
     using FileIO
     using CSVFiles
+    using FCSFiles
 catch
     import Pkg;
     Pkg.add("Distributed")
     Pkg.add("FileIO")
     Pkg.add("CSVFiles")
+    Pkg.add("FCSFiles")
 end
-
-
-using Distributed, FileIO
 
 # prepare the workers
+using Distributed
 nWorkers = 2
-addprocs(nWorkers)
+type = "fcs" #csv
+addprocs(nWorkers, topology=:master_worker)
 @everywhere using FileIO
 
+# information about workers
+@info "Number of workers: $nWorkers"
+
 # define a custom load function
-@everywhere function loadData(id, fileNames)
-    for fn in fileNames
-        in = load(fn)
-    end
-    return ones(id, id)
+@everywhere function loadData(id, fn, type)
+    @time in = FileIO.load(type*"/"*fn)
+    return id
 end
 
-R = Vector{Any}(undef,nworkers())
-content = readdir("csv")
+# get the files
+content = readdir(type)
+L = length(content)
+
+# define an array of references
+R = Vector{Any}(undef, L)
 
 # load files in parallel
-N = convert(Int64, length(content)/nWorkers)
-@time begin
-    @sync for (idx, pid) in enumerate(workers())
-        @async R[idx] = fetch(@spawnat pid loadData(idx, content[(idx-1)*N+1:idx*N]))
+N = convert(Int64, L/nWorkers)
+
+@info "Benchmarking ..."
+
+@time @sync for (idx, pid) in enumerate(workers())
+    @async for k in (idx-1)*N+1:idx*N
+        R[k] = fetch(@spawnat pid loadData(idx, content[k], type) )
     end
 end
 
+# fetch
 @info R
 
 rmprocs(workers())
