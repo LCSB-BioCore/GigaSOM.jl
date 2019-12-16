@@ -80,7 +80,10 @@ end
 # function doEpoch
 # -----------------------------------------
 @everywhere function mergeData(refWorker)
-    refWorker[1].x = vcat(refWorker[1].x, refWorker[2].x)
+    for i in 2:length(refWorker)
+        # merge the single df into the first one and return the Ref
+        refWorker[1].x = vcat(refWorker[1].x, refWorker[i].x)
+    end
     return refWorker[1]
 end
 
