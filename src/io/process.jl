@@ -20,7 +20,7 @@ function transformData(flowframe, method, cofactor)
     dMatrix = asinh.(dMatrix / cofactor)
     ddf = DataFrame(dMatrix)
 
-    names!(ddf, Symbol.(colnames))
+    rename!(ddf, Symbol.(colnames))
     # singleFcs["data"] = ddf
     return ddf
 
@@ -48,7 +48,7 @@ function cleanNames!(mydata)
                 colnames[i] = Symbol("_" * String(colnames[i]))
             end
         end
-        names!(mydata, colnames)
+        rename!(mydata, colnames)
     else
         for j in eachindex(mydata)
             mydata[j] = replace(mydata[j], "-"=>"_")
@@ -226,7 +226,7 @@ function getMetaData(f)
     end
 
     # set the names of the df
-    names!(df, Symbol.(column_names))
+    rename!(df, Symbol.(column_names))
 
     return df
 end
