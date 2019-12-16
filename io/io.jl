@@ -58,7 +58,7 @@ som = initGigaSOM(X, 10, 10)
 # Merge the list of references into an Array grouped by
 # worker ID
 workerIDs = workers()
-Rc = [Ref[], Ref[]]
+Rc = [Ref[] for i=1:nWorkers]
 
 # Collect all references into an array of Ref Data
 for k in 1:L
@@ -68,10 +68,10 @@ for k in 1:L
 end
 
 # try to merge from master on workers
-for i in 1:length(Rc[1])
-    Rc[1][1].x = vcat(Rc[1][1].x , Rc[1][i].x)
-end
-Rc[1][1].x = vcat(Rc[1][1].x , Rc[1][2].x)
+# for i in 1:length(Rc[1])
+#     Rc[1][1].x = vcat(Rc[1][1].x , Rc[1][i].x)
+# end
+# Rc[1][1].x = vcat(Rc[1][1].x , Rc[1][2].x)
 
 # -----------------------------------------
 # merge data on worker from master
@@ -97,31 +97,5 @@ end
 #------ trainGigaSOM() -------------------------
 # define the columns to be used for som training
 cc = map(Symbol, lineageMarkers)
-@time som = trainGigaSOM(som, Rc, cc)
+@time som = trainGigaSOM(som, Rmerged, cc)
 
-
-
-#=
-#@time @sync for (idx, pid) in enumerate(workers())
-#    @async R[idx] = fetch(@spawnat pid begin loadData(md.file_name[(idx-1)*N+1:idx*N],md, panel) end)
-#end
-
-# Get n random samples from m workers in R:
-samplesPerWorker = Int(length(R))
-# sampleList defines wich data in R ref has to return one random sample
-# TODO: put this into core.jl
-sampleList = rand(1:samplesPerWorker, 100)
-X = zeros(100, length(lineageMarkers))
-
-for i in 1:length(sampleList)
-    element = sampleList[i]
-    # dereference and get one random sample from matrix
-    Y = R[element].x[rand(1:size(R[element].x, 1), 1),:]
-    # convert Y into vector
-    X[i, :] = vec(Y)
-end
-
-
-
-
-rmprocs(workers())
