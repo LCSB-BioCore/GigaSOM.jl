@@ -73,7 +73,12 @@ for i in 1:length(Rc[1])
 end
 Rc[1][1].x = vcat(Rc[1][1].x , Rc[1][2].x)
 
-#
+# -----------------------------------------
+# merge data on worker from master
+# SLOW ! (2-3 seconds)
+# alternative: not merge and loop in the 
+# function doEpoch
+# -----------------------------------------
 @everywhere function mergeData(refWorker)
     refWorker[1].x = vcat(refWorker[1].x, refWorker[2].x)
     return refWorker[1]
@@ -86,6 +91,7 @@ Rmerged = Vector{Any}(undef,nworkers())
          Rmerged[idx] = fetch(@spawnat pid mergeData(Rc[idx]))
     end
 end
+
 
 # call trainGigaSOM with the list of references per worker
 #------ trainGigaSOM() -------------------------
