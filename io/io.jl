@@ -102,3 +102,5 @@ end
 cc = map(Symbol, lineageMarkers)
 @time som = trainGigaSOM(som, Rmerged, cc)
 
+rmprocs(workers())
+
