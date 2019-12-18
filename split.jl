@@ -35,6 +35,7 @@ lastFileL = Int(fileL + totalSize - nWorkers * fileL)
 @info " > # of workers: $nWorkers"
 @info " > Regular row count: $fileL cells"
 @info " > Last file row count: $lastFileL cells"
+@info " > Total row count: $totalSize cells"
 
 # determine the running sum of the file sizes
 runSum = []
@@ -56,15 +57,25 @@ for worker in 1:nWorkers
     if worker == nWorkers
         iEnd = iStart + lastFileL - 1
     end
+    @info ""
     @info " -----------------------------"
     @info " >> Generating input-$worker.jls"
     @info " -----------------------------"
     @info " > iStart: $iStart; iEnd: $iEnd"
 
+    ub = findall(runSum .>= iStart)
+    lb = findall(runSum .<= iEnd)
+
+    ioFiles = intersect(lb, ub)
+
+    #=
     fileStart = fileEnd
     for (k, tmpSum) in enumerate(runSum)
         if tmpSum >= iEnd
-            @info " + Break point file: $(md.file_name[k])"
+            if k > 1
+                k = k-1
+            end
+            @info " + Break point file: $(md.file_name[k]) [tmpSum = $tmpSum; iEnd = $iEnd]"
             fileEnd = k
             break;
         end
@@ -72,8 +83,10 @@ for worker in 1:nWorkers
     if worker == nWorkers
         fileEnd = length(md.file_name)
     end
-
-    @info " > fileStart: $fileStart; fileEnd: $fileEnd"
+    =#
+    for file in ioFiles
+        @info " > Reading from file $file"
+    end
 end
 
 # split the file properly speaking
