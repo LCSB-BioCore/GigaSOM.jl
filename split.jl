@@ -63,39 +63,25 @@ for worker in 1:nWorkers
     @info " -----------------------------"
     @info " > iStart: $iStart; iEnd: $iEnd"
 
+    # find which files are relevant to be extracted
     ub = findall(runSum .>= iStart)
     lb = findall(runSum .<= iEnd)
 
     # push an additional index for last file
     push!(lb, lb[end]+1)
 
+    # determine the relevant files
     ioFiles = intersect(lb, ub)
 
-    #=
-    fileStart = fileEnd
-    for (k, tmpSum) in enumerate(runSum)
-        if tmpSum >= iEnd
-            if k > 1
-                k = k-1
-            end
-            @info " + Break point file: $(md.file_name[k]) [tmpSum = $tmpSum; iEnd = $iEnd]"
-            fileEnd = k
-            break;
-        end
-    end
-    if worker == nWorkers
-        fileEnd = length(md.file_name)
-    end
-    =#
     for k in ioFiles
         @info " > Reading from file $k"
+        begPointer = 1
         endPointer = runSum[k]
         if k > 1
             begPointer = runSum[k-1]
-        else
-            begPointer = 1
         end
 
+        # limit the file pointers with the limits
         if iStart > begPointer
             begPointer = iStart
         end
