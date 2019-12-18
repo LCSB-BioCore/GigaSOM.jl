@@ -12,8 +12,8 @@ md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(mdFileName, "Sheet1")...)
 panel = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(panelFileName, "Sheet1")...)
 
 # read in the entire dataset
-in = readFlowset(md.file_name)
-fileNames = collect(keys(in))
+fileNames = md.file_name
+in = readFlowset(fileNames)
 
 @info " > Input: $(length(fileNames)) files"
 
@@ -49,8 +49,9 @@ end
 # establish an index map
 limitFileIndex = 0
 fileEnd = 1
+out = Dict()
 for worker in 1:nWorkers
-    global limitFileIndex, md, fileEnd
+    global limitFileIndex, md, fileEnd, fileNames
     iStart = Int((worker - 1) * fileL + 1)
     iEnd = Int(worker * fileL)
 
@@ -84,22 +85,36 @@ for worker in 1:nWorkers
 
         # limit the file pointers with the limits
         if iStart > begPointer
-            begPointer = iStart
+            begPointer = iStart - 1
         end
         if iEnd < endPointer
             endPointer = iEnd
         end
-        @info " > Reading from file $k from $begPointer to $endPointer"
+
+        #local indices
+        localStart = 1
+        localEnd = endPointer - begPointer
+        if begPointer == 1
+            localEnd = endPointer
+        end
+
+        # output
+        @info " > Reading from file $k -- File: $(fileNames[k]) from $begPointer to $endPointer ($localStart:$localEnd)"
+
+        # concatenate the array
+        if length(out) > 0 && issubset(worker, collect(keys(out)))
+            out[worker] = [out[worker]; in[fileNames[k]][localStart:localEnd, :]]
+        else
+            out[worker] = in[fileNames[k]][localStart:localEnd, :]
+        end
     end
+
+    # output the file per worker
+    open(f -> serialize(f,out), "input-$worker.jls", "w")
+    @info " > File input-$worker.jls written."
 end
 
-# split the file properly speaking
-#=
-out = Dict()
-for key in keyArray
-    out[key] = df.data[key][1:fileL]
-end
-
+#= split the file properly speaking
 open(f -> serialize(f,out), "out.jls", "w")
 y = open(deserialize, "out.jls")
 @test y == outa
