@@ -66,6 +66,9 @@ for worker in 1:nWorkers
     ub = findall(runSum .>= iStart)
     lb = findall(runSum .<= iEnd)
 
+    # push an additional index for last file
+    push!(lb, lb[end]+1)
+
     ioFiles = intersect(lb, ub)
 
     #=
@@ -84,8 +87,23 @@ for worker in 1:nWorkers
         fileEnd = length(md.file_name)
     end
     =#
-    for file in ioFiles
-        @info " > Reading from file $file"
+    for k in ioFiles
+        @info " > Reading from file $k"
+        endPointer = runSum[k]
+        if k > 1
+            begPointer = runSum[k-1]
+        else
+            begPointer = 1
+        end
+
+        if iStart > begPointer
+            begPointer = iStart
+        end
+        if iEnd < endPointer
+            endPointer = iEnd
+        end
+
+        @info "   begin: $begPointer; end: $endPointer"
     end
 end
 
