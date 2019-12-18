@@ -1,6 +1,6 @@
 location = ENV["HOME"]*"/artificial_data_cytof"
 binFileType = ".jls"
-nWorkers = 3
+nWorkers = 5
 
 fileDir = readdir(location)
 
@@ -67,14 +67,15 @@ for worker in 1:nWorkers
     ub = findall(runSum .>= iStart)
     lb = findall(runSum .<= iEnd)
 
-    # push an additional index for last file
-    push!(lb, lb[end]+1)
+    # push an additional index for last file if there is spill-over
+    if iEnd  > runSum[lb[end]]
+        push!(lb, lb[end]+1)
+    end
 
     # determine the relevant files
     ioFiles = intersect(lb, ub)
 
     for k in ioFiles
-        @info " > Reading from file $k"
         begPointer = 1
         endPointer = runSum[k]
         if k > 1
@@ -88,8 +89,7 @@ for worker in 1:nWorkers
         if iEnd < endPointer
             endPointer = iEnd
         end
-
-        @info "   begin: $begPointer; end: $endPointer"
+        @info " > Reading from file $k from $begPointer to $endPointer"
     end
 end
 
