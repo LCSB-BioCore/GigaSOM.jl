@@ -145,7 +145,7 @@ for worker in 1:nWorkers
 
         if  openNewFile
             @info " ... Opening file $(fileNames[k])"
-        #    inFile = readSingleFlowFrame(fileNames[k])
+            inFile = readSingleFlowFrame(fileNames[k])
         end
 
         if prevFileOpen
