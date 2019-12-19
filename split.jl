@@ -61,11 +61,11 @@ end
 # establish an index map
 fileEnd = 1
 out = Dict()
-slug = 0
+slack = 0
 openNewFile = true
 
 for worker in 1:nWorkers
-    global inFile, openNewFile, slug, fileEnd, fileNames
+    global inFile, openNewFile, slack, fileEnd, fileNames
 
     # define the global indices per worker
     iStart = Int((worker - 1) * fileL + 1)
@@ -120,8 +120,8 @@ for worker in 1:nWorkers
         end
 
         # define the local end
-        localStart = 1 + slug
-        localEnd = slug + endPointer - begPointer + 1
+        localStart = 1 + slack
+        localEnd = slack + endPointer - begPointer + 1
 
         # avoid that the local end pointer is larger than the actual file size
         if localEnd > inSize[k]
@@ -133,10 +133,10 @@ for worker in 1:nWorkers
         # determine if a new file shall be opened
         if localEnd >= inSize[k]
             prevFileOpen = false
-            slug = 0
+            slack = 0
         else
             prevFileOpen = true
-            slug = localEnd
+            slack = localEnd
         end
 
         # open the file properly speaking
@@ -147,10 +147,10 @@ for worker in 1:nWorkers
 
         # set a flag to open a new file or not
         if prevFileOpen
-            printstyled("[ Info:  + file $(fileNames[k]) is open ($slug)\n", color=:cyan)
+            printstyled("[ Info:  + file $(fileNames[k]) is open ($slack)\n", color=:cyan)
             openNewFile = false
         else
-            printstyled("[ Info:  - file $(fileNames[k]) is closed ($slug)\n", color=:magenta)
+            printstyled("[ Info:  - file $(fileNames[k]) is closed ($slack)\n", color=:magenta)
             openNewFile = true
         end
 
