@@ -62,8 +62,10 @@ end
 limitFileIndex = 0
 fileEnd = 1
 out = Dict()
+slug = 0
+openNewFile = true
 for worker in 1:nWorkers
-    global limitFileIndex, md, fileEnd, fileNames, localEnd
+    global openNewFile, slug, limitFileIndex, md, fileEnd, fileNames, localEnd
     iStart = Int((worker - 1) * fileL + 1)
     iEnd = Int(worker * fileL)
 
@@ -93,13 +95,6 @@ for worker in 1:nWorkers
 
     for k in ioFiles
 
-        localStart = iStart
-        if iEnd < inSize[k]
-            localEnd = iEnd
-        else
-            localEnd = inSize[k]
-        end
-        #=
         begPointer = 1
         endPointer = runSum[k]
         if k > 1
@@ -108,40 +103,59 @@ for worker in 1:nWorkers
 
         # limit the file pointers with the limits
         if iStart > begPointer
-            begPointer = iStart - 1
+            begPointer = iStart
         end
         if iEnd < endPointer
             endPointer = iEnd
         end
 
         # redefine the local start based on the previous index (chunk)
-        if @isdefined localEnd
-            if localEnd != inSize[k]
-                localStart = localEnd + 1
-                localEnd = localStart + endPointer - begPointer
-            end
-        else
-            # define the local end
-            localStart = 1
-            localEnd = endPointer - begPointer
-        end
+        #if @isdefined localEnd
+        #    if localEnd != inSize[k]
+        #        localStart =  1
+        #        localEnd = localStart + endPointer - begPointer
+        #    end
+        #else
 
+        # define the local end
+        localStart = 1 + slug
+        localEnd = slug + endPointer - begPointer + 1
+        if localEnd > inSize[k]
+            localEnd = inSize[k]
+        end
         # make sure that the localStart pointer is not further than the actual end
-        if localStart > localEnd
-            localStart = 1
-        end
+        #if localStart > localEnd
+        #    localStart = 1
+       # end
         # make sure that the end pointer
-        if begPointer == 1
-            localEnd = endPointer
-        end
-        =#
+        #if begPointer == 1
+        #    localEnd = endPointer
+        #end
         # output
         @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
 
-        # read the file
-        #=
-        inFile = readSingleFlowFrame(fileNames[k])
 
+        if localEnd >= inSize[k]
+            prevFileOpen = false
+            slug = 0
+        else
+            prevFileOpen = true
+            slug = localEnd
+        end
+
+        if  openNewFile
+            @info " ... Opening file $(fileNames[k])"
+        #    inFile = readSingleFlowFrame(fileNames[k])
+        end
+
+        if prevFileOpen
+            printstyled(" ++ file $(fileNames[k]) is open ($slug)\n", color=:yellow)
+            openNewFile = false
+        else
+            printstyled(" ++ file $(fileNames[k]) is closed ($slug)\n", color=:green)
+            openNewFile = true
+        end
+        #=
         # concatenate the array
         if length(out) > 0 && issubset(worker, collect(keys(out)))
             out[worker] = [out[worker]; inFile[localStart:localEnd, :]]
