@@ -104,6 +104,7 @@ for worker in 1:nWorkers
 
     for k in ioFiles
 
+        # determine global pointers
         begPointer = 1
         endPointer = runSum[k]
         if k > 1
@@ -121,13 +122,15 @@ for worker in 1:nWorkers
         # define the local end
         localStart = 1 + slug
         localEnd = slug + endPointer - begPointer + 1
+
+        # avoid that the local end pointer is larger than the actual file size
         if localEnd > inSize[k]
             localEnd = inSize[k]
         end
 
-
         @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
 
+        # determine if a new file shall be opened
         if localEnd >= inSize[k]
             prevFileOpen = false
             slug = 0
@@ -136,11 +139,13 @@ for worker in 1:nWorkers
             slug = localEnd
         end
 
-        if  openNewFile
+        # open the file properly speaking
+        ifopenNewFile
             @info " > Opening file $(fileNames[k]) ..."
             inFile = readSingleFlowFrame(fileNames[k])
         end
 
+        # set a flag to open a new file or not
         if prevFileOpen
             printstyled("[ Info:  + file $(fileNames[k]) is open ($slug)\n", color=:cyan)
             openNewFile = false
