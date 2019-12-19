@@ -1,6 +1,6 @@
 location = ENV["HOME"]*"/Archive_AF_files" #"/artificial_data_cytof" #"/Archive_AF_files"
 binFileType = ".jls"
-nWorkers = 5
+nWorkers = 12
 cd(location)
 fileDir = readdir(location)
 
@@ -81,6 +81,9 @@ for worker in 1:nWorkers
     lb = findall(runSum .<= iEnd)
 
     # push an additional index for last file if there is spill-over
+    if length(lb) == 0
+        lb = [1]
+    end
     if iEnd  > runSum[lb[end]]
         push!(lb, lb[end]+1)
     end
@@ -89,6 +92,14 @@ for worker in 1:nWorkers
     ioFiles = intersect(lb, ub)
 
     for k in ioFiles
+
+        localStart = iStart
+        if iEnd < inSize[k]
+            localEnd = iEnd
+        else
+            localEnd = inSize[k]
+        end
+        #=
         begPointer = 1
         endPointer = runSum[k]
         if k > 1
@@ -103,18 +114,17 @@ for worker in 1:nWorkers
             endPointer = iEnd
         end
 
-        #local indices
-        localStart = 1
-
         # redefine the local start based on the previous index (chunk)
         if @isdefined localEnd
-            if k > 1 && localEnd != inSize[k]
+            if localEnd != inSize[k]
                 localStart = localEnd + 1
+                localEnd = localStart + endPointer - begPointer
             end
+        else
+            # define the local end
+            localStart = 1
+            localEnd = endPointer - begPointer
         end
-
-        # define the local end
-        localEnd = endPointer - begPointer
 
         # make sure that the localStart pointer is not further than the actual end
         if localStart > localEnd
@@ -124,10 +134,12 @@ for worker in 1:nWorkers
         if begPointer == 1
             localEnd = endPointer
         end
+        =#
         # output
         @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
 
         # read the file
+        #=
         inFile = readSingleFlowFrame(fileNames[k])
 
         # concatenate the array
@@ -136,6 +148,7 @@ for worker in 1:nWorkers
         else
             out[worker] = inFile[localStart:localEnd, :]
         end
+        =#
     end
 
     # output the file per worker
