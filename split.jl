@@ -65,7 +65,7 @@ out = Dict()
 slug = 0
 openNewFile = true
 for worker in 1:nWorkers
-    global openNewFile, slug, limitFileIndex, md, fileEnd, fileNames, localEnd
+    global inFile, openNewFile, slug, limitFileIndex, md, fileEnd, fileNames, localEnd
     iStart = Int((worker - 1) * fileL + 1)
     iEnd = Int(worker * fileL)
 
@@ -144,30 +144,29 @@ for worker in 1:nWorkers
         end
 
         if  openNewFile
-            @info " ... Opening file $(fileNames[k])"
+            @info " > Opening file $(fileNames[k]) ..."
             inFile = readSingleFlowFrame(fileNames[k])
         end
 
         if prevFileOpen
-            printstyled(" ++ file $(fileNames[k]) is open ($slug)\n", color=:yellow)
+            printstyled("[ Info:  + file $(fileNames[k]) is open ($slug)\n", color=:cyan)
             openNewFile = false
         else
-            printstyled(" ++ file $(fileNames[k]) is closed ($slug)\n", color=:green)
+            printstyled("[ Info:  - file $(fileNames[k]) is closed ($slug)\n", color=:magenta)
             openNewFile = true
         end
-        #=
+
         # concatenate the array
         if length(out) > 0 && issubset(worker, collect(keys(out)))
             out[worker] = [out[worker]; inFile[localStart:localEnd, :]]
         else
             out[worker] = inFile[localStart:localEnd, :]
         end
-        =#
     end
 
     # output the file per worker
     open(f -> serialize(f,out), "input-$worker.jls", "w")
-    @info " > File input-$worker.jls written."
+    printstyled("[ Info:  > File input-$worker.jls written.\n", color=:green, bold=true)
 end
 
 #= split the file properly speaking
