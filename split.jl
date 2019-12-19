@@ -59,19 +59,23 @@ for indivSize in inSize
 end
 
 # establish an index map
-limitFileIndex = 0
 fileEnd = 1
 out = Dict()
 slug = 0
 openNewFile = true
+
 for worker in 1:nWorkers
-    global inFile, openNewFile, slug, limitFileIndex, md, fileEnd, fileNames, localEnd
+    global inFile, openNewFile, slug, fileEnd, fileNames
+
+    # define the global indices per worker
     iStart = Int((worker - 1) * fileL + 1)
     iEnd = Int(worker * fileL)
 
+    # treat the last file separately
     if worker == nWorkers
         iEnd = iStart + lastFileL - 1
     end
+
     @info ""
     @info " -----------------------------"
     @info " >> Generating input-$worker.jls"
@@ -82,10 +86,15 @@ for worker in 1:nWorkers
     ub = findall(runSum .>= iStart)
     lb = findall(runSum .<= iEnd)
 
-    # push an additional index for last file if there is spill-over
+    # make sure that there is at least one entry
+    if length(ub) == 0
+        ub = [1]
+    end
     if length(lb) == 0
         lb = [1]
     end
+
+    # push an additional index for last file if there is spill-over
     if iEnd  > runSum[lb[end]]
         push!(lb, lb[end]+1)
     end
@@ -109,31 +118,15 @@ for worker in 1:nWorkers
             endPointer = iEnd
         end
 
-        # redefine the local start based on the previous index (chunk)
-        #if @isdefined localEnd
-        #    if localEnd != inSize[k]
-        #        localStart =  1
-        #        localEnd = localStart + endPointer - begPointer
-        #    end
-        #else
-
         # define the local end
         localStart = 1 + slug
         localEnd = slug + endPointer - begPointer + 1
         if localEnd > inSize[k]
             localEnd = inSize[k]
         end
-        # make sure that the localStart pointer is not further than the actual end
-        #if localStart > localEnd
-        #    localStart = 1
-       # end
-        # make sure that the end pointer
-        #if begPointer == 1
-        #    localEnd = endPointer
-        #end
-        # output
-        @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
 
+
+        @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
 
         if localEnd >= inSize[k]
             prevFileOpen = false
