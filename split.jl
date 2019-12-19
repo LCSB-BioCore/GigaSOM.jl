@@ -1,4 +1,4 @@
-location = ENV["HOME"]*"/Archive_AF_files"
+location = ENV["HOME"]*"/Archive_AF_files" #"/artificial_data_cytof" #"/Archive_AF_files"
 binFileType = ".jls"
 nWorkers = 5
 cd(location)
@@ -11,7 +11,7 @@ md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(mdFileName, "Sheet1")...)
 
 # read in the entire dataset
 fileNames = md.file_name
-in = readFlowset(fileNames)
+#in = readFlowset(fileNames)
 
 @info " > Input: $(length(fileNames)) files"
 
@@ -63,7 +63,7 @@ limitFileIndex = 0
 fileEnd = 1
 out = Dict()
 for worker in 1:nWorkers
-    global limitFileIndex, md, fileEnd, fileNames
+    global limitFileIndex, md, fileEnd, fileNames, localEnd
     iStart = Int((worker - 1) * fileL + 1)
     iEnd = Int(worker * fileL)
 
@@ -105,19 +105,36 @@ for worker in 1:nWorkers
 
         #local indices
         localStart = 1
+
+        # redefine the local start based on the previous index (chunk)
+        if @isdefined localEnd
+            if k > 1 && localEnd != inSize[k]
+                localStart = localEnd + 1
+            end
+        end
+
+        # define the local end
         localEnd = endPointer - begPointer
+
+        # make sure that the localStart pointer is not further than the actual end
+        if localStart > localEnd
+            localStart = 1
+        end
+        # make sure that the end pointer
         if begPointer == 1
             localEnd = endPointer
         end
-
         # output
-        @info " > Reading from file $k -- File: $(fileNames[k]) from $begPointer to $endPointer ($localStart:$localEnd)"
+        @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
+
+        # read the file
+        inFile = readSingleFlowFrame(fileNames[k])
 
         # concatenate the array
         if length(out) > 0 && issubset(worker, collect(keys(out)))
-            out[worker] = [out[worker]; in[fileNames[k]][localStart:localEnd, :]]
+            out[worker] = [out[worker]; inFile[localStart:localEnd, :]]
         else
-            out[worker] = in[fileNames[k]][localStart:localEnd, :]
+            out[worker] = inFile[localStart:localEnd, :]
         end
     end
 
