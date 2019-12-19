@@ -140,7 +140,7 @@ for worker in 1:nWorkers
         end
 
         # open the file properly speaking
-        ifopenNewFile
+        if openNewFile
             @info " > Opening file $(fileNames[k]) ..."
             inFile = readSingleFlowFrame(fileNames[k])
         end
