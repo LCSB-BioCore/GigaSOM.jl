@@ -1,15 +1,13 @@
 location = ENV["HOME"]*"/Archive_AF_files"
 binFileType = ".jls"
 nWorkers = 5
-
+cd(location)
 fileDir = readdir(location)
 
 mdFileName = location*"/metadata.xlsx"
-#panelFileName = location*"/panel.xlsx"
 
-using GigaSOM, FileIO, Test, Serialization
+using GigaSOM, FileIO, Test, Serialization, FCSFiles
 md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(mdFileName, "Sheet1")...)
-#panel = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(panelFileName, "Sheet1")...)
 
 # read in the entire dataset
 fileNames = md.file_name
@@ -36,20 +34,9 @@ for f in fileNames
 
         totalSize += numberCells
         push!(inSize, numberCells)
-        @info "Filename: $f - #cells: $numberCells"
+        @info "   + Filename: $f - #cells: $numberCells"
     end
 end
-
-
-#=
-totalSize = 0
-inSize = []
-for name in fileNames
-    global totalSize
-    totalSize += size(in[name])[1]
-    push!(inSize, size(in[name])[1])
-end
-=#
 
 # determine the size per file
 fileL = Int(floor(totalSize/nWorkers))
