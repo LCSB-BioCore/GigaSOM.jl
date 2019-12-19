@@ -1,15 +1,15 @@
-location = ENV["HOME"]*"/artificial_data_cytof"
+location = ENV["HOME"]*"/Archive_AF_files"
 binFileType = ".jls"
 nWorkers = 5
 
 fileDir = readdir(location)
 
 mdFileName = location*"/metadata.xlsx"
-panelFileName = location*"/panel.xlsx"
+#panelFileName = location*"/panel.xlsx"
 
 using GigaSOM, FileIO, Test, Serialization
 md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(mdFileName, "Sheet1")...)
-panel = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(panelFileName, "Sheet1")...)
+#panel = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(panelFileName, "Sheet1")...)
 
 # read in the entire dataset
 fileNames = md.file_name
@@ -20,11 +20,36 @@ in = readFlowset(fileNames)
 # get the total size of the data set
 totalSize = 0
 inSize = []
+for f in fileNames
+    global totalSize
+    open(f) do io
+        # retrieve the offsets
+        offsets = FCSFiles.parse_header(io)
+        text_mappings = FCSFiles.parse_text(io, offsets[1], offsets[2])
+        FCSFiles.verify_text(text_mappings)
+
+        # get the number of parameters
+        n_params = parse(Int, text_mappings["\$PAR"])
+
+        # determine the number of cells
+        numberCells = Int((offsets[4] - offsets[3] + 1) / 4 / n_params)
+
+        totalSize += numberCells
+        push!(inSize, numberCells)
+        @info "Filename: $f - #cells: $numberCells"
+    end
+end
+
+
+#=
+totalSize = 0
+inSize = []
 for name in fileNames
     global totalSize
     totalSize += size(in[name])[1]
     push!(inSize, size(in[name])[1])
 end
+=#
 
 # determine the size per file
 fileL = Int(floor(totalSize/nWorkers))
