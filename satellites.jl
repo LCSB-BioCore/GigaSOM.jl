@@ -1,4 +1,4 @@
-function getTotalSize(md, printLevel = 0)
+function getTotalSize(md, printLevel=0)
     global totalSize, tmpSum
 
     # define the file names
@@ -45,7 +45,7 @@ function getTotalSize(md, printLevel = 0)
 end
 
 
-function splitting(totalSize, nWorkers, printLevel = 0)
+function splitting(totalSize, nWorkers, printLevel=0)
     # determine the size per file
     fileL = Int(floor(totalSize/nWorkers))
 
@@ -63,7 +63,7 @@ function splitting(totalSize, nWorkers, printLevel = 0)
 end
 
 
-function getFiles(worker, nWorkers, fileL, lastFileL, printLevel = 0)
+function getFiles(worker, nWorkers, fileL, lastFileL, printLevel=0)
     # define the global indices per worker
     iStart = Int((worker - 1) * fileL + 1)
     iEnd = Int(worker * fileL)
@@ -104,8 +104,7 @@ function getFiles(worker, nWorkers, fileL, lastFileL, printLevel = 0)
     return ioFiles, iStart, iEnd
 end
 
-function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack)
-
+function detLocalPointers!(k, inSize, runSum, iStart, iEnd, slack, printLevel=0)
         # determine global pointers
         begPointer = 1
         endPointer = runSum[k]
@@ -130,11 +129,15 @@ function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack)
             localEnd = inSize[k]
         end
 
+        if printLevel > 0
+            @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
+        end
+
         return localStart, localEnd
 end
 
 
-function ocLocalFile(worker, k, inSize, localStart, localEnd, fileNames, openNewFile, printLevel = 0)
+function ocLocalFile(worker, k, inSize, localStart, localEnd, slack, fileNames, openNewFile, printLevel=0)
     # determine if a new file shall be opened
     if localEnd >= inSize[k]
         prevFileOpen = false
@@ -171,22 +174,26 @@ function ocLocalFile(worker, k, inSize, localStart, localEnd, fileNames, openNew
     else
         out[worker] = inFile[localStart:localEnd, :]
     end
+
+    return slack
 end
 
 
-function generateIO(fileNames, nWorkers, generateFiles=true, printLevel = 0)
+function generateIO(fileNames, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
 
-    global inFile, openNewFile, slack, fileEnd
+    #global inFile, openNewFile, slack, fileEnd
 
     # determin the total size, the vector with sizes, and their running sum
-    totalSize, inSize, runSum = getTotalSize(md, 1)
+    totalSize, inSize, runSum = getTotalSize(md, printLevel)
 
     # determine the size of each file
-    fileL, lastFileL = splitting(totalSize, nWorkers)
+    fileL, lastFileL = splitting(totalSize, nWorkers, printLevel)
 
     # saving the variables for testing purposes
-    localStartVect = []
-    localEndVect = []
+    if saveIndices
+        localStartVect = []
+        localEndVect = []
+    end
 
     # establish an index map
     fileEnd = 1
@@ -196,20 +203,18 @@ function generateIO(fileNames, nWorkers, generateFiles=true, printLevel = 0)
     fileNames = md.file_name
 
     for worker in 1:nWorkers
-        ioFiles, iStart, iEnd = getFiles(worker, nWorkers, fileL, lastFileL)
+        ioFiles, iStart, iEnd = getFiles(worker, nWorkers, fileL, lastFileL, printLevel)
         for k in ioFiles
-            localStart, localEnd = detLocalPointers(k, inSize, runSum, iStart, iEnd, slack)
+            localStart, localEnd = detLocalPointers!(k, inSize, runSum, iStart, iEnd, slack, printLevel)
 
             # save the variables
-            push!(localStartVect, localStart)
-            push!(localEndVect, localEnd)
-
-            if printLevel > 0
-                @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
+            if saveIndices
+                push!(localStartVect, localStart)
+                push!(localEndVect, localEnd)
             end
 
             # open/close the local file
-            ocLocalFile(worker, k, inSize, localStart, localEnd, fileNames, openNewFile)
+            slack = ocLocalFile(worker, k, inSize, localStart, localEnd, slack, fileNames, openNewFile, printLevel)
         end
 
         # output the file per worker
@@ -219,5 +224,9 @@ function generateIO(fileNames, nWorkers, generateFiles=true, printLevel = 0)
                 printstyled("[ Info:  > File input-$worker.jls written.\n", color=:green, bold=true)
             end
         end
+    end
+
+    if saveIndices
+        return localStartVect, localEndVect
     end
 end

@@ -11,7 +11,7 @@ md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(mdFileName, "Sheet1")...)
 
 include("satellites.jl")
 
-generateIO(fileNames, nWorkers, true)
+localStartVect, localEndVect = generateIO(fileNames, nWorkers, true, 1, true)
 
 #= split the file properly speaking
 open(f -> serialize(f,out), "out.jls", "w")
