@@ -63,7 +63,7 @@ function splitting(totalSize, nWorkers, printLevel = 0)
 end
 
 
-function getFiles(worker, nWorkers, fileL, lastFileL)
+function getFiles(worker, nWorkers, fileL, lastFileL, printLevel = 0)
     # define the global indices per worker
     iStart = Int((worker - 1) * fileL + 1)
     iEnd = Int(worker * fileL)
@@ -73,11 +73,13 @@ function getFiles(worker, nWorkers, fileL, lastFileL)
         iEnd = iStart + lastFileL - 1
     end
 
-    @info ""
-    @info " -----------------------------"
-    @info " >> Generating input-$worker.jls"
-    @info " -----------------------------"
-    @info " > iStart: $iStart; iEnd: $iEnd"
+    if printLevel > 0
+        @info ""
+        @info " -----------------------------"
+        @info " >> Generating input-$worker.jls"
+        @info " -----------------------------"
+        @info " > iStart: $iStart; iEnd: $iEnd"
+    end
 
     # find which files are relevant to be extracted
     ub = findall(runSum .>= iStart)
