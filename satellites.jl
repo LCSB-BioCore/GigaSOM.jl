@@ -104,7 +104,7 @@ function getFiles(worker, nWorkers, fileL, lastFileL, printLevel=0)
     return ioFiles, iStart, iEnd
 end
 
-function detLocalPointers!(k, inSize, runSum, iStart, iEnd, slack, printLevel=0)
+function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, printLevel=0)
         # determine global pointers
         begPointer = 1
         endPointer = runSum[k]
@@ -205,7 +205,7 @@ function generateIO(fileNames, nWorkers, generateFiles=true, printLevel=0, saveI
     for worker in 1:nWorkers
         ioFiles, iStart, iEnd = getFiles(worker, nWorkers, fileL, lastFileL, printLevel)
         for k in ioFiles
-            localStart, localEnd = detLocalPointers!(k, inSize, runSum, iStart, iEnd, slack, printLevel)
+            localStart, localEnd = detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, printLevel)
 
             # save the variables
             if saveIndices
