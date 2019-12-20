@@ -172,3 +172,52 @@ function ocLocalFile(worker, k, inSize, localStart, localEnd, fileNames, openNew
         out[worker] = inFile[localStart:localEnd, :]
     end
 end
+
+
+function generateIO(fileNames, nWorkers, generateFiles=true, printLevel = 0)
+
+    global inFile, openNewFile, slack, fileEnd
+
+    # determin the total size, the vector with sizes, and their running sum
+    totalSize, inSize, runSum = getTotalSize(md, 1)
+
+    # determine the size of each file
+    fileL, lastFileL = splitting(totalSize, nWorkers)
+
+    # saving the variables for testing purposes
+    localStartVect = []
+    localEndVect = []
+
+    # establish an index map
+    fileEnd = 1
+    out = Dict()
+    slack = 0
+    openNewFile = true
+    fileNames = md.file_name
+
+    for worker in 1:nWorkers
+        ioFiles, iStart, iEnd = getFiles(worker, nWorkers, fileL, lastFileL)
+        for k in ioFiles
+            localStart, localEnd = detLocalPointers(k, inSize, runSum, iStart, iEnd, slack)
+
+            # save the variables
+            push!(localStartVect, localStart)
+            push!(localEndVect, localEnd)
+
+            if printLevel > 0
+                @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
+            end
+
+            # open/close the local file
+            ocLocalFile(worker, k, inSize, localStart, localEnd, fileNames, openNewFile)
+        end
+
+        # output the file per worker
+        if generateFiles
+            open(f -> serialize(f,out), "input-$worker.jls", "w")
+            if printLevel > 0
+                printstyled("[ Info:  > File input-$worker.jls written.\n", color=:green, bold=true)
+            end
+        end
+    end
+end
