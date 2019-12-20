@@ -61,3 +61,8 @@ function splitting(totalSize, nWorkers, printLevel = 0)
 
     return fileL, lastFileL
 end
+
+
+function getFiles()
+
+end
