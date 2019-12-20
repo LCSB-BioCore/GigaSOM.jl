@@ -132,3 +132,43 @@ function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack)
 
         return localStart, localEnd
 end
+
+
+function ocLocalFile(worker, k, inSize, localStart, localEnd, fileNames, openNewFile, printLevel = 0)
+    # determine if a new file shall be opened
+    if localEnd >= inSize[k]
+        prevFileOpen = false
+        slack = 0
+    else
+        prevFileOpen = true
+        slack = localEnd
+    end
+
+    # open the file properly speaking
+    if openNewFile
+        if printLevel > 0
+            @info " > Opening file $(fileNames[k]) ..."
+        end
+        inFile = readSingleFlowFrame(fileNames[k])
+    end
+
+    # set a flag to open a new file or not
+    if prevFileOpen
+        if printLevel > 0
+            printstyled("[ Info:  + file $(fileNames[k]) is open ($slack)\n", color=:cyan)
+        end
+        openNewFile = false
+    else
+        if printLevel > 0
+            printstyled("[ Info:  - file $(fileNames[k]) is closed ($slack)\n", color=:magenta)
+        end
+        openNewFile = true
+    end
+
+    # concatenate the array
+    if length(out) > 0 && issubset(worker, collect(keys(out)))
+        out[worker] = [out[worker]; inFile[localStart:localEnd, :]]
+    else
+        out[worker] = inFile[localStart:localEnd, :]
+    end
+end

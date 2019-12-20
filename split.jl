@@ -46,36 +46,8 @@ for worker in 1:nWorkers
 
         @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
 
-        # determine if a new file shall be opened
-        if localEnd >= inSize[k]
-            prevFileOpen = false
-            slack = 0
-        else
-            prevFileOpen = true
-            slack = localEnd
-        end
-
-        # open the file properly speaking
-        if openNewFile
-            @info " > Opening file $(fileNames[k]) ..."
-            inFile = readSingleFlowFrame(fileNames[k])
-        end
-
-        # set a flag to open a new file or not
-        if prevFileOpen
-            printstyled("[ Info:  + file $(fileNames[k]) is open ($slack)\n", color=:cyan)
-            openNewFile = false
-        else
-            printstyled("[ Info:  - file $(fileNames[k]) is closed ($slack)\n", color=:magenta)
-            openNewFile = true
-        end
-
-        # concatenate the array
-        if length(out) > 0 && issubset(worker, collect(keys(out)))
-            out[worker] = [out[worker]; inFile[localStart:localEnd, :]]
-        else
-            out[worker] = inFile[localStart:localEnd, :]
-        end
+        # open/close the local file
+        ocLocalFile(worker, k, inSize, localStart, localEnd, fileNames, openNewFile)
     end
 
     # output the file per worker
