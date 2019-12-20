@@ -17,11 +17,19 @@ totalSize, inSize, runSum = getTotalSize(md, 1)
 # determine the size of each file
 fileL, lastFileL = splitting(totalSize, nWorkers)
 
+
+#function generateIO(fileNames, nWorkers, generateFiles=true)
+
+# saving the variables for testing purposes
+localStartVect = []
+localEndVect = []
+
 # establish an index map
 fileEnd = 1
 out = Dict()
 slack = 0
 openNewFile = true
+fileNames = md.file_name
 
 for worker in 1:nWorkers
     global inFile, openNewFile, slack, fileEnd, fileNames
@@ -86,6 +94,10 @@ for worker in 1:nWorkers
         if localEnd > inSize[k]
             localEnd = inSize[k]
         end
+
+        # save the variables
+        push!(localStartVect, localStart)
+        push!(localEndVect, localEnd)
 
         @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
 
