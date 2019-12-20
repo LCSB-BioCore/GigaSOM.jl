@@ -21,8 +21,17 @@ totalSize, inSize, runSum = getTotalSize(md, 0)
 
 localStartVect, localEndVect = generateIO(fileNames, nWorkers, true, 0, true)
 
-#test if the differences between the local indices correspond
+# test if the differences between the local indices correspond
 @test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
 
-@test localStartVect' == [1  275  1  50  324  598  1  72  1  196  1  270  544  1  193  1  137  1  121]
-@test localEndVect' == [274  500  49  323  597  800  71  150  195  200  269  543  625  192  330  136  290  120  400]
+@test localStartVect == [1, 275, 1, 50, 324, 598, 1, 72, 1, 196, 1, 270, 544, 1, 193, 1, 137, 1, 121]
+@test localEndVect == [274, 500, 49, 323, 597, 800, 71, 150, 195, 200, 269, 543, 625, 192, 330, 136, 290, 120, 400]
+
+# simple concatenation
+nWorkers = 1
+
+localStartVect, localEndVect = generateIO(fileNames, nWorkers, true, 0, true)
+@test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
+
+@test localStartVect == [1, 1, 1, 1, 1, 1, 1, 1]
+@test localEndVect == inSize
