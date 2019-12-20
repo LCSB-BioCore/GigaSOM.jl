@@ -9,54 +9,72 @@ mdFileName = location*"/metadata.xlsx"
 using GigaSOM, FileIO, Test, Serialization, FCSFiles
 md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(mdFileName, "Sheet1")...)
 
-# read in the entire dataset
-fileNames = md.file_name
-#in = readFlowset(fileNames)
+function getTotalSize(md, printLevel = 0)
+    global totalSize, tmpSum
 
-@info " > Input: $(length(fileNames)) files"
+    # define the file names
+    fileNames = md.file_name
 
-# get the total size of the data set
-totalSize = 0
-inSize = []
-for f in fileNames
-    global totalSize
-    open(f) do io
-        # retrieve the offsets
-        offsets = FCSFiles.parse_header(io)
-        text_mappings = FCSFiles.parse_text(io, offsets[1], offsets[2])
-        FCSFiles.verify_text(text_mappings)
-
-        # get the number of parameters
-        n_params = parse(Int, text_mappings["\$PAR"])
-
-        # determine the number of cells
-        numberCells = Int((offsets[4] - offsets[3] + 1) / 4 / n_params)
-
-        totalSize += numberCells
-        push!(inSize, numberCells)
-        @info "   + Filename: $f - #cells: $numberCells"
+    # out the number of files
+    if printLevel > 0
+        @info " > Input: $(length(fileNames)) files"
     end
+
+    # get the total size of the data set
+    totalSize = 0
+    inSize = []
+    for f in fileNames
+        open(f) do io
+            # retrieve the offsets
+            offsets = FCSFiles.parse_header(io)
+            text_mappings = FCSFiles.parse_text(io, offsets[1], offsets[2])
+            FCSFiles.verify_text(text_mappings)
+
+            # get the number of parameters
+            n_params = parse(Int, text_mappings["\$PAR"])
+
+            # determine the number of cells
+            numberCells = Int((offsets[4] - offsets[3] + 1) / 4 / n_params)
+
+            totalSize += numberCells
+            push!(inSize, numberCells)
+            if printLevel > 0
+                @info "   + Filename: $f - #cells: $numberCells"
+            end
+        end
+    end
+
+    # determine the running sum of the file sizes
+    runSum = []
+    tmpSum = 0
+    for indivSize in inSize
+        tmpSum += indivSize
+        push!(runSum, tmpSum)
+    end
+
+    return totalSize, inSize, runSum
 end
 
-# determine the size per file
-fileL = Int(floor(totalSize/nWorkers))
+totalSize, inSize, runSum = getTotalSize(md, 1)
 
-# determine the size of the last (residual) file
-lastFileL = Int(fileL + totalSize - nWorkers * fileL)
+function splitting(totalSize, nWorkers, printLevel = 0)
+    # determine the size per file
+    fileL = Int(floor(totalSize/nWorkers))
 
-@info " > # of workers: $nWorkers"
-@info " > Regular row count: $fileL cells"
-@info " > Last file row count: $lastFileL cells"
-@info " > Total row count: $totalSize cells"
+    # determine the size of the last (residual) file
+    lastFileL = Int(fileL + totalSize - nWorkers * fileL)
 
-# determine the running sum of the file sizes
-runSum = []
-tmpSum = 0
-for indivSize in inSize
-    global tmpSum
-    tmpSum += indivSize
-    push!(runSum, tmpSum)
+    if printLevel > 0
+        @info " > # of workers: $nWorkers"
+        @info " > Regular row count: $fileL cells"
+        @info " > Last file row count: $lastFileL cells"
+        @info " > Total row count: $totalSize cells"
+    end
+
+    return fileL, lastFileL
 end
+
+fileL, lastFileL = splitting(totalSize, nWorkers)
 
 # establish an index map
 fileEnd = 1
