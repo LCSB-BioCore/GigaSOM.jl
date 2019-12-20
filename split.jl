@@ -55,8 +55,6 @@ function getTotalSize(md, printLevel = 0)
     return totalSize, inSize, runSum
 end
 
-totalSize, inSize, runSum = getTotalSize(md, 1)
-
 function splitting(totalSize, nWorkers, printLevel = 0)
     # determine the size per file
     fileL = Int(floor(totalSize/nWorkers))
@@ -74,6 +72,10 @@ function splitting(totalSize, nWorkers, printLevel = 0)
     return fileL, lastFileL
 end
 
+# determin the total size, the vector with sizes, and their running sum
+totalSize, inSize, runSum = getTotalSize(md, 1)
+
+# determine the size of each file
 fileL, lastFileL = splitting(totalSize, nWorkers)
 
 # establish an index map
