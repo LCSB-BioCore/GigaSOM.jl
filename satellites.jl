@@ -103,3 +103,32 @@ function getFiles(worker, nWorkers, fileL, lastFileL, printLevel = 0)
 
     return ioFiles, iStart, iEnd
 end
+
+function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack)
+
+        # determine global pointers
+        begPointer = 1
+        endPointer = runSum[k]
+        if k > 1
+            begPointer = runSum[k-1]
+        end
+
+        # limit the file pointers with the limits
+        if iStart > begPointer
+            begPointer = iStart
+        end
+        if iEnd < endPointer
+            endPointer = iEnd
+        end
+
+        # define the local end
+        localStart = 1 + slack
+        localEnd = slack + endPointer - begPointer + 1
+
+        # avoid that the local end pointer is larger than the actual file size
+        if localEnd > inSize[k]
+            localEnd = inSize[k]
+        end
+
+        return localStart, localEnd
+end

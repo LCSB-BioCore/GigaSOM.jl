@@ -38,29 +38,7 @@ for worker in 1:nWorkers
 
     for k in ioFiles
 
-        # determine global pointers
-        begPointer = 1
-        endPointer = runSum[k]
-        if k > 1
-            begPointer = runSum[k-1]
-        end
-
-        # limit the file pointers with the limits
-        if iStart > begPointer
-            begPointer = iStart
-        end
-        if iEnd < endPointer
-            endPointer = iEnd
-        end
-
-        # define the local end
-        localStart = 1 + slack
-        localEnd = slack + endPointer - begPointer + 1
-
-        # avoid that the local end pointer is larger than the actual file size
-        if localEnd > inSize[k]
-            localEnd = inSize[k]
-        end
+        localStart, localEnd = detLocalPointers(k, inSize, runSum, iStart, iEnd, slack)
 
         # save the variables
         push!(localStartVect, localStart)
