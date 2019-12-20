@@ -19,6 +19,7 @@ totalSize, inSize, runSum = getTotalSize(md, 0)
 @test inSize == [500, 800, 150, 200, 625, 330, 290, 400]
 @test runSum == [500, 1300, 1450, 1650, 2275, 2605, 2895, 3295]
 
+localStartVect, localEndVect = generateIO(fileNames, nWorkers, true, 0, true)
 
 #test if the differences between the local indices correspond
 @test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
