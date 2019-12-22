@@ -2,17 +2,29 @@ using GigaSOM, FileIO, Test, Serialization, FCSFiles, DataFrames
 
 include("satellites.jl")
 
-location = ENV["HOME"]*"/Archive_AF_files" #"/artificial_data_cytof" #"/Archive_AF_files"
+location = ENV["HOME"]*"/Archive_AF_files"
 binFileType = ".jls"
-nWorkers = 12
-#cd(location)
 mdFileName = location*"/metadata.xlsx"
 
 # read the directory and their metadata
 fileDir = readdir(location)
 md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(mdFileName, "Sheet1")...)
 
+# read in all the files in 1 go and concatenate
+fileNames = []
+for f in sort(md.file_name)
+    push!(fileNames, location * "/" * f)
+end
+inSet = readFlowset(fileNames)
 
+inConcat = DataFrame()
+for key in sort(collect(keys(inSet)))
+    global inConcat
+    inConcat = vcat(inConcat, inSet[key])
+end
+
+# multiple workers
+nWorkers = 12
 
 # test the sizes
 totalSize, inSize, runSum = getTotalSize(location, md, 0)
@@ -43,18 +55,7 @@ localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 0, true)
 @test localStartVect == [1, 1, 1, 1, 1, 1, 1, 1]
 @test localEndVect == inSize
 
-# test if the data corresponds
-fileNames = []
-for f in sort(md.file_name)
-    push!(fileNames, location * "/" * f)
-end
-inSet = readFlowset(fileNames)
 
-inConcat = DataFrame()
-for key in sort(collect(keys(inSet)))
-    global inConcat
-    inConcat = vcat(inConcat, inSet[key])
-end
 
 # read the generated file
 y = open(deserialize, "input-1.jls")
