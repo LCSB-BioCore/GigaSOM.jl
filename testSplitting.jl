@@ -23,9 +23,7 @@ for key in sort(collect(keys(inSet)))
     inConcat = vcat(inConcat, inSet[key])
 end
 
-# multiple workers
-# ====================================================================
-
+# test the i/o functionality properly speaking
 for printLevel in [0, 1]
     for nWorkers in 1:12
         # test the sizes
@@ -53,12 +51,11 @@ for printLevel in [0, 1]
         yConcat = DataFrame()
         for k in 1:nWorkers
             y = open(deserialize, "input-$k.jls")
-            yConcat = vcat(yConcat, y[1])
+            yConcat = vcat(yConcat, y[k])
         end
 
-        if nWorkers == 1
-            @test yConcat == inConcat
-        end
+        # test of data consistency
+        @test yConcat == inConcat
 
         # remove all the files
         for k in 1:nWorkers
