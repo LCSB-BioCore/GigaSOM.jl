@@ -2,7 +2,7 @@ function getTotalSize(location, md, printLevel=0)
     global totalSize, tmpSum
 
     # define the file names
-    fileNames = md.file_name
+    fileNames = sort(md.file_name)
 
     # out the number of files
     if printLevel > 0
@@ -105,7 +105,7 @@ function getFiles(worker, nWorkers, fileL, lastFileL, printLevel=0)
     return ioFiles, iStart, iEnd
 end
 
-function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, printLevel=0)
+function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, printLevel=0)
         # determine global pointers
         begPointer = 1
         endPointer = runSum[k]
@@ -171,7 +171,7 @@ function ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePa
 
     # concatenate the array
     if length(out) > 0 && issubset(worker, collect(keys(out)))
-        out[worker] = [out[worker]; inFile[localStart:localEnd, :]]
+        out[worker] = vcat(out[worker], inFile[localStart:localEnd, :])
     else
         out[worker] = inFile[localStart:localEnd, :]
     end
@@ -180,9 +180,7 @@ function ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePa
 end
 
 
-function generateIO(filePath, fileNames, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
-
-    #global inFile, openNewFile, slack, fileEnd
+function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
 
     # determin the total size, the vector with sizes, and their running sum
     totalSize, inSize, runSum = getTotalSize(location, md, printLevel)
@@ -201,12 +199,12 @@ function generateIO(filePath, fileNames, nWorkers, generateFiles=true, printLeve
     out = Dict()
     slack = 0
     openNewFile = true
-    fileNames = md.file_name
+    fileNames = sort(md.file_name)
 
     for worker in 1:nWorkers
         ioFiles, iStart, iEnd = getFiles(worker, nWorkers, fileL, lastFileL, printLevel)
         for k in ioFiles
-            localStart, localEnd = detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, printLevel)
+            localStart, localEnd = detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, printLevel)
 
             # save the variables
             if saveIndices
