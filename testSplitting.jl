@@ -30,15 +30,8 @@ localStartVect, localEndVect = generateIO(location, fileNames, nWorkers, true, 1
 # test if the data corresponds
 inSet = readFlowset(md.file_name)
 
-# split the file properly speaking
-for k in 1:nWorkers
-    #open(f -> serialize(f,out), "input-$k.jls", "w")
-    y = open(deserialize, "input-$k.jls")
-    #@info y
-    #@test y == outa
-end
-
 # remove all the files
+
 for k in 1:nWorkers
     try
         printstyled("> Removing input-$k.jls ... ", color=:yellow)
@@ -57,3 +50,13 @@ localStartVect, localEndVect = generateIO(location, fileNames, nWorkers, true, 0
 
 @test localStartVect == [1, 1, 1, 1, 1, 1, 1, 1]
 @test localEndVect == inSize
+
+inConcat = DataFrame()
+for key in keys(inSet)
+    global inConcat
+    inConcat = vcat(inConcat, inSet[key])
+end
+
+# read the generated file
+y = open(deserialize, "input-1.jls")
+@test y[1] == inConcat
