@@ -25,59 +25,47 @@ end
 
 # multiple workers
 # ====================================================================
-nWorkers = 12
 
-# test the sizes
-totalSize, inSize, runSum = getTotalSize(location, md, 0)
+for nWorkers in [1, 12]
+    # test the sizes
+    totalSize, inSize, runSum = getTotalSize(location, md, 0)
 
-@test totalSize == 3295
-@test inSize == [150, 200, 290, 330, 400, 500, 625, 800]
-@test runSum == [150, 350, 640, 970, 1370, 1870, 2495, 3295]
+    @test totalSize == 3295
 
-localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 1, true)
+    if nWorkers == 12
+        @test inSize == [150, 200, 290, 330, 400, 500, 625, 800]
+        @test runSum == [150, 350, 640, 970, 1370, 1870, 2495, 3295]
 
-# test if the differences between the local indices correspond
-@test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
+        localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 1, true)
 
-@test localStartVect == [1, 1, 126, 1, 200, 1, 184, 1, 128, 1, 275, 1, 50, 324, 598, 1, 247, 521]
-@test localEndVect == [150, 125, 200, 199, 290, 183, 330, 127, 400, 274, 500, 49, 323, 597, 625, 246, 520, 800]
+        # test if the differences between the local indices correspond
+        @test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
 
-# read in all the generated files
-yConcat = DataFrame()
-for k in 1:nWorkers
-    global yConcat
-    y = open(deserialize, "input-$k.jls")
-    yConcat = vcat(yConcat, y[1])
-end
+        @test localStartVect == [1, 1, 126, 1, 200, 1, 184, 1, 128, 1, 275, 1, 50, 324, 598, 1, 247, 521]
+        @test localEndVect == [150, 125, 200, 199, 290, 183, 330, 127, 400, 274, 500, 49, 323, 597, 625, 246, 520, 800]
 
-#@test yConcat == inConcat
+    elseif nWorkers == 1
 
-# remove all the files
-for k in 1:nWorkers
-    rmFile("input-$k.jls")
-end
+        localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 0, true)
+        @test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
 
-# simple concatenation
-# ====================================================================
-nWorkers = 1
+        @test localStartVect == [1, 1, 1, 1, 1, 1, 1, 1]
+        @test localEndVect == inSize
+    end
 
-localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 0, true)
-@test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
+    # read in all the generated files
+    yConcat = DataFrame()
+    for k in 1:nWorkers
+        y = open(deserialize, "input-$k.jls")
+        yConcat = vcat(yConcat, y[1])
+    end
 
-@test localStartVect == [1, 1, 1, 1, 1, 1, 1, 1]
-@test localEndVect == inSize
+    if nWorkers == 1
+        @test yConcat == inConcat
+    end
 
-# read in all the generated files
-yConcat = DataFrame()
-for k in 1:nWorkers
-    global yConcat
-    y = open(deserialize, "input-$k.jls")
-    yConcat = vcat(yConcat, y[1])
-end
-
-@test yConcat == inConcat
-
-# remove all the files
-for k in 1:nWorkers
-    rmFile("input-$k.jls")
+    # remove all the files
+    for k in 1:nWorkers
+        rmFile("input-$k.jls")
+    end
 end
