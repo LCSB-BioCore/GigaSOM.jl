@@ -26,29 +26,24 @@ end
 # multiple workers
 # ====================================================================
 
-for nWorkers in [1, 12]
+for nWorkers in [1, 4, 8, 12]
     # test the sizes
     totalSize, inSize, runSum = getTotalSize(location, md, 0)
 
     @test totalSize == 3295
+    @test inSize == [150, 200, 290, 330, 400, 500, 625, 800]
+    @test runSum == [150, 350, 640, 970, 1370, 1870, 2495, 3295]
+
+    localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 1, true)
+
+    # test if the differences between the local indices correspond
+    @test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
 
     if nWorkers == 12
-        @test inSize == [150, 200, 290, 330, 400, 500, 625, 800]
-        @test runSum == [150, 350, 640, 970, 1370, 1870, 2495, 3295]
-
-        localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 1, true)
-
-        # test if the differences between the local indices correspond
-        @test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
-
         @test localStartVect == [1, 1, 126, 1, 200, 1, 184, 1, 128, 1, 275, 1, 50, 324, 598, 1, 247, 521]
         @test localEndVect == [150, 125, 200, 199, 290, 183, 330, 127, 400, 274, 500, 49, 323, 597, 625, 246, 520, 800]
 
     elseif nWorkers == 1
-
-        localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 0, true)
-        @test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
-
         @test localStartVect == [1, 1, 1, 1, 1, 1, 1, 1]
         @test localEndVect == inSize
     end
