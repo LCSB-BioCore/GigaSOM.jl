@@ -26,7 +26,7 @@ end
 # multiple workers
 # ====================================================================
 
-for nWorkers in [1, 4, 8, 12]
+for nWorkers in 1:12
     # test the sizes
     totalSize, inSize, runSum = getTotalSize(location, md, 0)
 
