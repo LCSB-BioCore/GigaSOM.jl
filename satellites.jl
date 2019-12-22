@@ -229,3 +229,13 @@ function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, sa
         return localStartVect, localEndVect
     end
 end
+
+function rmFile(fileName)
+    try
+        printstyled("> Removing $fileName ... ", color=:yellow)
+        rm(fileName)
+        printstyled("Done.\n", color=:green)
+    catch
+        printstyled("(file $fileName does not exist - skipping).\n", color=:red)
+    end
+end

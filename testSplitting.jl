@@ -1,14 +1,6 @@
 using GigaSOM, FileIO, Test, Serialization, FCSFiles, DataFrames
 
-function rmFile(fileName)
-    try
-        printstyled("> Removing $fileName ... ", color=:yellow)
-        rm(fileName)
-        printstyled("Done.\n", color=:green)
-    catch
-        printstyled("(file $fileName does not exist - skipping).\n", color=:red)
-    end
-end
+include("satellites.jl")
 
 location = ENV["HOME"]*"/Archive_AF_files" #"/artificial_data_cytof" #"/Archive_AF_files"
 binFileType = ".jls"
@@ -20,7 +12,7 @@ mdFileName = location*"/metadata.xlsx"
 fileDir = readdir(location)
 md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(mdFileName, "Sheet1")...)
 
-include("satellites.jl")
+
 
 # test the sizes
 totalSize, inSize, runSum = getTotalSize(location, md, 0)
@@ -37,13 +29,6 @@ localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 1, true)
 @test localStartVect == [1, 1, 126, 1, 200, 1, 184, 1, 128, 1, 275, 1, 50, 324, 598, 1, 247, 521]
 @test localEndVect == [150, 125, 200, 199, 290, 183, 330, 127, 400, 274, 500, 49, 323, 597, 625, 246, 520, 800]
 
-# test if the data corresponds
-fileNames = []
-for f in sort(md.file_name)
-    push!(fileNames, location * "/" * f)
-end
-inSet = readFlowset(fileNames)
-
 # remove all the files
 for k in 1:nWorkers
     rmFile("input-$k.jls")
@@ -57,6 +42,13 @@ localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 0, true)
 
 @test localStartVect == [1, 1, 1, 1, 1, 1, 1, 1]
 @test localEndVect == inSize
+
+# test if the data corresponds
+fileNames = []
+for f in sort(md.file_name)
+    push!(fileNames, location * "/" * f)
+end
+inSet = readFlowset(fileNames)
 
 inConcat = DataFrame()
 for key in sort(collect(keys(inSet)))
