@@ -23,17 +23,20 @@ for key in sort(collect(keys(inSet)))
     inConcat = vcat(inConcat, inSet[key])
 end
 
+# test the sizes
+@testset "Overall size" begin
+    totalSize, inSize, runSum = getTotalSize(location, md, 0)
+
+    @test totalSize == 3295
+    @test inSize == [150, 200, 290, 330, 400, 500, 625, 800]
+    @test runSum == [150, 350, 640, 970, 1370, 1870, 2495, 3295]
+end
+
 # test the i/o functionality properly speaking
 @testset "Overall I/O splitting" begin
     for printLevel in [0, 1]
         for nWorkers in 1:17
-            # test the sizes
-            totalSize, inSize, runSum = getTotalSize(location, md, 0)
-
-            @test totalSize == 3295
-            @test inSize == [150, 200, 290, 330, 400, 500, 625, 800]
-            @test runSum == [150, 350, 640, 970, 1370, 1870, 2495, 3295]
-
+            # generate the files
             localStartVect, localEndVect = generateIO(location, md, nWorkers, true, printLevel, true)
 
             # test if the differences between the local indices correspond
