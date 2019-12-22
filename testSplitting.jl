@@ -24,6 +24,7 @@ for key in sort(collect(keys(inSet)))
 end
 
 # multiple workers
+# ====================================================================
 nWorkers = 12
 
 # test the sizes
@@ -41,12 +42,23 @@ localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 1, true)
 @test localStartVect == [1, 1, 126, 1, 200, 1, 184, 1, 128, 1, 275, 1, 50, 324, 598, 1, 247, 521]
 @test localEndVect == [150, 125, 200, 199, 290, 183, 330, 127, 400, 274, 500, 49, 323, 597, 625, 246, 520, 800]
 
+# read in all the generated files
+yConcat = DataFrame()
+for k in 1:nWorkers
+    global yConcat
+    y = open(deserialize, "input-$k.jls")
+    yConcat = vcat(yConcat, y[1])
+end
+
+#@test yConcat == inConcat
+
 # remove all the files
 for k in 1:nWorkers
     rmFile("input-$k.jls")
 end
 
 # simple concatenation
+# ====================================================================
 nWorkers = 1
 
 localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 0, true)
@@ -55,11 +67,17 @@ localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 0, true)
 @test localStartVect == [1, 1, 1, 1, 1, 1, 1, 1]
 @test localEndVect == inSize
 
+# read in all the generated files
+yConcat = DataFrame()
+for k in 1:nWorkers
+    global yConcat
+    y = open(deserialize, "input-$k.jls")
+    yConcat = vcat(yConcat, y[1])
+end
 
+@test yConcat == inConcat
 
-# read the generated file
-y = open(deserialize, "input-1.jls")
-@test y[1] == inConcat
-
-# remove the single file
-rmFile("input-1.jls")
+# remove all the files
+for k in 1:nWorkers
+    rmFile("input-$k.jls")
+end
