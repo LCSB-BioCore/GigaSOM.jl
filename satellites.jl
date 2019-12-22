@@ -1,4 +1,4 @@
-function getTotalSize(md, printLevel=0)
+function getTotalSize(location, md, printLevel=0)
     global totalSize, tmpSum
 
     # define the file names
@@ -13,6 +13,7 @@ function getTotalSize(md, printLevel=0)
     totalSize = 0
     inSize = []
     for f in fileNames
+        f = location * "/" * f
         open(f) do io
             # retrieve the offsets
             offsets = FCSFiles.parse_header(io)
@@ -137,7 +138,7 @@ function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, printLevel=0)
 end
 
 
-function ocLocalFile(worker, k, inSize, localStart, localEnd, slack, fileNames, openNewFile, printLevel=0)
+function ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePath, fileNames, openNewFile, printLevel=0)
     # determine if a new file shall be opened
     if localEnd >= inSize[k]
         prevFileOpen = false
@@ -152,7 +153,7 @@ function ocLocalFile(worker, k, inSize, localStart, localEnd, slack, fileNames, 
         if printLevel > 0
             @info " > Opening file $(fileNames[k]) ..."
         end
-        inFile = readSingleFlowFrame(fileNames[k])
+        inFile = readSingleFlowFrame(filePath*"/"*fileNames[k])
     end
 
     # set a flag to open a new file or not
@@ -175,16 +176,16 @@ function ocLocalFile(worker, k, inSize, localStart, localEnd, slack, fileNames, 
         out[worker] = inFile[localStart:localEnd, :]
     end
 
-    return slack
+    return out, slack
 end
 
 
-function generateIO(fileNames, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
+function generateIO(filePath, fileNames, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
 
     #global inFile, openNewFile, slack, fileEnd
 
     # determin the total size, the vector with sizes, and their running sum
-    totalSize, inSize, runSum = getTotalSize(md, printLevel)
+    totalSize, inSize, runSum = getTotalSize(location, md, printLevel)
 
     # determine the size of each file
     fileL, lastFileL = splitting(totalSize, nWorkers, printLevel)
@@ -214,7 +215,7 @@ function generateIO(fileNames, nWorkers, generateFiles=true, printLevel=0, saveI
             end
 
             # open/close the local file
-            slack = ocLocalFile(worker, k, inSize, localStart, localEnd, slack, fileNames, openNewFile, printLevel)
+            out, slack = ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePath, fileNames, openNewFile, printLevel)
         end
 
         # output the file per worker

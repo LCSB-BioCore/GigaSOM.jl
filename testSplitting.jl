@@ -3,7 +3,7 @@ using GigaSOM, FileIO, Test, Serialization, FCSFiles
 location = ENV["HOME"]*"/Archive_AF_files" #"/artificial_data_cytof" #"/Archive_AF_files"
 binFileType = ".jls"
 nWorkers = 12
-cd(location)
+#cd(location)
 mdFileName = location*"/metadata.xlsx"
 
 # read the directory and their metadata
@@ -13,13 +13,13 @@ md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(mdFileName, "Sheet1")...)
 include("satellites.jl")
 
 # test the sizes
-totalSize, inSize, runSum = getTotalSize(md, 0)
+totalSize, inSize, runSum = getTotalSize(location, md, 0)
 
 @test totalSize == 3295
 @test inSize == [500, 800, 150, 200, 625, 330, 290, 400]
 @test runSum == [500, 1300, 1450, 1650, 2275, 2605, 2895, 3295]
 
-localStartVect, localEndVect = generateIO(fileNames, nWorkers, true, 1, true)
+localStartVect, localEndVect = generateIO(location, fileNames, nWorkers, true, 1, true)
 
 # test if the differences between the local indices correspond
 @test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
@@ -28,7 +28,15 @@ localStartVect, localEndVect = generateIO(fileNames, nWorkers, true, 1, true)
 @test localEndVect == [274, 500, 49, 323, 597, 800, 71, 150, 195, 200, 269, 543, 625, 192, 330, 136, 290, 120, 400]
 
 # test if the data corresponds
-readFlowset(md.file_name)
+inSet = readFlowset(md.file_name)
+
+# split the file properly speaking
+for k in 1:nWorkers
+    #open(f -> serialize(f,out), "input-$k.jls", "w")
+    y = open(deserialize, "input-$k.jls")
+    #@info y
+    #@test y == outa
+end
 
 # remove all the files
 for k in 1:nWorkers
@@ -44,7 +52,7 @@ end
 # simple concatenation
 nWorkers = 1
 
-localStartVect, localEndVect = generateIO(fileNames, nWorkers, true, 0, true)
+localStartVect, localEndVect = generateIO(location, fileNames, nWorkers, true, 0, true)
 @test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
 
 @test localStartVect == [1, 1, 1, 1, 1, 1, 1, 1]
