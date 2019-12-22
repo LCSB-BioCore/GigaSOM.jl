@@ -26,41 +26,43 @@ end
 # multiple workers
 # ====================================================================
 
-for nWorkers in 1:12
-    # test the sizes
-    totalSize, inSize, runSum = getTotalSize(location, md, 0)
+for printLevel in [0, 1]
+    for nWorkers in 1:12
+        # test the sizes
+        totalSize, inSize, runSum = getTotalSize(location, md, 0)
 
-    @test totalSize == 3295
-    @test inSize == [150, 200, 290, 330, 400, 500, 625, 800]
-    @test runSum == [150, 350, 640, 970, 1370, 1870, 2495, 3295]
+        @test totalSize == 3295
+        @test inSize == [150, 200, 290, 330, 400, 500, 625, 800]
+        @test runSum == [150, 350, 640, 970, 1370, 1870, 2495, 3295]
 
-    localStartVect, localEndVect = generateIO(location, md, nWorkers, true, 1, true)
+        localStartVect, localEndVect = generateIO(location, md, nWorkers, true, printLevel, true)
 
-    # test if the differences between the local indices correspond
-    @test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
+        # test if the differences between the local indices correspond
+        @test sum(localEndVect - localStartVect) + length(localEndVect) == totalSize
 
-    if nWorkers == 12
-        @test localStartVect == [1, 1, 126, 1, 200, 1, 184, 1, 128, 1, 275, 1, 50, 324, 598, 1, 247, 521]
-        @test localEndVect == [150, 125, 200, 199, 290, 183, 330, 127, 400, 274, 500, 49, 323, 597, 625, 246, 520, 800]
+        if nWorkers == 12
+            @test localStartVect == [1, 1, 126, 1, 200, 1, 184, 1, 128, 1, 275, 1, 50, 324, 598, 1, 247, 521]
+            @test localEndVect == [150, 125, 200, 199, 290, 183, 330, 127, 400, 274, 500, 49, 323, 597, 625, 246, 520, 800]
 
-    elseif nWorkers == 1
-        @test localStartVect == [1, 1, 1, 1, 1, 1, 1, 1]
-        @test localEndVect == inSize
-    end
+        elseif nWorkers == 1
+            @test localStartVect == [1, 1, 1, 1, 1, 1, 1, 1]
+            @test localEndVect == inSize
+        end
 
-    # read in all the generated files
-    yConcat = DataFrame()
-    for k in 1:nWorkers
-        y = open(deserialize, "input-$k.jls")
-        yConcat = vcat(yConcat, y[1])
-    end
+        # read in all the generated files
+        yConcat = DataFrame()
+        for k in 1:nWorkers
+            y = open(deserialize, "input-$k.jls")
+            yConcat = vcat(yConcat, y[1])
+        end
 
-    if nWorkers == 1
-        @test yConcat == inConcat
-    end
+        if nWorkers == 1
+            @test yConcat == inConcat
+        end
 
-    # remove all the files
-    for k in 1:nWorkers
-        rmFile("input-$k.jls")
+        # remove all the files
+        for k in 1:nWorkers
+            rmFile("input-$k.jls", printLevel)
+        end
     end
 end

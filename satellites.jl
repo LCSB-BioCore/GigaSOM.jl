@@ -230,12 +230,18 @@ function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, sa
     end
 end
 
-function rmFile(fileName)
+function rmFile(fileName, printLevel = 1)
     try
-        printstyled("> Removing $fileName ... ", color=:yellow)
+        if printLevel > 0
+            printstyled("> Removing $fileName ... ", color=:yellow)
+        end
         rm(fileName)
-        printstyled("Done.\n", color=:green)
+        if printLevel > 0
+            printstyled("Done.\n", color=:green)
+        end
     catch
-        printstyled("(file $fileName does not exist - skipping).\n", color=:red)
+        if printLevel > 0
+            printstyled("(file $fileName does not exist - skipping).\n", color=:red)
+        end
     end
 end
