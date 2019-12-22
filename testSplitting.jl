@@ -3,7 +3,6 @@ using GigaSOM, FileIO, Test, Serialization, FCSFiles, DataFrames
 include("satellites.jl")
 
 location = ENV["HOME"]*"/Archive_AF_files"
-binFileType = ".jls"
 mdFileName = location*"/metadata.xlsx"
 
 # read the directory and their metadata
