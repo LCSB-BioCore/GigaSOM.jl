@@ -1,4 +1,3 @@
-
 using GigaSOM, DataFrames, XLSX, Test, Random, Distributed, SHA, JSON
 
 checkDir()
@@ -11,7 +10,6 @@ md = DataFrame(XLSX.readtable("metadata.xlsx", "Sheet1", infer_eltypes=true)...)
 panel = DataFrame(XLSX.readtable("panel.xlsx", "Sheet1", infer_eltypes=true)...)
 
 lineageMarkers, functionalMarkers = getMarkers(panel)
-
 
 nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
