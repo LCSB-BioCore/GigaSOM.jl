@@ -34,7 +34,15 @@ function readFlowset(filenames)
 end
 
 
-# TODO: add function header
+"""
+    readSingleFlowFrame(filename)
+
+Reads a single flowframe, extracts the markers as
+Column names and returns a DataFrame
+
+# Arguments:
+- `filename`: string
+"""
 function readSingleFlowFrame(filename)
 
     flowrun = FileIO.load(filename) # FCS file
