@@ -6,7 +6,7 @@ and at the given location.
 
 # INPUTS
 
-- `location`: absolute path of the files specified in the metadata file
+- `location`: Absolute path of the files specified in the metadata file
 - `md`: Metadata table
 - `printLevel`: Verbose level (0: mute)
 
@@ -63,7 +63,23 @@ function getTotalSize(location, md, printLevel=0)
     return totalSize, inSize, runSum
 end
 
+"""
+    splitting(totalSize, nWorkers, printLevel=0)
 
+Determine the size of each file (including the last one)
+given the total size and the number of workers
+
+# INPUTS
+
+- `totalSize`: Total size of the data set
+- `nWorkers`: Number of workers
+- `printLevel`: Verbose level (0: mute)
+
+# OUTPUTS
+
+- `fileL`: Length of each file apart from the last one
+- `lastFileL`: Length of the last file
+"""
 function splitting(totalSize, nWorkers, printLevel=0)
     # determine the size per file
     fileL = Int(floor(totalSize/nWorkers))
