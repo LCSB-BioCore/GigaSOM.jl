@@ -1,3 +1,21 @@
+"""
+    getTotalSize(location, md, printLevel=0)
+
+Get the total size of all the files specified in the metadata file
+and at the given location.
+
+# INPUTS
+
+- `location`: absolute path of the files specified in the metadata file
+- `md`: Metadata table
+- `printLevel`: Verbose level (0: mute)
+
+# OUTPUTS
+
+- `totalSize`: (integer) Total size of the full data set
+- `inSize`: Vector with the lengths of each file within the input data set
+- `runSum`: Running sum of the `inSize` vector (`runSum[end] == totalSize`)
+"""
 function getTotalSize(location, md, printLevel=0)
     global totalSize, tmpSum
 
