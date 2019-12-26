@@ -97,7 +97,26 @@ function splitting(totalSize, nWorkers, printLevel=0)
     return fileL, lastFileL
 end
 
+"""
+    getFiles(worker, nWorkers, fileL, lastFileL, printLevel=0)
 
+Determine which files need to be opened and read from
+
+# INPUTS
+
+- `worker`: ID of the worker
+- `nWorkers`: Number of workers
+- `fileL`: Length of each file apart from the last one
+- `lastFileL`: Length of the last file
+- `printLevel`: Verbose level (0: mute)
+
+# OUTPUTS
+
+- `ioFiles`: Vector with the indices of the files that need to be opened
+- `iStart`: Global start index
+- `iEnd`: Global end index
+
+"""
 function getFiles(worker, nWorkers, fileL, lastFileL, printLevel=0)
     # define the global indices per worker
     iStart = Int((worker - 1) * fileL + 1)
@@ -140,35 +159,34 @@ function getFiles(worker, nWorkers, fileL, lastFileL, printLevel=0)
 end
 
 function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, printLevel=0)
-        # determine global pointers
-        begPointer = 1
-        endPointer = runSum[k]
-        if k > 1
-            begPointer = runSum[k-1]
-        end
+    # determine global pointers
+    begPointer = 1
+    endPointer = runSum[k]
+    if k > 1
+        begPointer = runSum[k-1]
+    end
 
-        # limit the file pointers with the limits
-        if iStart > begPointer
-            begPointer = iStart
-        end
-        if iEnd < endPointer
-            endPointer = iEnd
-        end
+    # limit the file pointers with the limits
+    if iStart > begPointer
+        begPointer = iStart
+    end
+    if iEnd < endPointer
+        endPointer = iEnd
+    end
 
-        # define the local end
-        localStart = 1 + slack
-        localEnd = slack + endPointer - begPointer + 1
+    # define the local end
+    localStart = 1 + slack
+    localEnd = slack + endPointer - begPointer + 1
 
-        # avoid that the local end pointer is larger than the actual file size
-        if localEnd > inSize[k]
-            localEnd = inSize[k]
-        end
+    # avoid that the local end pointer is larger than the actual file size
+    if localEnd > inSize[k]
+        localEnd = inSize[k]
+    end
+    if printLevel > 0
+        @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
+    end
 
-        if printLevel > 0
-            @info " > Reading from file $k -- File: $(fileNames[k]) $localStart to $localEnd (Total: $(inSize[k]))"
-        end
-
-        return localStart, localEnd
+    return localStart, localEnd
 end
 
 
