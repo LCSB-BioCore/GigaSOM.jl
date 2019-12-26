@@ -26,9 +26,9 @@ end
 @testset "Overall size" begin
     totalSize, inSize, runSum = getTotalSize(location, md, 0)
 
-    @test totalSize == 3295
     @test inSize == [150, 200, 290, 330, 400, 500, 625, 800]
     @test runSum == [150, 350, 640, 970, 1370, 1870, 2495, 3295]
+    @test runSum[end] == totalSize
 end
 
 # test the i/o functionality properly speaking
