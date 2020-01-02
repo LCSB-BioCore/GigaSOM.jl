@@ -62,7 +62,7 @@ function readFlowFrame(filename)
     cleanNames!(markers)
 
     names!(flowDF, Symbol.(markers), makeunique=true)
-    flowFrame[name] = flowDF
+    flowFrame[filename] = flowDF
 
     return flowFrame
 end
