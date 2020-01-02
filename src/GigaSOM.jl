@@ -43,7 +43,8 @@ module GigaSOM
         daFrame
 
     export #input
-        readFlowset
+        readFlowset,
+        readFlowFrame
 
     export #satellites
         cleanNames!,
