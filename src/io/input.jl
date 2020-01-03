@@ -19,8 +19,8 @@ function readFlowset(filenames)
         # As the dict is not in order, use the name column form meta
         # to sort the Dataframe after cast.
         meta = getMetaData(flowrun)
-        markers = meta[:,1]
-        markersIsotope = meta[:,5]
+        markers = meta[!, Symbol("\$PnS")]
+        markersIsotope = meta[!, Symbol("\$PnN")]
         flowDF = DataFrame(flowrun.data)
         # sort the DF according to the marker list
         flowDF = flowDF[:, Symbol.(markersIsotope)]
@@ -54,8 +54,8 @@ function readFlowFrame(filename)
     # As the dict is not in order, use the name column form meta
     # to sort the Dataframe after cast.
     meta = getMetaData(flowrun)
-    markers = meta[:,1]
-    markersIsotope = meta[:,5]
+    markers = meta[!, Symbol("\$PnS")]
+    markersIsotope = meta[!, Symbol("\$PnN")]
     flowDF = DataFrame(flowrun.data)
     # sort the DF according to the marker list
     flowDF = flowDF[:, Symbol.(markersIsotope)]
