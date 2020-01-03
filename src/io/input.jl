@@ -21,6 +21,10 @@ function readFlowset(filenames)
         meta = getMetaData(flowrun)
         markers = meta[!, Symbol("\$PnS")]
         markersIsotope = meta[!, Symbol("\$PnN")]
+        # if marker labels are empty use Isotope marker as column names
+        if markers[1] == " "
+            markers = markersIsotope
+        end
         flowDF = DataFrame(flowrun.data)
         # sort the DF according to the marker list
         flowDF = flowDF[:, Symbol.(markersIsotope)]
@@ -56,6 +60,10 @@ function readFlowFrame(filename)
     meta = getMetaData(flowrun)
     markers = meta[!, Symbol("\$PnS")]
     markersIsotope = meta[!, Symbol("\$PnN")]
+    # if marker labels are empty use Isotope marker as column names
+    if markers[1] == " "
+        markers = markersIsotope
+    end
     flowDF = DataFrame(flowrun.data)
     # sort the DF according to the marker list
     flowDF = flowDF[:, Symbol.(markersIsotope)]
