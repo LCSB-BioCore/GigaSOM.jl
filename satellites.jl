@@ -115,7 +115,6 @@ Determine which files need to be opened and read from
 - `ioFiles`: Vector with the indices of the files that need to be opened
 - `iStart`: Global start index
 - `iEnd`: Global end index
-
 """
 function getFiles(worker, nWorkers, fileL, lastFileL, printLevel=0)
     # define the global indices per worker
@@ -158,6 +157,25 @@ function getFiles(worker, nWorkers, fileL, lastFileL, printLevel=0)
     return ioFiles, iStart, iEnd
 end
 
+"""
+    detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, printLevel=0)
+
+Determine the local pointers
+
+# INPUTS
+
+- `worker`: ID of the worker
+- `nWorkers`: Number of workers
+- `fileL`: Length of each file apart from the last one
+- `lastFileL`: Length of the last file
+- `printLevel`: Verbose level (0: mute)
+
+# OUTPUTS
+
+- `ioFiles`: Vector with the indices of the files that need to be opened
+- `iStart`: Global start index
+- `iEnd`: Global end index
+"""
 function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, printLevel=0)
     # determine global pointers
     begPointer = 1
