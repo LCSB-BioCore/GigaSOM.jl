@@ -49,6 +49,18 @@ cleanNames!(fcsRaw)
 # create daFrame file
 daf = createDaFrame(fcsRaw, md, panel)
 
+filename = md.file_name[1]
+ff = readFlowFrame(filename)
+cleanNames!(ff)
+dafsingle = createDaFrame(ff, md, panel)
+
+@testset "Single FCS file support" begin
+
+    @test typeof(ff) == Dict{Any,Any}
+    @test length(ff) == 1
+    @test typeof(dafsingle) == daFrame
+end
+
 @testset "Sort and reduce test" begin
 
     df = DataFrame(Col1 = rand(5), Col2 = rand(5), None = rand(5))

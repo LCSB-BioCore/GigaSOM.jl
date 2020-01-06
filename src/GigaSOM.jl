@@ -44,6 +44,7 @@ module GigaSOM
 
     export #input
         readFlowset,
+        readFlowFrame
         readSingleFlowFrame,
         loadData
 

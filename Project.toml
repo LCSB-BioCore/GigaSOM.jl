@@ -1,6 +1,6 @@
 name = "GigaSOM"
 uuid = "a03a9c34-069e-5582-a11c-5c984cab887c"
-version = "0.2.1"
+version = "0.2.2"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -20,6 +20,16 @@ XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [compat]
 julia = "1"
+CSV = "^0.5.12"
+DataFrames = "^0.19.4"
+Distances = "^0.8.2"
+DistributedArrays = "^0.6.4"
+Distributions = "^0.21.1"
+FCSFiles = "^0.1.1"
+FileIO = "^1.0.7"
+JSON = "^0.21.0"
+NearestNeighbors = "^0.4.3"
+XLSX = "^0.5.5"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
