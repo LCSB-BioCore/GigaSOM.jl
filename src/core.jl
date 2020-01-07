@@ -10,7 +10,7 @@ Initialises a SOM.
 - `norm`: optional normalisation
 - `toroidal`: optional flag; if true, the SOM is toroidal.
 """
-function initGigaSOM(initMatrix, xdim, ydim = xdim;
+function initGigaSOM(initMatrix::Array{Float64, 2}, xdim, ydim = xdim;
              norm::Symbol = :none, toroidal = false)
 
     numCodes = xdim * ydim
@@ -29,6 +29,46 @@ function initGigaSOM(initMatrix, xdim, ydim = xdim;
     # TODO: simulate colnames for testing only !!!
     colNames = ["a", "b", "c"]
     normParams = DataFrame()
+    # make SOM object:
+    som = Som(codes = codes, colNames = colNames,
+           normParams = normParams, norm = norm,
+           xdim = xdim, ydim = ydim,
+           numCodes = numCodes,
+           grid = grid, indices = indices,
+           toroidal = toroidal,
+           population = zeros(Int, numCodes))
+    return som
+end
+
+
+function initGigaSOM(train::DataFrame, xdim, ydim = xdim;
+             norm::Symbol = :none, toroidal = false)
+
+    if typeof(train) == DataFrame
+        colNames = [String(x) for x in names(train)]
+    else
+        colNames = ["x$i" for i in 1:size(train,2)]
+    end
+
+    train = convertTrainingData(train)
+
+    numCodes = xdim * ydim
+
+    # normalise training data:
+    train, normParams = normTrainData(train, norm)
+
+    # initialise the codes with random samples
+    codes = train[rand(1:size(train,1), numCodes),:]
+    grid = gridRectangular(xdim, ydim)
+
+    normParams = convert(DataFrame, normParams)
+    names!(normParams, Symbol.(colNames))
+
+    # create X,Y-indices for neurons:
+    #
+    x = y = collect(1:numCodes)
+    indices = DataFrame(X = x, Y = y)
+
     # make SOM object:
     som = Som(codes = codes, colNames = colNames,
            normParams = normParams, norm = norm,
@@ -63,7 +103,7 @@ end
 - `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
 - `epochs`: number of SOM training iterations (default 10)
 """
-function trainGigaSOM(som::Som, trainRef, cc;
+function trainGigaSOM(som::Som, trainRef::Vector{Ref}, cc;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
                       knnTreeFun = BruteTree,
@@ -116,6 +156,72 @@ function trainGigaSOM(som::Som, trainRef, cc;
 end
 
 
+function trainGigaSOM(som::Som, train::DataFrame;
+                      kernelFun::Function = gaussianKernel,
+                      metric = Euclidean(),
+                      knnTreeFun = BruteTree,
+                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
+                      epochs = 10)
+
+    train = convertTrainingData(train)
+
+    # set default radius:
+
+    if rStart == 0.0
+        rStart = √(som.xdim^2 + som.ydim^2) / 2
+        @info "The radius has been determined automatically."
+    end
+
+    dm = distMatrix(som.grid, som.toroidal)
+
+    codes = som.codes
+
+    nWorkers = nprocs()
+    dTrain = distribute(train)
+
+    for j in 1:epochs
+
+        globalSumNumerator = zeros(Float64, size(codes))
+        globalSumDenominator = zeros(Float64, size(codes)[1])
+
+        tree = knnTreeFun(Array{Float64,2}(transpose(codes)), metric)
+
+        if nworkers() > 1
+
+            R = Vector{Any}(undef,nworkers())
+
+            @sync begin
+                for (idx, pid) in enumerate(workers())
+                    @async begin
+                        R[idx] =  fetch(@spawnat pid begin doEpoch(localpart(dTrain), codes, tree) end)
+                        globalSumNumerator += R[idx][1]
+                        globalSumDenominator += R[idx][2]
+                    end
+                end
+            end
+        else
+            # only batch mode
+            sumNumerator, sumDenominator = doEpoch(localpart(dTrain), codes, tree)
+            globalSumNumerator += sumNumerator
+            globalSumDenominator += sumDenominator
+        end
+
+        r = radiusFun(rStart, rFinal, j, epochs)
+        println("Radius: $r")
+        if r <= 0
+            error("Sanity check: radius must be positive")
+        end
+
+        wEpoch = kernelFun(dm, r)
+        codes = (wEpoch*globalSumNumerator) ./ (wEpoch*globalSumDenominator)
+    end
+
+    som.codes[:,:] = codes[:,:]
+
+    return som
+end
+
+
 """
     doEpoch(x::Array{Float64}, codes::Array{Float64}, tree)
 
@@ -126,13 +232,8 @@ vectors and the adjustment in radius after each epoch.
 - `codes`: Codebook
 - `tree`: knn-compatible tree built upon the codes
 """
-function doEpoch(x, codes::Array{Float64, 2}, tree, cc)
+function doEpoch(x::Ref, codes::Array{Float64, 2}, tree, cc)
 
-    # display(x.x[1:5, 1:5])
-    # display(size(x.x))
-    # data = x.x
-    # display()
-    # x = convertTrainingData(train.x[:,cc])
     # initialise numerator and denominator with 0's
     sumNumerator = zeros(Float64, size(codes))
     sumDenominator = zeros(Float64, size(codes)[1])
@@ -144,6 +245,27 @@ function doEpoch(x, codes::Array{Float64, 2}, tree, cc)
         target = bmuIdx[1]
 
         sumNumerator[target, :] .+= x.x[s, :]
+        sumDenominator[target] += 1
+    end
+
+    return sumNumerator, sumDenominator
+end
+
+
+function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, tree)
+
+    # initialise numerator and denominator with 0's
+    sumNumerator = zeros(Float64, size(codes))
+    sumDenominator = zeros(Float64, size(codes)[1])
+
+    # for each sample in dataset / trainingsset
+    for s in 1:size(x, 1)
+
+        (bmuIdx, bmuDist) = knn(tree, x[s, :], 1)
+
+        target = bmuIdx[1]
+
+        sumNumerator[target, :] .+= x[s, :]
         sumDenominator[target] += 1
     end
 
