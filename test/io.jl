@@ -49,15 +49,26 @@ cleanNames!(fcsRaw)
 # create daFrame file
 daf = createDaFrame(fcsRaw, md, panel)
 
-filename = md.file_name[1]
-ff = readFlowFrame(filename)
-cleanNames!(ff)
-dafsingle = createDaFrame(ff, md, panel)
-
 @testset "Single FCS file support" begin
+    # call readFlowFrame with an array
+    filename = md.file_name[1]
+    ff = readFlowFrame([filename])
+    cleanNames!(ff)
+    dafsingle = createDaFrame(ff, md, panel)
 
-    #@test typeof(ff) == Dict{Any,Any}
-    #@test length(ff) == 1
+    # return type is a Dict{} with 1 element
+    @test typeof(ff) == Dict{Any,Any}
+    @test length(ff) == 1
+    @test typeof(dafsingle) == daFrame
+
+    # call readFlowFrame with a string
+    filename = md.file_name[1]
+    ff = readFlowFrame(filename)
+    cleanNames!(ff)
+    dafsingle = createDaFrame(ff, md, panel)
+
+    # return type is a DataFrame
+    @test typeof(ff) == DataFrame
     @test typeof(dafsingle) == daFrame
 end
 
