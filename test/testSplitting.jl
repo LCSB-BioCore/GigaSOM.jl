@@ -1,7 +1,5 @@
 using GigaSOM, FileIO, Test, Serialization, FCSFiles, DataFrames
 
-include("satellites.jl")
-
 location = ENV["HOME"]*"/Archive_AF_files"
 mdFileName = location*"/metadata.xlsx"
 
@@ -24,7 +22,10 @@ end
 
 # test the sizes
 @testset "Overall size" begin
-    totalSize, inSize, runSum = getTotalSize(location, md, 0)
+
+    global totalSize, inSize
+
+    totalSize, inSize, runSum = GigaSOM.getTotalSize(location, md, 0)
 
     @test inSize == [150, 200, 290, 330, 400, 500, 625, 800]
     @test runSum == [150, 350, 640, 970, 1370, 1870, 2495, 3295]
@@ -70,7 +71,7 @@ end
 
             # remove all the files
             for k in 1:nWorkers
-                rmFile("input-$k.jls", printLevel)
+                GigaSOM.rmFile("input-$k.jls", printLevel)
             end
         end
     end
