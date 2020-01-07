@@ -16,6 +16,8 @@ checkDir()
     include("parallel.jl")
 
     include("functionTest.jl")
+
+    include("testSplitting.jl")
 end
 
 cd(owd)
