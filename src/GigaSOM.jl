@@ -35,7 +35,7 @@ module GigaSOM
         mapToGigaSOM,
         linearRadius,
         expRadius
-    
+
     export #embedding
         embedGigaSOM
 
@@ -44,8 +44,7 @@ module GigaSOM
 
     export #input
         readFlowset,
-        readFlowFrame
-        readSingleFlowFrame,
+        readFlowFrame,
         loadData
 
     export #satellites
