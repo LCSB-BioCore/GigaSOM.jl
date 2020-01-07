@@ -167,14 +167,14 @@ function checkDir()
 end
 
 """
-    getTotalSize(location, md, printLevel=0)
+    getTotalSize(loc, md, printLevel=0)
 
 Get the total size of all the files specified in the metadata file
 and at the given location.
 
 # INPUTS
 
-- `location`: Absolute path of the files specified in the metadata file
+- `loc`: Absolute path of the files specified in the metadata file
 - `md`: Metadata table
 - `printLevel`: Verbose level (0: mute)
 
@@ -184,7 +184,7 @@ and at the given location.
 - `inSize`: Vector with the lengths of each file within the input data set
 - `runSum`: Running sum of the `inSize` vector (`runSum[end] == totalSize`)
 """
-function getTotalSize(location, md, printLevel=0)
+function getTotalSize(loc, md, printLevel=0)
     global totalSize, tmpSum
 
     # define the file names
@@ -199,7 +199,7 @@ function getTotalSize(location, md, printLevel=0)
     totalSize = 0
     inSize = []
     for f in fileNames
-        f = location * "/" * f
+        f = loc * "/" * f
         open(f) do io
             # retrieve the offsets
             offsets = FCSFiles.parse_header(io)
@@ -266,7 +266,7 @@ function splitting(totalSize, nWorkers, printLevel=0)
 end
 
 """
-    getFiles(worker, nWorkers, fileL, lastFileL, printLevel=0)
+    getFiles(worker, nWorkers, fileL, lastFileL, runSum, printLevel=0)
 
 Determine which files need to be opened and read from
 
@@ -276,6 +276,7 @@ Determine which files need to be opened and read from
 - `nWorkers`: Number of workers
 - `fileL`: Length of each file apart from the last one
 - `lastFileL`: Length of the last file
+- `runSum`: running sum
 - `printLevel`: Verbose level (0: mute)
 
 # OUTPUTS
@@ -284,7 +285,7 @@ Determine which files need to be opened and read from
 - `iStart`: Global start index
 - `iEnd`: Global end index
 """
-function getFiles(worker, nWorkers, fileL, lastFileL, printLevel=0)
+function getFiles(worker, nWorkers, fileL, lastFileL, runSum, printLevel=0)
     # define the global indices per worker
     iStart = Int((worker - 1) * fileL + 1)
     iEnd = Int(worker * fileL)
@@ -391,7 +392,7 @@ function ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePa
         if printLevel > 0
             @info " > Opening file $(fileNames[k]) ..."
         end
-        inFile = readSingleFlowFrame(filePath*"/"*fileNames[k])
+        inFile = readFlowFrame(filePath*"/"*fileNames[k])
     end
 
     # set a flag to open a new file or not
@@ -421,7 +422,7 @@ end
 function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
 
     # determin the total size, the vector with sizes, and their running sum
-    totalSize, inSize, runSum = getTotalSize(location, md, printLevel)
+    totalSize, inSize, runSum = getTotalSize(filePath, md, printLevel)
 
     # determine the size of each file
     fileL, lastFileL = splitting(totalSize, nWorkers, printLevel)
@@ -440,7 +441,7 @@ function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, sa
     fileNames = sort(md.file_name)
 
     for worker in 1:nWorkers
-        ioFiles, iStart, iEnd = getFiles(worker, nWorkers, fileL, lastFileL, printLevel)
+        ioFiles, iStart, iEnd = getFiles(worker, nWorkers, fileL, lastFileL, runSum, printLevel)
         for k in ioFiles
             localStart, localEnd = detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, printLevel)
 
