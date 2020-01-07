@@ -77,15 +77,15 @@ embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.0, adjust=0.5)
 
 end
 
-@testset "single file training" begin
+# @testset "single file training" begin
 
-    dfSom = dafsingle.fcstable[:,cc]
-    som2 = initGigaSOM(dfSom, 10, 10)
-    som2 = trainGigaSOM(som2, dfSom, epochs = 2, rStart = 6.0)       
-    winners = mapToGigaSOM(som2, dfSom)
+#     dfSom = dafsingle.fcstable[:,cc]
+#     som2 = initGigaSOM(dfSom, 10, 10)
+#     som2 = trainGigaSOM(som2, dfSom, epochs = 2, rStart = 6.0)       
+#     winners = mapToGigaSOM(som2, dfSom)
 
-    @test typeof(winners) == DataFrame
-end
+#     @test typeof(winners) == DataFrame
+# end
 
 rmprocs(workers())
 
