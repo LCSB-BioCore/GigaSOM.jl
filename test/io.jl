@@ -49,15 +49,28 @@ cleanNames!(fcsRaw)
 # create daFrame file
 daf = createDaFrame(fcsRaw, md, panel)
 
-filename = md.file_name[1]
-ff = readFlowFrame(filename)
-cleanNames!(ff)
-dafsingle = createDaFrame(ff, md, panel)
+@testset "Single FCS file support (to be deprecated)" begin
+    # call readFlowFrame with an array
+    filename = md.file_name[1]
+    ff = readFlowFrame([filename])
+    cleanNames!(ff)
+    dafsingle = createDaFrame(ff, md, panel)
 
-@testset "Single FCS file support" begin
-
+    # return type is a Dict{} with 1 element
     @test typeof(ff) == Dict{Any,Any}
     @test length(ff) == 1
+    @test typeof(dafsingle) == daFrame
+end
+
+@testset "Single FCS file support" begin
+    # call readFlowFrame with a string
+    filename = md.file_name[1]
+    ff = readFlowFrame(filename)
+    cleanNames!(ff)
+    dafsingle = createDaFrame(ff, md, panel)
+
+    # return type is a DataFrame
+    @test typeof(ff) == DataFrame
     @test typeof(dafsingle) == daFrame
 end
 
@@ -66,16 +79,16 @@ end
     df = DataFrame(Col1 = rand(5), Col2 = rand(5), None = rand(5))
     namesDF = names(df)
     cc = [:Col1, :Col2]
-    
+
     # testing reduce by column names
     dfReduce = GigaSOM.sortReduce(df, cc, true, true)
     @test namesDF != names(dfReduce)
- 
+
     # testing :None removal
     df = DataFrame(Col1 = rand(5), Col2 = rand(5), None = rand(5))
     dfNoneRemoved = GigaSOM.sortReduce(df, cc, false, true)
     @test cc == names(dfNoneRemoved)
- 
+
     # testing column sorting and none removing
     df = DataFrame(Col2 = rand(5), Col1 = rand(5), None = rand(5))
     dfSorted = GigaSOM.sortReduce(df, cc, false, true)
