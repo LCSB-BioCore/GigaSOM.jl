@@ -234,11 +234,6 @@ vectors and the adjustment in radius after each epoch.
 """
 function doEpoch(x::Ref, codes::Array{Float64, 2}, tree, cc)
 
-    # display(x.x[1:5, 1:5])
-    # display(size(x.x))
-    # data = x.x
-    # display()
-    # x = convertTrainingData(train.x[:,cc])
     # initialise numerator and denominator with 0's
     sumNumerator = zeros(Float64, size(codes))
     sumDenominator = zeros(Float64, size(codes)[1])
