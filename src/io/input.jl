@@ -1,26 +1,26 @@
 """
-    readFlowset(filenames)
+    readFlowset(filenames::AbstractArray)
 
 Create a dictionary with filenames as keys and daFrame as values
 
 # Arguments:
 - `filenames`: Array of type string with names of files
 """
-function readFlowset(filenames::Array{Any, 1})
+function readFlowset(filenames::AbstractArray)
     @warn "This function will be deprecated in a future version. Please use readFlowFrame(filenames)."
 
     readFlowFrame(filenames)
 end
 
 """
-    readFlowFrame(filenames::Array{String, 1})
+    readFlowFrame(filenames::AbstractArray)
 
 Create a dictionary with filenames as keys and daFrame as values
 
 # Arguments:
 - `filenames`: Array of type string with names of files
 """
-function readFlowFrame(filenames::Array{Any, 1})
+function readFlowFrame(filenames::AbstractArray)
 
     flowFrame = Dict()
 
