@@ -1,5 +1,5 @@
 using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed, SHA, JSON
-
+using FileIO, Serialization, FCSFiles, DataFrames
 
 owd = pwd()
 

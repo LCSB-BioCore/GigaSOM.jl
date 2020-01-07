@@ -1,5 +1,3 @@
-using GigaSOM, FileIO, Test, Serialization, FCSFiles, DataFrames
-
 location = ENV["HOME"]*"/Archive_AF_files"
 mdFileName = location*"/metadata.xlsx"
 
