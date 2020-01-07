@@ -49,7 +49,7 @@ cleanNames!(fcsRaw)
 # create daFrame file
 daf = createDaFrame(fcsRaw, md, panel)
 
-@testset "Single FCS file support" begin
+@testset "Single FCS file support (to be deprecated)" begin
     # call readFlowFrame with an array
     filename = md.file_name[1]
     ff = readFlowFrame([filename])
@@ -60,7 +60,9 @@ daf = createDaFrame(fcsRaw, md, panel)
     @test typeof(ff) == Dict{Any,Any}
     @test length(ff) == 1
     @test typeof(dafsingle) == daFrame
+end
 
+@testset "Single FCS file support" begin
     # call readFlowFrame with a string
     filename = md.file_name[1]
     ff = readFlowFrame(filename)
