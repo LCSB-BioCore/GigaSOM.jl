@@ -1,5 +1,22 @@
-location = ENV["HOME"]*"/Archive_AF_files"
+# fetch the required data for testing and download the zip archive and unzip it
+cd(dataPath)
+
+dataFiles = ["2020-01-07_testData_fcs.zip"]
+for f in dataFiles
+    if !isfile(f)
+        @info "downloading"
+        download("https://prince.lcsb.uni.lu/GigaSOM.jl/data/"*f, f)
+        if occursin(".zip", f)
+            run(`unzip 2020-01-07_testData_fcs.zip`)
+        end
+    else
+    end
+end
+
+location = dataPath*"/testData_fcs"
 mdFileName = location*"/metadata.xlsx"
+
+cd(genDataPath)
 
 # read the directory and their metadata
 fileDir = readdir(location)
