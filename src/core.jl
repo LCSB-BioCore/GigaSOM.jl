@@ -103,7 +103,7 @@ end
 - `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
 - `epochs`: number of SOM training iterations (default 10)
 """
-function trainGigaSOM(som::Som, trainRef::Vector{Ref}, cc;
+function trainGigaSOM(som::Som, trainRef::Array{Any,1}, cc;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
                       knnTreeFun = BruteTree,
