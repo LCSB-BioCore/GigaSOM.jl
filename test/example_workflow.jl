@@ -43,5 +43,7 @@ cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
 winners = mapToGigaSOM(som, R)
 
+embed = embedGigaSOM(som, R, k=10, smooth=0.0, adjust=0.5)
+
 rmprocs(workers())
 cd(cwd)
