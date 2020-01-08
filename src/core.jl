@@ -10,16 +10,27 @@ Initialises a SOM.
 - `norm`: optional normalisation
 - `toroidal`: optional flag; if true, the SOM is toroidal.
 """
-function initGigaSOM(initMatrix::Array{Float64, 2}, xdim, ydim = xdim;
+function initGigaSOM(R::Array{Any,1}, xdim, ydim = xdim;
              norm::Symbol = :none, toroidal = false)
 
     numCodes = xdim * ydim
+    nCols = size(R[1].x,2)
+    randWorkers = rand(1:nworkers(), numCodes)
+    X = zeros(numCodes, nCols)
+
+    for i in 1:length(randWorkers)
+        element = randWorkers[i]
+        # dereference and get one random sample from matrix
+        Y = R[element].x[rand(1:size(R[element].x, 1), 1),:]
+        # convert Y into vector
+        X[i, :] = vec(Y)
+    end
 
     # TODO: Normalization need to be adjusted for distributed loading
     # normParams = convert(DataFrame, normParams)
 
     # initialise the codes with random samples from workers
-    codes = initMatrix
+    codes = X
     grid = gridRectangular(xdim, ydim)
 
     # create X,Y-indices for neurons:
@@ -103,7 +114,7 @@ end
 - `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
 - `epochs`: number of SOM training iterations (default 10)
 """
-function trainGigaSOM(som::Som, trainRef::Vector{Ref}, cc;
+function trainGigaSOM(som::Som, trainRef::Array{Any,1}, cc;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
                       knnTreeFun = BruteTree,
@@ -314,6 +325,40 @@ function mapToGigaSOM(som::Som, data::DataFrame;
                 # here). vcat() nicely squashes the arrays-in-arrays into a
                 # single vector.
                 vcat(knn(tree, transpose(localpart(dData)), 1)[1]...)
+            end
+        end
+
+        @sync begin
+            for (p, pid) in enumerate(sort!(workers()))
+                append!(vis, fetch(R[p]))
+            end
+        end
+    else
+        vis = vcat(knn(tree, transpose(data), 1)[1]...)
+    end
+
+    return DataFrame(index = vis)
+end
+
+
+function mapToGigaSOM(som::Som, trainRef::Array{Any,1};
+                      knnTreeFun = BruteTree,
+                      metric = Euclidean())
+
+    nWorkers = nprocs()
+    vis = Int64[]
+    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
+
+    if nWorkers > 1
+
+        R = Array{Future}(undef,nWorkers, 1)
+        @sync for (p, pid) in enumerate(workers())
+            @async R[p] = @spawnat pid begin
+                # knn() returns a tuple of 2 arrays of arrays (one with indexes
+                # that we take out, the second with distances that we discard
+                # here). vcat() nicely squashes the arrays-in-arrays into a
+                # single vector.
+                vcat(knn(tree, transpose(trainRef[p].x), 1)[1]...)
             end
         end
 

@@ -11,6 +11,8 @@ checkDir()
     include("testParallel.jl")
     include("testSatellites.jl")
     include("testSplitting.jl")
+
+    # include("testFunctionEquality.jl")
 end
 
 cd(owd)
