@@ -24,18 +24,7 @@ R =  Vector{Any}(undef,nWorkers)
     @async R[idx] = fetch(@spawnat pid loadData(idx, "input-$idx.jls", md, panel))
 end
 
-randWorkers = rand(1:nworkers(), 100)
-X = zeros(100, length(lineageMarkers))
-
-for i in 1:length(randWorkers)
-    element = randWorkers[i]
-    # dereference and get one random sample from matrix
-    Y = R[element].x[rand(1:size(R[element].x, 1), 1),:]
-    # convert Y into vector
-    X[i, :] = vec(Y)
-end
-
-som = initGigaSOM(X, 10, 10)
+som = initGigaSOM(R, 10, 10)
 
 cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
