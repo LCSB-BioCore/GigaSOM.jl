@@ -330,6 +330,40 @@ function mapToGigaSOM(som::Som, data::DataFrame;
 end
 
 
+function mapToGigaSOM(som::Som, trainRef::Array{Any,1};
+                      knnTreeFun = BruteTree,
+                      metric = Euclidean())
+
+    nWorkers = nprocs()
+    vis = Int64[]
+    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
+
+    if nWorkers > 1
+
+        R = Array{Future}(undef,nWorkers, 1)
+        @sync for (p, pid) in enumerate(workers())
+            @async R[p] = @spawnat pid begin
+                # knn() returns a tuple of 2 arrays of arrays (one with indexes
+                # that we take out, the second with distances that we discard
+                # here). vcat() nicely squashes the arrays-in-arrays into a
+                # single vector.
+                vcat(knn(tree, transpose(trainRef[p].x), 1)[1]...)
+            end
+        end
+
+        @sync begin
+            for (p, pid) in enumerate(sort!(workers()))
+                append!(vis, fetch(R[p]))
+            end
+        end
+    else
+        vis = vcat(knn(tree, transpose(data), 1)[1]...)
+    end
+
+    return DataFrame(index = vis)
+end
+
+
 """
     scaleEpochTime(iteration::Int64, epochs::Int64)
 
