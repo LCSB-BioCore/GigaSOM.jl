@@ -41,5 +41,7 @@ cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
 @time som = trainGigaSOM(som, R, cc)
 
+winners = mapToGigaSOM(som, R)
+
 rmprocs(workers())
 cd(cwd)
