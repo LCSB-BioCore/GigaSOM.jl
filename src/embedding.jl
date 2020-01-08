@@ -77,6 +77,42 @@ function embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
     end
 end
 
+
+function embedGigaSOM(som::GigaSOM.Som, data::Array{Any,1};
+                      knnTreeFun = BruteTree,
+                      metric = Euclidean(),
+                      k::Int64=0, adjust::Float64=1.0, smooth::Float64=0.0)
+
+    # convert `smooth` to `boost`
+    boost = ((1+sqrt(Float64(5)))/2)^(smooth-2)
+
+    # default `k`
+    if k == 0
+        k = Integer((som.xdim+som.ydim)/2)
+    end
+
+    # check if `k` isn't too high
+    if k > som.xdim*som.ydim
+        k = Integer(som.xdim * som.ydim)
+    end
+
+    # prepare the kNN-tree for lookups
+    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
+
+    # run the distributed computation
+    nWorkers = nprocs()
+    if nWorkers > 1
+
+        dRes = [ (@spawnat pid embedGigaSOM_internal(som, data[p], tree,
+                                                   k, adjust, boost))
+                 for (p,pid) in enumerate(workers()) ]
+
+        return vcat([fetch(r) for r in dRes]...)
+    else
+        return embedGigaSOM_internal(som, data, tree, k, adjust, boost)
+    end
+end
+
 """
     embedGigaSOM_internal(som::GigaSOM.Som, data::Array{Float64,2}, tree,
                           k::Int64, adjust::Float64, boost::Float64)
@@ -84,11 +120,11 @@ end
 Internal function to compute parts of the embedding on a prepared kNN-tree
 structure (`tree`) and `smooth` converted to `boost`.
 """
-function embedGigaSOM_internal(som::GigaSOM.Som, data::Array{Float64,2},
+function embedGigaSOM_internal(som::GigaSOM.Som, data::Ref,
 			       tree, k::Int64, adjust::Float64, boost::Float64)
 
-    ndata = size(data,1)
-    dim = size(data,2)
+    ndata = size(data.x,1)
+    dim = size(data.x,2)
 
     # output buffer
     e = zeros(Float64, ndata, 2)
@@ -97,10 +133,10 @@ function embedGigaSOM_internal(som::GigaSOM.Som, data::Array{Float64,2},
     sp = zeros(Int, k)
 
     # process all data points in this batch
-    for di in 1:size(data,1)
+    for di in 1:size(data.x,1)
 
         # find the nearest neighbors of the point and sort them by distance
-        (knidx,kndist) = knn(tree, data[di,:], k)
+        (knidx,kndist) = knn(tree, data.x[di,:], k)
         sortperm!(sp, kndist)
         knidx=knidx[sp] # nearest point indexes
         kndist=kndist[sp] # their corresponding distances
@@ -161,7 +197,7 @@ function embedGigaSOM_internal(som::GigaSOM.Som, data::Array{Float64,2},
                 for kk in 1:dim
                     tmp = som.codes[idx,kk]*som.codes[jdx,kk]
                     sqdist += tmp*tmp
-                    scalar += tmp*(data[di,kk]-som.codes[idx,kk])
+                    scalar += tmp*(data.x[di,kk]-som.codes[idx,kk])
                 end
 
                 if scalar != 0
@@ -216,3 +252,5 @@ function embedGigaSOM_internal(som::GigaSOM.Som, data::Array{Float64,2},
 
     return e
 end
+
+
