@@ -18,6 +18,8 @@ checkDir()
     include("functionTest.jl")
 
     include("testSplitting.jl")
+
+    # include("testFunctionEquality.jl")
 end
 
 cd(owd)
