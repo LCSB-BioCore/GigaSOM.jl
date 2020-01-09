@@ -1,6 +1,6 @@
 """
-    function initGigaSOM(initMatrix, xdim, ydim = xdim;
-        norm::Symbol = :none, toroidal = false)
+    initGigaSOM(R::Array{Any,1}, xdim, ydim = xdim;
+                norm::Symbol = :none, toroidal = false)
 
 Initialises a SOM.
 
@@ -51,13 +51,24 @@ function initGigaSOM(R::Array{Any,1}, xdim, ydim = xdim;
     return som
 end
 
+"""
+    initGigaSOM(train::DataFrame, xdim, ydim = xdim;
+                norm::Symbol = :none, toroidal = false)
 
-function initGigaSOM(train::DataFrame, xdim, ydim = xdim;
-             norm::Symbol = :none, toroidal = false)
+Initialises a SOM.
+
+# Arguments:
+- `initMatrix`: codeBook vector as random input matrix from random workers
+- `xdim, ydim`: geometry of the SOM
+- `norm`: optional normalisation
+- `toroidal`: optional flag; if true, the SOM is toroidal.
+"""
+function initGigaSOM(train, xdim, ydim = xdim;
+                     norm::Symbol = :none, toroidal = false)
 
     if typeof(train) == DataFrame
         colNames = [String(x) for x in names(train)]
-    else
+    else # train::Array{Any,1}
         colNames = ["x$i" for i in 1:size(train,2)]
     end
 
@@ -166,7 +177,28 @@ function trainGigaSOM(som::Som, trainRef::Array{Any,1}, cc;
     return som
 end
 
+"""
+    trainGigaSOM(som::Som, train::DataFrame;
+                 kernelFun::Function = gaussianKernel,
+                 metric = Euclidean(),
+                 knnTreeFun = BruteTree,
+                 rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
+                 epochs = 10)
 
+# Arguments:
+- `som`: object of type Som with an initialised som
+- `trainRef`: reference to data on each worker
+- `cc`: list of columns to be used in training
+- `kernelFun::function`: optional distance kernel; one of (`bubbleKernel, gaussianKernel`)
+            default is `gaussianKernel`
+- `metric`: Passed as metric argument to the KNN-tree constructor
+- `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
+- `rStart`: optional training radius.
+       If r is not specified, it defaults to (xdim+ydim)/3
+- `rFinal`: target radius at the last epoch, defaults to 0.1
+- `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
+- `epochs`: number of SOM training iterations (default 10)
+"""
 function trainGigaSOM(som::Som, train::DataFrame;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
@@ -234,7 +266,7 @@ end
 
 
 """
-    doEpoch(x::Array{Float64}, codes::Array{Float64}, tree)
+    doEpoch(x::Ref, codes::Array{Float64, 2}, tree, cc)
 
 vectors and the adjustment in radius after each epoch.
 
@@ -262,7 +294,16 @@ function doEpoch(x::Ref, codes::Array{Float64, 2}, tree, cc)
     return sumNumerator, sumDenominator
 end
 
+"""
+    doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, tree)
 
+vectors and the adjustment in radius after each epoch.
+
+# Arguments:
+- `x`: training Data
+- `codes`: Codebook
+- `tree`: knn-compatible tree built upon the codes
+"""
 function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, tree)
 
     # initialise numerator and denominator with 0's
@@ -285,7 +326,9 @@ end
 
 
 """
-    mapToGigaSOM(som::Som, data)
+    mapToGigaSOM(som::Som, data::DataFrame;
+                 knnTreeFun = BruteTree,
+                 metric = Euclidean())
 
 Return a DataFrame with X-, Y-indices and index of winner neuron for
 every row in data.
@@ -340,7 +383,23 @@ function mapToGigaSOM(som::Som, data::DataFrame;
     return DataFrame(index = vis)
 end
 
+"""
+    mapToGigaSOM(som::Som, trainRef::Array{Any,1};
+                 knnTreeFun = BruteTree,
+                 metric = Euclidean())
 
+Return a DataFrame with X-, Y-indices and index of winner neuron for
+every row in data.
+
+# Arguments
+- `som`: a trained SOM
+- `data`: Array or DataFrame with training data.
+- `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
+- `metric`: Passed as metric argument to the KNN-tree constructor
+
+Data must have the same number of dimensions as the training dataset
+and will be normalised with the same parameters.
+"""
 function mapToGigaSOM(som::Som, trainRef::Array{Any,1};
                       knnTreeFun = BruteTree,
                       metric = Euclidean())
