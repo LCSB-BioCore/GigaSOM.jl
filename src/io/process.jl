@@ -52,7 +52,7 @@ function cleanNames!(mydata::Dict{Any, Any})
                 colnames[i] = Symbol("_" * String(colnames[i]))
             end
         end
-        names!(v, colnames)
+        rename!(v, colnames)
     end
 end
 
