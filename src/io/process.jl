@@ -133,7 +133,7 @@ function createDaFrame(fcsRaw::Dict{Any,Any}, md, panel; method = "asinh", cofac
 
 end
 
-function createDaFrame(fcsRaw::DataFrame, md, panel; method = "asinh", cofactor = 5, reduce = true, sort = true)
+function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce = true, sort = true)
 
     # extract lineage markers
     lineageMarkers, functionalMarkers = getMarkers(panel)
@@ -143,18 +143,21 @@ function createDaFrame(fcsRaw::DataFrame, md, panel; method = "asinh", cofactor 
     # therefore make cc unique
     unique!(cc)
 
-    fcsRaw = transformData(fcsRaw, method, cofactor)
+    transformData(fcsRaw, method, cofactor)
 
     dfall = []
     colnames = []
 
-        df = fcsRaw
+    for (k, v) in fcsRaw
+        
+        df = v
         df = sortReduce(df, cc, reduce, sort)
 
-        insertcols!(df, 1, sample_id = string(1))
+        insertcols!(df, 1, sample_id = string(k))
         push!(dfall,df)
         # collect the column names of each file for order check
         push!(colnames, names(df))
+    end
 
     # # check if all the column names are in the same order
     if !(all(y->y==colnames[1], colnames))
