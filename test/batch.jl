@@ -31,7 +31,7 @@ embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.0, adjust=0.5)
     @test size(codes) == (100,10)
 
     dfCodes = DataFrame(codes)
-    names!(dfCodes, Symbol.(som2.colNames))
+    rename!(dfCodes, Symbol.(som2.colNames))
     dfEmbed = DataFrame(embed)
     CSV.write(genDataPath*"/batchDfCodes.csv", dfCodes)
     CSV.write(genDataPath*"/batchWinners.csv", winners)
