@@ -196,7 +196,7 @@ function sortReduce(df, cc, reduce, sort)
     if sort
         n = names(df)
         sort!(n)
-        permutecols!(df, n)
+        select!(df, n)
     end
 end
 
