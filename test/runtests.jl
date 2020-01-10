@@ -19,7 +19,8 @@ checkDir()
 
     include("testSplitting.jl")
 
-    # include("testFunctionEquality.jl")
+    # test equality of the output: winners
+    include("testTrainingOuputEquality.jl")
 end
 
 cd(owd)
