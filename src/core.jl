@@ -73,7 +73,7 @@ function initGigaSOM(train::DataFrame, xdim, ydim = xdim;
     grid = gridRectangular(xdim, ydim)
 
     normParams = convert(DataFrame, normParams)
-    names!(normParams, Symbol.(colNames))
+    rename!(normParams, Symbol.(colNames))
 
     # create X,Y-indices for neurons:
     #
