@@ -368,7 +368,7 @@ function mapToGigaSOM(som::Som, trainRef::Array{Any,1};
             end
         end
     else
-        vis = vcat(knn(tree, transpose(data), 1)[1]...)
+        vis = vcat(knn(tree, transpose(trainRef.x), 1)[1]...)
     end
 
     return DataFrame(index = vis)
