@@ -210,7 +210,7 @@ function getTotalSize(loc, md, printLevel=0)
             n_params = parse(Int, text_mappings["\$PAR"])
 
             # determine the number of cells
-            numberCells = Int((offsets[4] - offsets[3] + 1) / 4 / n_params)
+            numberCells = Int(round((offsets[4] - offsets[3] + 1) / 4 / n_params))
 
             totalSize += numberCells
             push!(inSize, numberCells)
