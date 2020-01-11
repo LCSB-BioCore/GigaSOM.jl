@@ -11,8 +11,6 @@ checkDir()
     include("testParallel.jl")
     include("testSatellites.jl")
     include("testSplitting.jl")
-
-    # test equality of the output: winners
     include("testTrainingOuputEquality.jl")
 end
 
