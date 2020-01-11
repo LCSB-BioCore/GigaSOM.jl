@@ -84,7 +84,7 @@ function initGigaSOM(train, xdim, ydim = xdim;
     grid = gridRectangular(xdim, ydim)
 
     normParams = convert(DataFrame, normParams)
-    names!(normParams, Symbol.(colNames))
+    rename!(normParams, Symbol.(colNames))
 
     # create X,Y-indices for neurons:
     #
@@ -427,7 +427,7 @@ function mapToGigaSOM(som::Som, trainRef::Array{Any,1};
             end
         end
     else
-        vis = vcat(knn(tree, transpose(data), 1)[1]...)
+        vis = vcat(knn(tree, transpose(trainRef.x), 1)[1]...)
     end
 
     return DataFrame(index = vis)

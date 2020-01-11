@@ -457,10 +457,16 @@ function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, sa
 
         # output the file per worker
         if generateFiles
-            open(f -> serialize(f,out), "input-$worker.jls", "w")
+            open("input-$worker.jls", "w") do file
+                serialize(file, out)
+                close(file)
+            end
+            # serialize(open("input-$worker.jls", "w"), out)
+            # open(f -> serialize(f,out), "input-$worker.jls", "w")
             if printLevel > 0
                 printstyled("[ Info:  > File input-$worker.jls written.\n", color=:green, bold=true)
             end
+            # close(f)
         end
     end
 

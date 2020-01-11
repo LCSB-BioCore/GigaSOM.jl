@@ -52,7 +52,7 @@ function cleanNames!(mydata::Dict{Any, Any})
                 colnames[i] = Symbol("_" * String(colnames[i]))
             end
         end
-        names!(v, colnames)
+        rename!(v, colnames)
     end
 end
 
@@ -193,7 +193,7 @@ function sortReduce(df, cc, reduce, sort)
     if sort
         n = names(df)
         sort!(n)
-        permutecols!(df, n)
+        select!(df, n)
     end
 end
 
