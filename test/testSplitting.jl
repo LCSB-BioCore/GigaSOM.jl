@@ -8,6 +8,7 @@ for f in dataFiles
         download("https://prince.lcsb.uni.lu/GigaSOM.jl/data/"*f, f)
         if occursin(".zip", f)
             run(`unzip 2020-01-07_testData_fcs.zip`)
+            rm("2020-01-07_testData_fcs.zip", force=true)
         end
     else
     end
