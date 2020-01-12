@@ -63,7 +63,7 @@ function readFlowFrame(filename::String)
     flowDF = flowDF[:, Symbol.(markersIsotope)]
     cleanNames!(markers)
 
-    names!(flowDF, Symbol.(markers), makeunique=true)
+    rename!(flowDF, Symbol.(markers), makeunique=true)
 
     return flowDF
 end
