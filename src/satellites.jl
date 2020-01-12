@@ -434,13 +434,13 @@ function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, sa
     end
 
     # establish an index map
-    fileEnd = 1
-    out = Dict()
-    slack = 0
-    openNewFile = true
     fileNames = sort(md.file_name)
 
     for worker in 1:nWorkers
+        out = Dict()
+        slack = 0
+        fileEnd = 1
+        openNewFile = true
         ioFiles, iStart, iEnd = getFiles(worker, nWorkers, fileL, lastFileL, runSum, printLevel)
         for k in ioFiles
             localStart, localEnd = detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, printLevel)
@@ -457,16 +457,10 @@ function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, sa
 
         # output the file per worker
         if generateFiles
-            open("input-$worker.jls", "w") do file
-                serialize(file, out)
-                close(file)
-            end
-            # serialize(open("input-$worker.jls", "w"), out)
-            # open(f -> serialize(f,out), "input-$worker.jls", "w")
+            open(f -> serialize(f,out), "input-$worker.jls", "w")
             if printLevel > 0
                 printstyled("[ Info:  > File input-$worker.jls written.\n", color=:green, bold=true)
             end
-            # close(f)
         end
     end
 
