@@ -106,11 +106,13 @@ CSV.write(genDataPath*"/daf.csv", daf.fcstable)
 
 @testset "Checksums" begin
     cd(dataPath)
-    filesNames = readdir()
-    csDict = Dict()
-    for f in filesNames
-        cs = bytes2hex(sha256(f))
-        csDict[f] = cs
+    fileNames = readdir()
+    csDict = Dict{String, Any}()
+    for f in fileNames
+        if  f[end-3:end] == ".fcs" || f[end-4:end] == ".xlsx"
+            cs = bytes2hex(sha256(f))
+            csDict[f] = cs
+        end
     end
     cd(cwd*"/checkSums")
     csTest = JSON.parsefile("csTest.json")
