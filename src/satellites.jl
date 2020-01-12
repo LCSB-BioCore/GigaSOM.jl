@@ -199,7 +199,7 @@ function getTotalSize(loc, md, printLevel=0)
     totalSize = 0
     inSize = []
     for f in fileNames
-        f = loc * "/" * f
+        f = loc * Base.Filesystem.path_separator * f
         open(f) do io
             # retrieve the offsets
             offsets = FCSFiles.parse_header(io)
@@ -392,7 +392,7 @@ function ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePa
         if printLevel > 0
             @info " > Opening file $(fileNames[k]) ..."
         end
-        inFile = readFlowFrame(filePath*"/"*fileNames[k])
+        inFile = readFlowFrame(filePath * Base.Filesystem.path_separator * fileNames[k])
     end
 
     # set a flag to open a new file or not
