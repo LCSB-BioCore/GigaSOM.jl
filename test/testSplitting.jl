@@ -53,9 +53,9 @@ end
     fs1 = filesize("input-1.jls")
     fs2 = filesize("input-2.jls")
 
-    # check if the filsize is similar (within 1%)
-    @test abs(fs1 - fs2)/fs1 < 1/1000
-    @test abs(fs1 - fs2)/fs2 < 1/1000
+    # check if the filsize is similar (within 0.1%)
+    @test abs(fs1 - fs2)/fs1 < 0.1/100
+    @test abs(fs1 - fs2)/fs2 < 0.1/100
 end
 
 # test the i/o functionality properly speaking
