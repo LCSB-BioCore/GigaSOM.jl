@@ -47,6 +47,17 @@ end
     @test runSum[end] == totalSize
 end
 
+# test that the file size is roughly the same
+@testset "Check file size" begin
+    localStartVect, localEndVect = generateIO(location, md, 2, true, 1, true)
+    fs1 = filesize("input-1.jls")
+    fs2 = filesize("input-2.jls")
+
+    # check if the filsize is similar (within 1%)
+    @test abs(fs1 - fs2)/fs1 < 1/1000
+    @test abs(fs1 - fs2)/fs2 < 1/1000
+end
+
 # test the i/o functionality properly speaking
 @testset "Overall I/O splitting" begin
     for printLevel in [0, 1]
