@@ -1,20 +1,25 @@
-using XLSX, CSV, Test, Random, Distributed, SHA, JSON
-using GigaSOM, FileIO, Test, Serialization, FCSFiles, DataFrames
+# Test the GigaSOM package first:
+import Pkg
+Pkg.activate("GigaSOM")
+Pkg.update()
+
+#Pkg.test("GigaSOM")
+using Distributed
+using GigaSOM
 
 checkDir()
 cwd = pwd()
 
-dataPath = "/Users/ohunewald/work/artificial_data_cytof"
-# dataPath = "artificial_data_cytof/"
+dataPath = joinpath(dirname(pathof(GigaSOM)), "..")*"/test/data"
 cd(dataPath)
-md = DataFrame(XLSX.readtable("metadata.xlsx", "Sheet1", infer_eltypes=true)...)
-panel = DataFrame(XLSX.readtable("panel.xlsx", "Sheet1", infer_eltypes=true)...)
+md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
+panel = GigaSOM.DataFrame(GigaSOM.XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
 
 lineageMarkers, functionalMarkers = getMarkers(panel)
 
 nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
-@everywhere using GigaSOM, FCSFiles
+@everywhere using GigaSOM
 
 generateIO(dataPath, md, nWorkers, true, 1, true)
 
