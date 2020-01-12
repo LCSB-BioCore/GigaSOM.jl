@@ -33,7 +33,6 @@ for f in dataFiles
         download("http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/"*f, f)
         if occursin(".zip", f)
             run(`unzip PBMC8_fcs_files.zip`)
-            rm("PBMC8_fcs_files.zip", force=true)
         end
     else
     end
