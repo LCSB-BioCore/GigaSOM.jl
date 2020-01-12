@@ -434,14 +434,18 @@ function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, sa
     end
 
     # establish an index map
+    slack = 0
+    fileEnd = 1
+    openNewFile = true
     fileNames = sort(md.file_name)
 
     for worker in 1:nWorkers
         out = Dict()
-        slack = 0
-        fileEnd = 1
-        openNewFile = true
+
+        # determine which files should be opened by each worker
         ioFiles, iStart, iEnd = getFiles(worker, nWorkers, fileL, lastFileL, runSum, printLevel)
+
+        # loop through each file
         for k in ioFiles
             localStart, localEnd = detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, printLevel)
 
