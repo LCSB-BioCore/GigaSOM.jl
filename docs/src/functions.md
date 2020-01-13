@@ -21,6 +21,13 @@ Modules = [GigaSOM]
 Pages = ["core.jl"]
 ```
 
+## Embedding
+
+```@autodocs
+Modules = [GigaSOM]
+Pages = ["embedding.jl"]
+```
+
 ## Structs
 
 ```@autodocs
@@ -33,11 +40,4 @@ Pages = ["structs.jl"]
 ```@autodocs
 Modules = [GigaSOM]
 Pages = ["satellites.jl"]
-```
-
-## Visualisation
-
-```@autodocs
-Modules = [GigaSOM]
-Pages = ["plotting.jl"]
 ```

@@ -46,7 +46,7 @@ embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.0, adjust=0.5)
     @test size(codes) == (100,10)
 
     dfCodes = DataFrame(codes)
-    names!(dfCodes, Symbol.(som2.colNames))
+    rename!(dfCodes, Symbol.(som2.colNames))
     dfEmbed = DataFrame(embed)
     CSV.write(genDataPath*"/parallelDfCodes.csv", dfCodes)
     CSV.write(genDataPath*"/parallelWinners.csv", winners)
@@ -75,6 +75,19 @@ embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.0, adjust=0.5)
         @test isapprox(i, j; atol = 0.001)
     end
 
+end
+
+@testset "single file training (to be deprecated)" begin
+    cd(dataPath)
+    filename = md.file_name[1]
+    ff = readFlowFrame(filename)
+    cleanNames!(ff)
+    dafsingle = createDaFrame(ff, md, panel)
+    dfSom = dafsingle.fcstable[:,cc]
+    som2 = initGigaSOM(dfSom, 10, 10)
+    som2 = trainGigaSOM(som2, dfSom, epochs = 2, rStart = 6.0)
+    winners = mapToGigaSOM(som2, dfSom)
+    @test typeof(winners) == DataFrame
 end
 
 rmprocs(workers())

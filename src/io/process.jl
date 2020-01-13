@@ -1,33 +1,38 @@
-
 """
     transformData(flowframe, method, cofactor)
-
 Tansforms FCS data. Currently only asinh
-
 # Arguments:
 - `flowframe`: Flowframe containing daFrame per sample
 - `method`: transformation method
 - `cofactor`: Cofactor for transformation
 """
-function transformData(flowframe, method, cofactor)
+function transformData(flowframe::Dict{Any,Any}, method, cofactor)
     # loop through every file in dict
     # get the dataframe
     # convert to matrix
     # arcsinh transformation
     # convert back to dataframe
     for (k,v) in flowframe
-        fcsDf = flowframe[k]
-        colnames = names(fcsDf) # keep the column names
-        dMatrix = Matrix(fcsDf)
-        dMatrix = asinh.(dMatrix / cofactor)
-        ddf = DataFrame(dMatrix)
-
-        names!(ddf, Symbol.(colnames))
-        # singleFcs["data"] = ddf
-        flowframe[k] = ddf
+        flowframe[k] = transformData(flowframe[k], method, cofactor)
     end
+    return flowframe
 end
 
+function transformData(flowframe::DataFrame, method, cofactor)
+    # get the dataframe
+    # convert to matrix
+    # arcsinh transformation
+    # convert back to dataframe
+    fcsDf = flowframe
+    colnames = names(fcsDf) # keep the column names
+    dMatrix = Matrix(fcsDf)
+    dMatrix = asinh.(dMatrix / cofactor)
+    ddf = DataFrame(dMatrix)
+
+    rename!(ddf, Symbol.(colnames))
+    # singleFcs["data"] = ddf
+    return ddf
+end
 
 """
     cleanNames!(mydata)
@@ -38,30 +43,40 @@ Checks if the column name contains a '-' and transforms it to and '_' and it che
 # Arguments:
 - `mydata`: dict fcsRaw or array of string
 """
-function cleanNames!(mydata)
+function cleanNames!(mydata::Dict{Any, Any})
+    for (k,v) in mydata
+        colnames = names(v)
+        for i in eachindex(colnames)
+            colnames[i] = Symbol(replace(String(colnames[i]), "-"=>"_"))
+            if isnumeric(first(String(colnames[i])))
+                colnames[i] = Symbol("_" * String(colnames[i]))
+            end
+        end
+        rename!(v, colnames)
+    end
+end
+
+function cleanNames!(mydata::DataFrame)
     # replace chritical characters
     # put "_" in front of colname in case it starts with a number
     # println(typeof(mydata))
-    if mydata isa Dict{Any, Any}
-        for (k,v) in mydata
-            colnames = names(v)
-            for i in eachindex(colnames)
-                colnames[i] = Symbol(replace(String(colnames[i]), "-"=>"_"))
-                if isnumeric(first(String(colnames[i])))
-                    colnames[i] = Symbol("_" * String(colnames[i]))
-                end
+        colnames = names(mydata)
+        for i in eachindex(colnames)
+            colnames[i] = Symbol(replace(String(colnames[i]), "-"=>"_"))
+            if isnumeric(first(String(colnames[i])))
+                colnames[i] = Symbol("_" * String(colnames[i]))
             end
-            names!(v, colnames)
         end
-    else
-        for j in eachindex(mydata)
-            mydata[j] = replace(mydata[j], "-"=>"_")
-            if isnumeric(first(mydata[j]))
-                mydata[j] = "_" * mydata[j]
-            end
+        rename!(mydata, colnames)
+end
+
+function cleanNames!(mydata)
+    for j in eachindex(mydata)
+        mydata[j] = replace(mydata[j], "-"=>"_")
+        if isnumeric(first(mydata[j]))
+            mydata[j] = "_" * mydata[j]
         end
     end
-
 end
 
 
@@ -77,12 +92,12 @@ Read in the fcs raw, add sample id, subset the columns and transform
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
 - `method`: transformation method, default arcsinh, optional
 - `cofactor`: Cofactor for transformation, default 5, optional
-- `reduce`: Selected only columns which are defined by lineage and functional, optional, 
-    default: true. If false the check for any none columns to be removed (none columns can appear 
+- `reduce`: Selected only columns which are defined by lineage and functional, optional,
+    default: true. If false the check for any none columns to be removed (none columns can appear
     after concatenating FCS files as well as parameter like: time, event length)
-- `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true 
+- `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true
 """
-function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce = true, sort = true)
+function createDaFrame(fcsRaw::Dict{Any,Any}, md, panel; method = "asinh", cofactor = 5, reduce = true, sort = true)
 
     # extract lineage markers
     lineageMarkers, functionalMarkers = getMarkers(panel)
@@ -92,13 +107,13 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
     # therefore make cc unique
     unique!(cc)
 
-    transformData(fcsRaw, method, cofactor)
+    fcsRaw = transformData(fcsRaw, method, cofactor)
 
     dfall = []
     colnames = []
 
     for (k, v) in fcsRaw
-        
+
         df = v
         df = sortReduce(df, cc, reduce, sort)
 
@@ -115,13 +130,45 @@ function createDaFrame(fcsRaw, md, panel; method = "asinh", cofactor = 5, reduce
 
     dfall = vcat(dfall...)
     daf = daFrame(dfall, md, panel)
+
 end
 
+function createDaFrame(fcsRaw::DataFrame, md, panel; method = "asinh", cofactor = 5, reduce = true, sort = true)
+
+    # extract lineage markers
+    lineageMarkers, functionalMarkers = getMarkers(panel)
+
+    cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
+    # markers can be lineage and functional at tthe same time
+    # therefore make cc unique
+    unique!(cc)
+
+    fcsRaw = transformData(fcsRaw, method, cofactor)
+
+    dfall = []
+    colnames = []
+
+        df = fcsRaw
+        df = sortReduce(df, cc, reduce, sort)
+
+        insertcols!(df, 1, sample_id = string(1))
+        push!(dfall,df)
+        # collect the column names of each file for order check
+        push!(colnames, names(df))
+
+    # # check if all the column names are in the same order
+    if !(all(y->y==colnames[1], colnames))
+        throw(UndefVarError(:TheColumnOrderIsNotEqual))
+    end
+
+    dfall = vcat(dfall...)
+    daf = daFrame(dfall, md, panel)
+end
 
 """
     sortReduce(df, cc, reduce, sort)
 
-Sorts the columns and/or reduces them to sleected markers
+Sorts the columns and/or reduces them to selected markers
 
 # Arguments:
 - `df`: FCS dataframe
@@ -146,7 +193,7 @@ function sortReduce(df, cc, reduce, sort)
     if sort
         n = names(df)
         sort!(n)
-        permutecols!(df, n)
+        select!(df, n)
     end
 end
 
@@ -230,7 +277,7 @@ function getMetaData(f)
     end
 
     # set the names of the df
-    names!(df, Symbol.(column_names))
+    rename!(df, Symbol.(column_names))
 
     return df
 end

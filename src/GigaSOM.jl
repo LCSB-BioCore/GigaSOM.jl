@@ -12,10 +12,12 @@ module GigaSOM
     using Distances
     using Distributed
     using Distributions
+    using FCSFiles
     using FileIO
     using DistributedArrays
     using XLSX
     using NearestNeighbors
+    using Serialization
 
     include("structs.jl")
     include("core.jl")
@@ -35,7 +37,7 @@ module GigaSOM
         mapToGigaSOM,
         linearRadius,
         expRadius
-    
+
     export #embedding
         embedGigaSOM
 
@@ -43,7 +45,10 @@ module GigaSOM
         daFrame
 
     export #input
-        readFlowset
+        readFlowset,
+        readFlowFrame,
+        loadData,
+        generateIO
 
     export #satellites
         cleanNames!,

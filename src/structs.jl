@@ -39,7 +39,7 @@ Structure to hold all data of a trained SOM.
 - `population::Array{Int,1}`: 1D-array of numbers of training samples mapped to
                 each neuron.
 """
-struct Som
+mutable struct Som
     codes::Array{Float64,2}
     colNames::Array{String}
     normParams::DataFrame
