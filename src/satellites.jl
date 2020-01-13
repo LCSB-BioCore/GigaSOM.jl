@@ -376,7 +376,30 @@ function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, pri
     return localStart, localEnd
 end
 
+"""
+    ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePath, fileNames, openNewFile, printLevel=0)
 
+Open and close a local file.
+
+# INPUTS
+
+- `out`: concatenated data table
+- `worker`: id of worker
+- `k`: index of the current file
+- `inSize`: array with size of all files
+- `localStart`: start index of local file
+- `localEnd`: end index of local file
+- `slack`: remaining part that needs to be read in another process
+- `filePath`: path to the file
+- `fileNames`: array with names of files
+- `openNewFile`: boolean to open a file or not
+- `printLevel`: Verbose level (0: mute)
+
+# OUTPUTS
+
+- `out`: concatenated data table
+- `slack`: remaining part that needs to be read in another process
+"""
 function ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePath, fileNames, openNewFile, printLevel=0)
     # determine if a new file shall be opened
     if localEnd >= inSize[k]
@@ -418,7 +441,30 @@ function ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePa
     return out, slack
 end
 
+"""
+    generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
 
+Generate binary .jls files given a path to files, their metadata, and the number of workers
+
+# INPUTS
+
+- `filePath`: path to the files
+- `md`: Metadata table
+- `nWorkers`: number of workers
+- `generateFiles`: Boolean to actually generate files
+- `printLevel`: Verbose level (0: mute)
+- `saveIndices`: Boolean to save the local indices
+
+# OUTPUTS
+
+if `saveIndices` is `true`:
+    - `localStart`: start index of local file
+    - `localEnd`: end index of local file
+
+if `generateFiles` is `true`:
+    `nWorkers` files named `input-<workerID>.jls` saved in the directory `filePath`.
+
+"""
 function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
 
     # determin the total size, the vector with sizes, and their running sum
@@ -473,6 +519,16 @@ function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, sa
     end
 end
 
+"""
+    rmFile(fileName, printLevel = 1)
+
+Remove a file.
+
+# INPUTS
+
+- `fileName`: name of file to be removed
+- `printLevel`: Verbose level (0: mute)
+"""
 function rmFile(fileName, printLevel = 1)
     try
         if printLevel > 0

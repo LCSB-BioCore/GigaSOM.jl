@@ -1,5 +1,8 @@
 """
-    embedGigaSOM(som::Som, data::DataFrame, k, adjust, smooth)
+    embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
+                 knnTreeFun = BruteTree,
+                 metric = Euclidean(),
+                 k::Int64=0, adjust::Float64=1.0, smooth::Float64=0.0)
 
 Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 
@@ -77,7 +80,29 @@ function embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
     end
 end
 
+"""
+    embedGigaSOM(som::GigaSOM.Som, data::Array{Any,1};
+                 knnTreeFun = BruteTree,
+                 metric = Euclidean(),
+                 k::Int64=0, adjust::Float64=1.0, smooth::Float64=0.0)
 
+Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
+
+# Arguments
+- `som`: a trained SOM
+- `data`: Array or DataFrame with the data.
+- `k`: number of nearest neighbors to consider (high values get quadratically
+  slower)
+- `adjust`: position adjustment parameter (higher values avoid non-local
+  approximations)
+- `smooth`: approximation smoothness (the higher the value, the larger the
+  neighborhood of approximate local linearity of the projection)
+- `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
+- `metric`: Passed as metric argument to the KNN-tree constructor
+
+Data must have the same number of dimensions as the training dataset
+and will be normalised with the same parameters.
+"""
 function embedGigaSOM(som::GigaSOM.Som, data::Array{Any,1};
                       knnTreeFun = BruteTree,
                       metric = Euclidean(),
@@ -253,9 +278,16 @@ function embedGigaSOM_internal(som::GigaSOM.Som, data::Array{Float64,2},
     return e
 end
 
+"""
+    embedGigaSOM_internal(som::GigaSOM.Som, data::Ref, tree,
+                          k::Int64, adjust::Float64, boost::Float64)
 
+Internal function to compute parts of the embedding on a prepared kNN-tree
+structure (`tree`) and `smooth` converted to `boost`.
+"""
 function embedGigaSOM_internal(som::GigaSOM.Som, data::Ref,
-			       tree, k::Int64, adjust::Float64, boost::Float64)
+                               tree, k::Int64,
+                               adjust::Float64, boost::Float64)
 
     ndata = size(data.x,1)
     dim = size(data.x,2)
@@ -386,5 +418,3 @@ function embedGigaSOM_internal(som::GigaSOM.Som, data::Ref,
 
     return e
 end
-
-
