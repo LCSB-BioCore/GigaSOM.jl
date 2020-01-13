@@ -376,7 +376,30 @@ function detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, pri
     return localStart, localEnd
 end
 
+"""
+    ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePath, fileNames, openNewFile, printLevel=0)
 
+Open and close a local file.
+
+# INPUTS
+
+- `out`: concatenated data table
+- `worker`: id of worker
+- `k`: index of the current file
+- `inSize`: array with size of all files
+- `localStart`: start index of local file
+- `localEnd`: end index of local file
+- `slack`: remaining part that needs to be read in another process
+- `filePath`: path to the file
+- `fileNames`: array with names of files
+- `openNewFile`: boolean to open a file or not
+- `printLevel`: Verbose level (0: mute)
+
+# OUTPUTS
+
+- `out`: concatenated data table
+- `slack`: remaining part that needs to be read in another process
+"""
 function ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePath, fileNames, openNewFile, printLevel=0)
     # determine if a new file shall be opened
     if localEnd >= inSize[k]
