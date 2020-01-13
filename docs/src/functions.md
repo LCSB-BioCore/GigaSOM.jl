@@ -21,6 +21,13 @@ Modules = [GigaSOM]
 Pages = ["core.jl"]
 ```
 
+## Embedding
+
+```@autodocs
+Modules = [GigaSOM]
+Pages = ["embedding.jl"]
+```
+
 ## Structs
 
 ```@autodocs
