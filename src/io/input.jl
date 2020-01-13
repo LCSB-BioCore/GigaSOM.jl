@@ -86,20 +86,26 @@ Load the data in parallel on each worker. Returns a reference of the loaded Data
     after concatenating FCS files as well as parameter like: time, event length)
 - `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true
 """
-function loadData(idx, fn, md, panel; method = "asinh", cofactor = 5,
+function loadData(idx, fn, panel=Nothing(), method = "asinh", cofactor = 5,
                             reduce = true, sort = true)
 
     y = open(deserialize, fn)
     fcsRaw = y[idx]
     cleanNames!(fcsRaw)
 
-    # extract lineage markers
-    lineageMarkers, functionalMarkers = getMarkers(panel)
-
-    cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
-    # markers can be lineage and functional at tthe same time
-    # therefore make cc unique
-    unique!(cc)
+    # If no panel is provided, use all column names as cc
+    # and set reduce to false
+    if panel == Nothing()
+        cc = map(Symbol, names(fcsRaw))
+        reduce = false
+    else
+        # extract lineage markers
+        lineageMarkers, functionalMarkers = getMarkers(panel)
+        cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
+        # markers can be lineage and functional at tthe same time
+        # therefore make cc unique
+        unique!(cc)
+    end
 
     fcsData = transformData(fcsRaw, method, cofactor)
     fcsData = sortReduce(fcsData, cc, reduce, sort)
