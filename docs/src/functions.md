@@ -41,10 +41,3 @@ Pages = ["structs.jl"]
 Modules = [GigaSOM]
 Pages = ["satellites.jl"]
 ```
-
-## Visualisation
-
-```@autodocs
-Modules = [GigaSOM]
-Pages = ["plotting.jl"]
-```
