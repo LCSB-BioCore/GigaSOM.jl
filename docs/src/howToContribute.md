@@ -1,7 +1,7 @@
 # How to contribute to/develop GigaSOM
 
 If you want to contribute to the `GigaSOM` package, please fork the present
-repository by following [these instructions](https://help.github.com/en/articles/fork-a-repo).
+repository by following [these instructions](https://help.github.com/en/github/getting-started-with-github/fork-a-repo).
 
 ## Step 1: Retrieve a local version of GigaSOM
 
