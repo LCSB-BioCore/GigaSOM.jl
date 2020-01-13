@@ -184,7 +184,7 @@ and at the given location.
 - `inSize`: Vector with the lengths of each file within the input data set
 - `runSum`: Running sum of the `inSize` vector (`runSum[end] == totalSize`)
 """
-function getTotalSize(loc, md, printLevel=0)
+function getTotalSize(loc, md::DataFrame, printLevel=0)
     global totalSize, tmpSum
 
     # define the file names
@@ -217,6 +217,48 @@ function getTotalSize(loc, md, printLevel=0)
             if printLevel > 0
                 @info "   + Filename: $f - #cells: $numberCells"
             end
+        end
+    end
+
+    # determine the running sum of the file sizes
+    runSum = []
+    tmpSum = 0
+    for indivSize in inSize
+        tmpSum += indivSize
+        push!(runSum, tmpSum)
+    end
+
+    return totalSize, inSize, runSum
+end
+
+
+function getTotalSize(loc, fn::String, printLevel=0)
+    global totalSize, tmpSum
+
+    # define the file names
+    f = fn
+
+    # get the total size of the data set
+    totalSize = 0
+    inSize = []
+
+    f = loc * Base.Filesystem.path_separator * f
+    open(f) do io
+        # retrieve the offsets
+        offsets = FCSFiles.parse_header(io)
+        text_mappings = FCSFiles.parse_text(io, offsets[1], offsets[2])
+        FCSFiles.verify_text(text_mappings)
+
+        # get the number of parameters
+        n_params = parse(Int, text_mappings["\$PAR"])
+
+        # determine the number of cells
+        numberCells = Int(round((offsets[4] - offsets[3] + 1) / 4 / n_params))
+
+        totalSize += numberCells
+        push!(inSize, numberCells)
+        if printLevel > 0
+            @info "   + Filename: $f - #cells: $numberCells"
         end
     end
 
@@ -483,7 +525,12 @@ function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, sa
     slack = 0
     fileEnd = 1
     openNewFile = true
-    fileNames = sort(md.file_name)
+    # to enable single file load, md can be a string only
+    if md == DataFrame
+        fileNames = sort(md.file_name)
+    else 
+        fileNames = md
+    end
 
     for worker in 1:nWorkers
         out = Dict()
