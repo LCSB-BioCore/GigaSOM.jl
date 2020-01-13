@@ -491,7 +491,7 @@ Generate binary .jls files given a path to files, their metadata, and the number
 # INPUTS
 
 - `filePath`: path to the files
-- `md`: Metadata table
+- `md`: Metadata table, or single file String
 - `nWorkers`: number of workers
 - `generateFiles`: Boolean to actually generate files
 - `printLevel`: Verbose level (0: mute)
@@ -507,7 +507,69 @@ if `generateFiles` is `true`:
     `nWorkers` files named `input-<workerID>.jls` saved in the directory `filePath`.
 
 """
-function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
+function generateIO(filePath, md::DataFrame, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
+
+    # determin the total size, the vector with sizes, and their running sum
+    totalSize, inSize, runSum = getTotalSize(filePath, md, printLevel)
+
+    # determine the size of each file
+    fileL, lastFileL = splitting(totalSize, nWorkers, printLevel)
+
+    # saving the variables for testing purposes
+    if saveIndices
+        localStartVect = []
+        localEndVect = []
+    end
+
+    # establish an index map
+    slack = 0
+    fileEnd = 1
+    openNewFile = true
+    fileNames = sort(md.file_name)
+
+    for worker in 1:nWorkers
+        out = Dict()
+
+        # determine which files should be opened by each worker
+        ioFiles, iStart, iEnd = getFiles(worker, nWorkers, fileL, lastFileL, runSum, printLevel)
+
+        # loop through each file
+        for k in ioFiles
+            localStart, localEnd = detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, printLevel)
+
+            # save the variables
+            if saveIndices
+                push!(localStartVect, localStart)
+                push!(localEndVect, localEnd)
+            end
+
+            # open/close the local file
+            out, slack = ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePath, fileNames, openNewFile, printLevel)
+        end
+
+        # output the file per worker
+        if generateFiles
+            open(f -> serialize(f,out), "input-$worker.jls", "w")
+            if printLevel > 0
+                printstyled("[ Info:  > File input-$worker.jls written.\n", color=:green, bold=true)
+            end
+        end
+    end
+
+    if saveIndices
+        return localStartVect, localEndVect
+    end
+end
+
+function generateIO(filePath, fn::String, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
+
+    # read the single file and split it according to the number of workers. 
+    inFile = readFlowFrame(filePath * Base.Filesystem.path_separator * fn)
+
+    for worker in 1:nWorkers
+        out = Dict()
+        partSize = size(inFile, 1) / 2
+    end
 
     # determin the total size, the vector with sizes, and their running sum
     totalSize, inSize, runSum = getTotalSize(filePath, md, printLevel)
@@ -526,11 +588,7 @@ function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, sa
     fileEnd = 1
     openNewFile = true
     # to enable single file load, md can be a string only
-    if md == DataFrame
-        fileNames = sort(md.file_name)
-    else 
-        fileNames = md
-    end
+    fileNames = md
 
     for worker in 1:nWorkers
         out = Dict()
@@ -590,4 +648,23 @@ function rmFile(fileName, printLevel = 1)
             printstyled("(file $fileName does not exist - skipping).\n", color=:red)
         end
     end
+end
+
+# Statically split range [1,N] into equal sized chunks for np processors
+function splitrange(N::Int, np::Int)
+    each = div(N,np)
+    extras = rem(N,np)
+    nchunks = each > 0 ? np : extras
+    chunks = Vector{UnitRange{Int}}(undef, nchunks)
+    lo = 1
+    for i in 1:nchunks
+        hi = lo + each - 1
+        if extras > 0
+            hi += 1
+            extras -= 1
+        end
+        chunks[i] = lo:hi
+        lo = hi+1
+    end
+    return chunks
 end
