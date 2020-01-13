@@ -565,63 +565,18 @@ function generateIO(filePath, fn::String, nWorkers, generateFiles=true, printLev
 
     # read the single file and split it according to the number of workers. 
     inFile = readFlowFrame(filePath * Base.Filesystem.path_separator * fn)
-
-    for worker in 1:nWorkers
+    xRanges = splitrange(size(inFile, 1), nWorkers)
+    
+    for i in 1:length(xRanges)
         out = Dict()
-        partSize = size(inFile, 1) / 2
-    end
-
-    # determin the total size, the vector with sizes, and their running sum
-    totalSize, inSize, runSum = getTotalSize(filePath, md, printLevel)
-
-    # determine the size of each file
-    fileL, lastFileL = splitting(totalSize, nWorkers, printLevel)
-
-    # saving the variables for testing purposes
-    if saveIndices
-        localStartVect = []
-        localEndVect = []
-    end
-
-    # establish an index map
-    slack = 0
-    fileEnd = 1
-    openNewFile = true
-    # to enable single file load, md can be a string only
-    fileNames = md
-
-    for worker in 1:nWorkers
-        out = Dict()
-
-        # determine which files should be opened by each worker
-        ioFiles, iStart, iEnd = getFiles(worker, nWorkers, fileL, lastFileL, runSum, printLevel)
-
-        # loop through each file
-        for k in ioFiles
-            localStart, localEnd = detLocalPointers(k, inSize, runSum, iStart, iEnd, slack, fileNames, printLevel)
-
-            # save the variables
-            if saveIndices
-                push!(localStartVect, localStart)
-                push!(localEndVect, localEnd)
-            end
-
-            # open/close the local file
-            out, slack = ocLocalFile(out, worker, k, inSize, localStart, localEnd, slack, filePath, fileNames, openNewFile, printLevel)
-        end
-
-        # output the file per worker
-        if generateFiles
-            open(f -> serialize(f,out), "input-$worker.jls", "w")
-            if printLevel > 0
-                printstyled("[ Info:  > File input-$worker.jls written.\n", color=:green, bold=true)
-            end
-        end
+        out[i] = inFile[xRanges[i], :]
+        open(f -> serialize(f,out), "input-$i.jls", "w")
     end
 
     if saveIndices
-        return localStartVect, localEndVect
+        return xRanges
     end
+
 end
 
 """
