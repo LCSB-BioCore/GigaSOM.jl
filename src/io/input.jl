@@ -87,7 +87,7 @@ Load the data in parallel on each worker. Returns a reference of the loaded Data
 - `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true
 """
 function loadData(idx, fn, panel=Nothing(); method = "asinh", cofactor = 5,
-                            reduce = true, sort = true, transform = true)
+                            reduce = false, sort = false, transform = false)
 
     y = open(deserialize, fn)
     fcsData = y[idx]
@@ -107,13 +107,12 @@ function loadData(idx, fn, panel=Nothing(); method = "asinh", cofactor = 5,
         # If no panel is provided, use all column names as cc
         # and set reduce to false
         cc = map(Symbol, names(fcsData))
-        reduce = false
     end
 
     if transform
         fcsData = transformData(fcsData, method, cofactor)
     end
-    fcsData = sortReduce(fcsData, cc, false, sort)
+    sortReduce(fcsData, cc, reduce, sort)
 
     # get the sample_id from md
     # return value is an array with only one entry -> take [1]
