@@ -86,12 +86,12 @@ Load the data in parallel on each worker. Returns a reference of the loaded Data
     after concatenating FCS files as well as parameter like: time, event length)
 - `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true
 """
-function loadData(idx, fn, panel=Nothing(), method = "asinh", cofactor = 5,
-                            reduce = true, sort = true)
+function loadData(idx, fn, panel=Nothing(); method = "asinh", cofactor = 5,
+                            reduce = true, sort = true, transform = true)
 
     y = open(deserialize, fn)
-    fcsRaw = y[idx]
-    cleanNames!(fcsRaw)
+    fcsData = y[idx]
+    cleanNames!(fcsData)
 
     # Define the clustering column by range object
     if typeof(panel) == Array{Int64,1}
@@ -106,12 +106,14 @@ function loadData(idx, fn, panel=Nothing(), method = "asinh", cofactor = 5,
     else
         # If no panel is provided, use all column names as cc
         # and set reduce to false
-        cc = map(Symbol, names(fcsRaw))
+        cc = map(Symbol, names(fcsData))
         reduce = false
     end
 
-    fcsData = transformData(fcsRaw, method, cofactor)
-    fcsData = sortReduce(fcsData, cc, reduce, sort)
+    if transform
+        fcsData = transformData(fcsData, method, cofactor)
+    end
+    fcsData = sortReduce(fcsData, cc, false, sort)
 
     # get the sample_id from md
     # return value is an array with only one entry -> take [1]
