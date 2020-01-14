@@ -13,6 +13,7 @@ checkDir()
     include("testSplitting.jl")
     include("testTrainingOuputEquality.jl")
     include("testSingleFileSplitting.jl")
+    include("testLoadData.jl")
 end
 
 cd(owd)
