@@ -93,18 +93,21 @@ function loadData(idx, fn, panel=Nothing(), method = "asinh", cofactor = 5,
     fcsRaw = y[idx]
     cleanNames!(fcsRaw)
 
-    # If no panel is provided, use all column names as cc
-    # and set reduce to false
-    if panel == Nothing()
-        cc = map(Symbol, names(fcsRaw))
-        reduce = false
-    else
+    # Define the clustering column by range object
+    if typeof(panel) == Array{Int64,1}
+        cc = panel
+    elseif typeof(panel) == DataFrame
         # extract lineage markers
         lineageMarkers, functionalMarkers = getMarkers(panel)
         cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
         # markers can be lineage and functional at tthe same time
         # therefore make cc unique
         unique!(cc)
+    else
+        # If no panel is provided, use all column names as cc
+        # and set reduce to false
+        cc = map(Symbol, names(fcsRaw))
+        reduce = false
     end
 
     fcsData = transformData(fcsRaw, method, cofactor)
