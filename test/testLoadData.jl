@@ -30,7 +30,7 @@ cd(dataPath)
 md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
 md = md[1:2, :]
 panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
-fcs = readFlowFrame(md.file_name[1]) # load the first file as reference 
+# load the first file as reference 
 lineageMarkers, functionalMarkers = getMarkers(panel)
 
 nWorkers = 2
@@ -38,7 +38,7 @@ addprocs(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM, FCSFiles
 
 @testset "Compare raw fcs load, columns and first rows" begin
-    
+    fcs = readFlowFrame(md.file_name[1]) 
     generateIO(dataPath, md, nWorkers, true, 1, true)
     R =  Vector{Any}(undef,nWorkers)
     @sync for (idx, pid) in enumerate(workers())
@@ -63,6 +63,7 @@ end
 
 @testset "Test loading the data and reducing by panel file" begin
 
+    fcs = readFlowFrame(md.file_name[1]) 
     generateIO(dataPath, md, nWorkers, true, 1, true)
     R =  Vector{Any}(undef,nWorkers)
     cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
@@ -113,21 +114,3 @@ end
 #     sortedRow = copy(R[1].x[1,:])
 #     @test sortedRow == unsortedRow
 # end
-
-R[1].x[1,:]
-fcs[:,cc]
-df = copy(fcs)
-n = names(df)
-sort!(n)
-select!(df, n)
-
-df
-fcs
-
-function sortReduce(df)
-    n = names(df)
-    sort!(n)
-    select!(df, n)
-end
-
-sortReduce(fcs)
