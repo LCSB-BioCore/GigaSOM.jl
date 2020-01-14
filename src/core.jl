@@ -125,7 +125,7 @@ end
 - `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
 - `epochs`: number of SOM training iterations (default 10)
 """
-function trainGigaSOM(som::Som, trainRef::Array{Any,1}, cc;
+function trainGigaSOM(som::Som, trainRef::Array{Any,1};
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
                       knnTreeFun = BruteTree,
@@ -155,7 +155,7 @@ function trainGigaSOM(som::Som, trainRef::Array{Any,1}, cc;
             for (idx, pid) in enumerate(workers())
                 @async begin
                     # @info pid
-                    R[idx] =  fetch(@spawnat pid begin doEpoch(trainRef[idx], codes, tree, cc) end)
+                    R[idx] =  fetch(@spawnat pid begin doEpoch(trainRef[idx], codes, tree) end)
                     globalSumNumerator += R[idx][1]
                     globalSumDenominator += R[idx][2]
                 end
@@ -275,7 +275,7 @@ vectors and the adjustment in radius after each epoch.
 - `codes`: Codebook
 - `tree`: knn-compatible tree built upon the codes
 """
-function doEpoch(x::Ref, codes::Array{Float64, 2}, tree, cc)
+function doEpoch(x::Ref, codes::Array{Float64, 2}, tree)
 
     # initialise numerator and denominator with 0's
     sumNumerator = zeros(Float64, size(codes))
