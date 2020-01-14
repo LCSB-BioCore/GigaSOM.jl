@@ -29,7 +29,7 @@ som2Codes = deepcopy(som.codes)
 
 cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
-som = trainGigaSOM(som, R, cc)
+som = trainGigaSOM(som, R)
 winners = mapToGigaSOM(som, R)
 embed = embedGigaSOM(som, R, k=10, smooth=0.0, adjust=0.5)
 
