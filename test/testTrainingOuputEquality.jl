@@ -20,7 +20,8 @@ generateIO(dataPath, md, nWorkers, true, 1, true)
 R =  Vector{Any}(undef,nWorkers)
 
 @sync for (idx, pid) in enumerate(workers())
-    @async R[idx] = fetch(@spawnat pid loadData(idx, "input-$idx.jls", panel))
+    @async R[idx] = fetch(@spawnat pid loadData(idx, "input-$idx.jls", panel, 
+                        reduce=true, transform=true))
 end
 
 som = initGigaSOM(R, 10, 10)
