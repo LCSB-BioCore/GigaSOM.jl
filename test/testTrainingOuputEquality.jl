@@ -15,14 +15,7 @@ nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM, FCSFiles
 
-generateIO(dataPath, md, nWorkers, true, 1, true)
-
-R =  Vector{Any}(undef,nWorkers)
-
-@sync for (idx, pid) in enumerate(workers())
-    @async R[idx] = fetch(@spawnat pid loadData(idx, "input-$idx.jls", panel, 
-                        reduce=true, transform=true))
-end
+R, _ = loadData(dataPath, md, nWorkers, panel=panel, reduce=true, transform=true)
 
 som = initGigaSOM(R, 10, 10)
 # get a copy of the inititalized som object for the second training

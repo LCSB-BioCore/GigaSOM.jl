@@ -69,25 +69,77 @@ function readFlowFrame(filename::String)
 end
 
 """
-    loadData(idx, fn, md,panel; method = "asinh", cofactor = 5,
-            reduce = true, sort = true)
+    loadData(dataPath, data, nWorkers; panel=Nothing(), 
+            type = "fcs", method = "asinh", cofactor = 5,
+            reduce = false, sort = false, transform = false)
+
+This function is of 2 parts. Part 1: Generates the temporary binaray files to be loaded by the
+    workers. The Input data will be equally divided into n parts according to the number of workers.
+    Part2: each worker loads independently its own data-package in parallel and returns
+
+# Arguments:
+- `dataPath`: worker index
+- `data`: single filename::String or a metadata::DataFrame with a column sample_name
+- `panel`: Panel table with a column for Lineage Markers and one for Functional Markers,
+    or Array::{Int} used as column indicies, default: Nothing()
+- `type`: String, type of datafile, default FCS
+- `method`: transformation method, default arcsinh, optional
+- `cofactor`: Cofactor for transformation, default 5, optional
+- `reduce`: Selected only columns which are defined by lineage and functional, optional,
+    default: false. If false the check for any none columns to be removed (none columns can appear
+    after concatenating FCS files as well as parameter like: time, event length)
+- `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: false
+- `transform`: Boolean to indicate if the data will be transformed according to method, default: false
+"""
+function loadData(dataPath, data, nWorkers; panel=Nothing(), 
+                type = "fcs", method = "asinh", cofactor = 5,
+                reduce = false, sort = false, transform = false)
+
+    # Split the data according to the number of worker as temp binary file
+    # md can be a metadata file or a single file_name:
+    # generateIO(dataPath, <filename>, nWorkers, true, 1, true)
+    xRange = generateIO(dataPath, data, nWorkers, true, 1, true)
+
+    R =  Vector{Any}(undef,nWorkers)
+
+    # Load the data by each worker
+    # Without panel file, all columns are loaded:
+    # loadData(idx, "input-$idx.jls")
+    # Columns ca be selected by an array of indicies:
+    # loadData(idx, "input-$idx.jls", [3:6;9:11]) <- this will concatenate ranges into arrays
+    # Please note that all optional arguments are by default "false"
+    if type == "fcs"
+        @time @sync for (idx, pid) in enumerate(workers())
+            @async R[idx] = fetch(@spawnat pid loadFCSData(idx, "input-$idx.jls", panel, method,
+                                cofactor,reduce, sort, transform))
+        end
+    else
+        @info "File Type not yet supported!"
+    end
+
+    return R, xRange
+
+end
+
+"""
+    loadFCSData(idx, fn, panel, method, cofactor, reduce, sort, transform)
 
 Load the data in parallel on each worker. Returns a reference of the loaded Data
 
 # Arguments:
 - `idx`: worker index
 - `fn`: filename
-- `md`: Metadata table
-- `panel`: Panel table with a column for Lineage Markers and one for Functional Markers
+- `panel`: Panel table with a column for Lineage Markers and one for Functional Markers, 
+    or Array::{Int} used as column indicies
 - `method`: transformation method, default arcsinh, optional
 - `cofactor`: Cofactor for transformation, default 5, optional
 - `reduce`: Selected only columns which are defined by lineage and functional, optional,
     default: true. If false the check for any none columns to be removed (none columns can appear
     after concatenating FCS files as well as parameter like: time, event length)
 - `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true
+- `transform`: Boolean to indicate if the data will be transformed according to method
 """
-function loadData(idx, fn, panel=Nothing(); method = "asinh", cofactor = 5,
-                            reduce = false, sort = false, transform = false)
+function loadFCSData(idx, fn, panel, method, cofactor, reduce, sort, transform)
 
     y = open(deserialize, fn)
     fcsData = y[idx]
@@ -128,3 +180,4 @@ function loadData(idx, fn, panel=Nothing(); method = "asinh", cofactor = 5,
 
     return (dfallRef)
 end
+

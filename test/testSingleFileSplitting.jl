@@ -17,16 +17,10 @@ nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM, FCSFiles
 
-xRange = generateIO(dataPath, fn, nWorkers, true, 1, true)
-
-R =  Vector{Any}(undef,nWorkers)
-
-@sync for (idx, pid) in enumerate(workers())
-    @async R[idx] = fetch(@spawnat pid loadData(idx, "input-$idx.jls"))
-end
+R, = loadData(dataPath, fn, nWorkers)
 
 @testset "check ranges" begin
-    @test length(xRange) == nWorkers
+    @test length(R) == nWorkers
 end
 
 @testset "compare the first rows of splitting and loading vs manual load" begin

@@ -30,7 +30,6 @@ cd(dataPath)
 md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
 md = md[1:2, :]
 panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
-# load the first file as reference 
 lineageMarkers, functionalMarkers = getMarkers(panel)
 
 nWorkers = 2
@@ -38,12 +37,9 @@ addprocs(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM, FCSFiles
 
 @testset "Compare raw fcs load, columns and first rows" begin
-    fcs = readFlowFrame(md.file_name[1]) 
-    generateIO(dataPath, md, nWorkers, true, 1, true)
-    R =  Vector{Any}(undef,nWorkers)
-    @sync for (idx, pid) in enumerate(workers())
-        @async R[idx] = fetch(@spawnat pid loadData(idx, "input-$idx.jls"))
-    end
+    fcs = readFlowFrame(md.file_name[1]) # load the first file as reference 
+
+    R, = loadData(dataPath, md, nWorkers)
 
     @test size(fcs,2) == size(R[1].x, 2)
     @test Array(fcs[1:5,:]) == R[1].x[1:5,:]
@@ -51,12 +47,8 @@ end
 
 @testset "Test loading the data and reducing by column index" begin
 
-    generateIO(dataPath, md, nWorkers, true, 1, true)
-    R =  Vector{Any}(undef,nWorkers)
     cols = [5:15;]
-    @sync for (idx, pid) in enumerate(workers())
-        @async R[idx] = fetch(@spawnat pid loadData(idx, "input-$idx.jls", cols, reduce = true))
-    end
+    R, = loadData(dataPath, md, nWorkers, panel=cols, reduce=true)
 
     @test size(R[1].x, 2) == 11
 end
@@ -64,13 +56,9 @@ end
 @testset "Test loading the data and reducing by panel file" begin
 
     fcs = readFlowFrame(md.file_name[1]) 
-    generateIO(dataPath, md, nWorkers, true, 1, true)
-    R =  Vector{Any}(undef,nWorkers)
     cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
-    @sync for (idx, pid) in enumerate(workers())
-        @async R[idx] = fetch(@spawnat pid loadData(idx, "input-$idx.jls", panel, 
-                                                    reduce = true))
-    end
+
+    R, = loadData(dataPath, md, nWorkers, panel=panel, reduce=true)
 
     @test size(R[1].x, 2) == length(cc)
     fcs = fcs[:,cc] # select the same columns and compare the order 
@@ -79,19 +67,12 @@ end
 
 @testset "Test loading the data and asinh transformation" begin
 
-    generateIO(dataPath, md, nWorkers, true, 1, true)
-    R = Vector{Any}(undef,nWorkers)
-    @sync for (idx, pid) in enumerate(workers())
-        @async R[idx] = fetch(@spawnat pid loadData(idx, "input-$idx.jls"))
-    end
+    R, = loadData(dataPath, md, nWorkers)
     rawDataRow = copy(R[1].x[1,:])
 
-    generateIO(dataPath, md, nWorkers, true, 1, true)
-    R = Vector{Any}(undef,nWorkers)
-    @sync for (idx, pid) in enumerate(workers())
-        @async R[idx] = fetch(@spawnat pid loadData(idx, "input-$idx.jls", transform=true))
-    end
+    R, = loadData(dataPath, md, nWorkers, transform=true)
     transformDataRow = copy(R[1].x[1,:])
+
     @test rawDataRow != transformDataRow
     @test isapprox(asinh(rawDataRow[1] / 5), transformDataRow[1]; atol = 0.001)
 end
