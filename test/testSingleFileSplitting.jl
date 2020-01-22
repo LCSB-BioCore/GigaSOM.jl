@@ -19,11 +19,8 @@ addprocs(nWorkers, topology=:master_worker)
 
 R, = loadData(dataPath, fn, nWorkers, transform=true)
 
-@testset "check ranges" begin
+@testset "compare ranges and first rows of splitting and loading vs manual load" begin
     @test length(R) == nWorkers
-end
-
-@testset "compare the first rows of splitting and loading vs manual load" begin
     @test Array(df_firstLine) == R[1].x[1,:]
 end
 
