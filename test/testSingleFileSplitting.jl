@@ -24,7 +24,7 @@ R, = loadData(dataPath, fn, nWorkers)
 end
 
 @testset "compare the first rows of splitting and loading vs manual load" begin
-    Array(df_firstLine) == R[1].x[1,:]
+    @test Array(df_firstLine) == R[1].x[1,:]
 end
 
 rmprocs(workers())
