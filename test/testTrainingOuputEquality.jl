@@ -15,7 +15,7 @@ nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM, FCSFiles
 
-R, _ = loadData(dataPath, md, nWorkers, panel=panel, reduce=true, transform=true)
+R, = loadData(dataPath, md, nWorkers, panel=panel, reduce=true, transform=true)
 
 som = initGigaSOM(R, 10, 10)
 # get a copy of the inititalized som object for the second training
