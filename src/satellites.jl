@@ -561,6 +561,30 @@ function generateIO(filePath, md::DataFrame, nWorkers, generateFiles=true, print
     end
 end
 
+"""
+    generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
+
+Generate binary .jls files for a single file given a path and the number of workers
+
+# INPUTS
+
+- `filePath`: path to the files
+- `fn`: file name
+- `nWorkers`: number of workers
+- `generateFiles`: Boolean to actually generate files
+- `printLevel`: Verbose level (0: mute)
+- `saveIndices`: Boolean to save the local indices
+
+# OUTPUTS
+
+if `saveIndices` is `true`:
+    - `localStart`: start index of local file
+    - `localEnd`: end index of local file
+
+if `generateFiles` is `true`:
+    `nWorkers` files named `input-<workerID>.jls` saved in the directory `filePath`.
+
+"""
 function generateIO(filePath, fn::String, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
 
     # read the single file and split it according to the number of workers. 
