@@ -109,7 +109,7 @@ function loadData(dataPath, data, nWorkers; panel=Nothing(),
     # loadData(idx, "input-$idx.jls", [3:6;9:11]) <- this will concatenate ranges into arrays
     # Please note that all optional arguments are by default "false"
     if type == "fcs"
-        @time @sync for (idx, pid) in enumerate(workers())
+        @sync for (idx, pid) in enumerate(workers())
             @async R[idx] = fetch(@spawnat pid loadFCSData(idx, "input-$idx.jls", panel, method,
                                 cofactor,reduce, sort, transform))
         end
