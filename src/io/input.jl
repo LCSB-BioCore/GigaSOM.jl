@@ -78,7 +78,7 @@ This function is of 2 parts. Part 1: Generates the temporary binaray files to be
     Part2: each worker loads independently its own data-package in parallel and returns
 
 # Arguments:
-- `dataPath`: worker index
+- `dataPath`: path to data folder
 - `data`: single filename::String or a metadata::DataFrame with a column sample_name
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers,
     or Array::{Int} used as column indicies, default: Nothing()
