@@ -184,11 +184,15 @@ and at the given location.
 - `inSize`: Vector with the lengths of each file within the input data set
 - `runSum`: Running sum of the `inSize` vector (`runSum[end] == totalSize`)
 """
-function getTotalSize(loc, md::DataFrame, printLevel=0)
+function getTotalSize(loc, md::Any, printLevel=0)
     global totalSize, tmpSum
 
-    # define the file names
-    fileNames = sort(md.file_name)
+    if md == typeof(String)
+        filenames = [md]
+    else
+        # define the file names
+        fileNames = sort(md.file_name)
+    end
 
     # out the number of files
     if printLevel > 0
@@ -231,47 +235,6 @@ function getTotalSize(loc, md::DataFrame, printLevel=0)
     return totalSize, inSize, runSum
 end
 
-
-function getTotalSize(loc, fn::String, printLevel=0)
-    global totalSize, tmpSum
-
-    # define the file names
-    f = fn
-
-    # get the total size of the data set
-    totalSize = 0
-    inSize = []
-
-    f = loc * Base.Filesystem.path_separator * f
-    open(f) do io
-        # retrieve the offsets
-        offsets = FCSFiles.parse_header(io)
-        text_mappings = FCSFiles.parse_text(io, offsets[1], offsets[2])
-        FCSFiles.verify_text(text_mappings)
-
-        # get the number of parameters
-        n_params = parse(Int, text_mappings["\$PAR"])
-
-        # determine the number of cells
-        numberCells = Int(round((offsets[4] - offsets[3] + 1) / 4 / n_params))
-
-        totalSize += numberCells
-        push!(inSize, numberCells)
-        if printLevel > 0
-            @info "   + Filename: $f - #cells: $numberCells"
-        end
-    end
-
-    # determine the running sum of the file sizes
-    runSum = []
-    tmpSum = 0
-    for indivSize in inSize
-        tmpSum += indivSize
-        push!(runSum, tmpSum)
-    end
-
-    return totalSize, inSize, runSum
-end
 
 """
     splitting(totalSize, nWorkers, printLevel=0)
