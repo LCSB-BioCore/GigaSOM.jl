@@ -95,9 +95,6 @@ function loadData(dataPath, data, nWorkers; panel=Nothing(),
                 type = "fcs", method = "asinh", cofactor = 5,
                 reduce = false, sort = false, transform = false)
 
-    # Split the data according to the number of worker as temp binary file
-    # md can be a metadata file or a single file_name:
-    # generateIO(dataPath, <filename>, nWorkers, true, 1, true)
     xRange = generateIO(dataPath, data, nWorkers, true, 1, true)
 
     R =  Vector{Any}(undef,nWorkers)
