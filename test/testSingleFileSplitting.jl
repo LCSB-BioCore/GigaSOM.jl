@@ -17,7 +17,7 @@ nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM, FCSFiles
 
-R, = loadData(dataPath, fn, nWorkers)
+R, = loadData(dataPath, fn, nWorkers, transform=true)
 
 @testset "check ranges" begin
     @test length(R) == nWorkers
