@@ -81,7 +81,7 @@ This function is of 2 parts. Part 1: Generates the temporary binaray files to be
 - `dataPath`: path to data folder
 - `data`: single filename::String or a metadata::DataFrame with a column sample_name
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers,
-    or Array::{Int} used as column indicies, default: Nothing()
+    or Array::{Int} used as column indices, default: Nothing()
 - `type`: String, type of datafile, default FCS
 - `method`: transformation method, default arcsinh, optional
 - `cofactor`: Cofactor for transformation, default 5, optional
