@@ -114,7 +114,7 @@ function loadData(dataPath, data, nWorkers; panel=Nothing(),
                                 cofactor,reduce, sort, transform))
         end
     else
-        @info "File Type not yet supported!"
+        @error "File Type not yet supported!"
     end
 
     return R, xRange
