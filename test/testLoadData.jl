@@ -1,29 +1,3 @@
-using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed, SHA, JSON
-using FileIO, Serialization, FCSFiles, DataFrames
-
-checkDir()
-
-#create genData and data folder and change dir to dataPath
-cwd = pwd()
-if occursin("jenkins", homedir()) || "TRAVIS" in keys(ENV)
-    genDataPath = mktempdir()
-    dataPath = mktempdir()
-else
-    if !occursin("test", cwd)
-        cd("test")
-        cwd = pwd()
-    end
-    dataFolders = ["genData", "data"]
-    for dir in dataFolders
-        if !isdir(dir)
-            mkdir(dir)
-        end
-    end
-    genDataPath = cwd*"/genData"
-    dataPath = cwd*"/data"
-end
-
-refDataPath = cwd*"/refData"
 Random.seed!(1)
 cd(dataPath)
 
