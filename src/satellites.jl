@@ -542,7 +542,7 @@ function generateIO(filePath, md::DataFrame, nWorkers, generateFiles=true, print
 end
 
 """
-    generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
+    generateIO(filePath, fn::String, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
 
 Generate binary .jls files for a single file given a path and the number of workers
 
