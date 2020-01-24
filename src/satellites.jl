@@ -569,16 +569,16 @@ function generateIO(filePath, fn::String, nWorkers, generateFiles=true, printLev
 
     # read the single file and split it according to the number of workers.
     inFile = readFlowFrame(filePath * Base.Filesystem.path_separator * fn)
-    _, _, xRanges = splitting(size(inFile, 1), nWorkers, 0)
+    _, _, chunks = splitting(size(inFile, 1), nWorkers, 0)
 
-    for i in 1:length(xRanges)
+    for i in 1:length(chunks)
         out = Dict()
-        out[i] = inFile[xRanges[i], :]
+        out[i] = inFile[chunks[i], :]
         open(f -> serialize(f,out), "input-$i.jls", "w")
     end
 
     if saveIndices
-        return xRanges
+        return chunks
     end
 
 end
