@@ -69,7 +69,7 @@ function readFlowFrame(filename::String)
 end
 
 """
-    loadData(dataPath, data, nWorkers; panel=Nothing(), 
+    loadData(dataPath, data, nWorkers; panel=Nothing(),
             type = "fcs", method = "asinh", cofactor = 5,
             reduce = false, sort = false, transform = false)
 
@@ -91,7 +91,7 @@ This function is of 2 parts. Part 1: Generates the temporary binaray files to be
 - `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: false
 - `transform`: Boolean to indicate if the data will be transformed according to method, default: false
 """
-function loadData(dataPath, data, nWorkers; panel=Nothing(), 
+function loadData(dataPath, data, nWorkers; panel=Nothing(),
                 type = "fcs", method = "asinh", cofactor = 5,
                 reduce = false, sort = false, transform = false)
 
@@ -107,7 +107,7 @@ function loadData(dataPath, data, nWorkers; panel=Nothing(),
     # Please note that all optional arguments are by default "false"
     if type == "fcs"
         @sync for (idx, pid) in enumerate(workers())
-            @async R[idx] = fetch(@spawnat pid loadFCSData(idx, "input-$idx.jls", panel, method,
+            @async R[idx] = fetch(@spawnat pid loadDataFile(idx, "input-$idx.jls", panel, method,
                                 cofactor,reduce, sort, transform))
         end
     else
@@ -119,14 +119,14 @@ function loadData(dataPath, data, nWorkers; panel=Nothing(),
 end
 
 """
-    loadFCSData(idx, fn, panel, method, cofactor, reduce, sort, transform)
+    loadDataFile(idx, fn, panel, method, cofactor, reduce, sort, transform)
 
 Load the data in parallel on each worker. Returns a reference of the loaded Data
 
 # Arguments:
 - `idx`: worker index
 - `fn`: filename
-- `panel`: Panel table with a column for Lineage Markers and one for Functional Markers, 
+- `panel`: Panel table with a column for Lineage Markers and one for Functional Markers,
     or Array::{Int} used as column indicies
 - `method`: transformation method, default arcsinh, optional
 - `cofactor`: Cofactor for transformation, default 5, optional
@@ -136,7 +136,7 @@ Load the data in parallel on each worker. Returns a reference of the loaded Data
 - `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true
 - `transform`: Boolean to indicate if the data will be transformed according to method
 """
-function loadFCSData(idx, fn, panel, method, cofactor, reduce, sort, transform)
+function loadDataFile(idx, fn, panel, method, cofactor, reduce, sort, transform)
 
     y = open(deserialize, fn)
     fcsData = y[idx]
