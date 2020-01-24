@@ -255,7 +255,10 @@ given the total size and the number of workers
 """
 function splitting(totalSize, nWorkers, printLevel=0)
     # determine the size per file
-    fileL = Int(floor(totalSize/nWorkers))
+    fileL = div(totalSize, nWorkers)
+
+    # determine the remainder
+    extras = rem(totalSize,nWorkers)
 
     # determine the size of the last (residual) file
     lastFileL = Int(fileL + totalSize - nWorkers * fileL)
@@ -267,7 +270,21 @@ function splitting(totalSize, nWorkers, printLevel=0)
         @info " > Total row count: $totalSize cells"
     end
 
-    return fileL, lastFileL
+    # determine the ranges
+    nchunks = fileL > 0 ? nWorkers : extras
+    chunks = Vector{UnitRange{Int}}(undef, nchunks)
+    lo = 1
+    for i in 1:nchunks
+        hi = lo + fileL - 1
+        if extras > 0
+            hi += 1
+            extras -= 1
+        end
+        chunks[i] = lo:hi
+        lo = hi+1
+    end
+
+    return fileL, lastFileL, chunks
 end
 
 """
@@ -511,12 +528,7 @@ function generateIO(filePath, md::DataFrame, nWorkers, generateFiles=true, print
         end
 
         # output the file per worker
-        if generateFiles
-            open(f -> serialize(f,out), "input-$worker.jls", "w")
-            if printLevel > 0
-                printstyled("[ Info:  > File input-$worker.jls written.\n", color=:green, bold=true)
-            end
-        end
+        outputFile(out, "input-$worker.jls", generateFiles)
     end
 
     if saveIndices
@@ -525,7 +537,7 @@ function generateIO(filePath, md::DataFrame, nWorkers, generateFiles=true, print
 end
 
 """
-    generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
+    generateIO(filePath, fn::String, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
 
 Generate binary .jls files for a single file given a path and the number of workers
 
@@ -541,29 +553,27 @@ Generate binary .jls files for a single file given a path and the number of work
 # OUTPUTS
 
 if `saveIndices` is `true`:
-    - `localStart`: start index of local file
-    - `localEnd`: end index of local file
+    - `chunks`: start index of local file
 
 if `generateFiles` is `true`:
-    `nWorkers` files named `input-<workerID>.jls` saved in the directory `filePath`.
+    - `nWorkers` files named `input-<workerID>.jls` saved in the directory `filePath`.
 
 """
 function generateIO(filePath, fn::String, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
 
-    # read the single file and split it according to the number of workers. 
+    # read the single file and split it according to the number of workers.
     inFile = readFlowFrame(filePath * Base.Filesystem.path_separator * fn)
-    xRanges = splitrange(size(inFile, 1), nWorkers)
-    
-    for i in 1:length(xRanges)
+    _, _, chunks = splitting(size(inFile, 1), nWorkers, 0)
+
+    for i in 1:length(chunks)
         out = Dict()
-        out[i] = inFile[xRanges[i], :]
-        open(f -> serialize(f,out), "input-$i.jls", "w")
+        out[i] = inFile[chunks[i], :]
+        outputFile(out, "input-$i.jls", generateFiles)
     end
 
     if saveIndices
-        return xRanges
+        return chunks
     end
-
 end
 
 """
@@ -576,7 +586,7 @@ Remove a file.
 - `fileName`: name of file to be removed
 - `printLevel`: Verbose level (0: mute)
 """
-function rmFile(fileName, printLevel = 1)
+function rmFile(fileName, printLevel=0)
     try
         if printLevel > 0
             printstyled("> Removing $fileName ... ", color=:yellow)
@@ -592,21 +602,23 @@ function rmFile(fileName, printLevel = 1)
     end
 end
 
-# Statically split range [1,N] into equal sized chunks for np processors
-function splitrange(N::Int, np::Int)
-    each = div(N,np)
-    extras = rem(N,np)
-    nchunks = each > 0 ? np : extras
-    chunks = Vector{UnitRange{Int}}(undef, nchunks)
-    lo = 1
-    for i in 1:nchunks
-        hi = lo + each - 1
-        if extras > 0
-            hi += 1
-            extras -= 1
+"""
+    outputFile(out, fileName, generateFiles=true, printLevel=0)
+
+Generate a file given a name and content.
+
+# INPUTS
+
+- `out`: content of the file
+- `fileName`: name of file to be removed
+- `generateFiles`: Boolean to actually generate files
+- `printLevel`: Verbose level (0: mute)
+"""
+function outputFile(out, fileName, generateFiles=true, printLevel=0)
+    if generateFiles
+        open(f -> serialize(f,out), fileName, "w")
+        if printLevel > 0
+            printstyled("[ Info:  > File $fileName written.\n", color=:green, bold=true)
         end
-        chunks[i] = lo:hi
-        lo = hi+1
     end
-    return chunks
 end
