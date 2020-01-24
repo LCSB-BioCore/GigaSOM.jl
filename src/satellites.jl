@@ -184,11 +184,15 @@ and at the given location.
 - `inSize`: Vector with the lengths of each file within the input data set
 - `runSum`: Running sum of the `inSize` vector (`runSum[end] == totalSize`)
 """
-function getTotalSize(loc, md, printLevel=0)
+function getTotalSize(loc, md::Any, printLevel=0)
     global totalSize, tmpSum
 
-    # define the file names
-    fileNames = sort(md.file_name)
+    if md == typeof(String)
+        filenames = [md]
+    else
+        # define the file names
+        fileNames = sort(md.file_name)
+    end
 
     # out the number of files
     if printLevel > 0
@@ -231,6 +235,7 @@ function getTotalSize(loc, md, printLevel=0)
     return totalSize, inSize, runSum
 end
 
+
 """
     splitting(totalSize, nWorkers, printLevel=0)
 
@@ -250,7 +255,10 @@ given the total size and the number of workers
 """
 function splitting(totalSize, nWorkers, printLevel=0)
     # determine the size per file
-    fileL = Int(floor(totalSize/nWorkers))
+    fileL = div(totalSize, nWorkers)
+
+    # determine the remainder
+    extras = rem(totalSize,nWorkers)
 
     # determine the size of the last (residual) file
     lastFileL = Int(fileL + totalSize - nWorkers * fileL)
@@ -262,7 +270,21 @@ function splitting(totalSize, nWorkers, printLevel=0)
         @info " > Total row count: $totalSize cells"
     end
 
-    return fileL, lastFileL
+    # determine the ranges
+    nchunks = fileL > 0 ? nWorkers : extras
+    chunks = Vector{UnitRange{Int}}(undef, nchunks)
+    lo = 1
+    for i in 1:nchunks
+        hi = lo + fileL - 1
+        if extras > 0
+            hi += 1
+            extras -= 1
+        end
+        chunks[i] = lo:hi
+        lo = hi+1
+    end
+
+    return fileL, lastFileL, chunks
 end
 
 """
@@ -449,7 +471,7 @@ Generate binary .jls files given a path to files, their metadata, and the number
 # INPUTS
 
 - `filePath`: path to the files
-- `md`: Metadata table
+- `md`: Metadata table, or single file String
 - `nWorkers`: number of workers
 - `generateFiles`: Boolean to actually generate files
 - `printLevel`: Verbose level (0: mute)
@@ -465,7 +487,7 @@ if `generateFiles` is `true`:
     `nWorkers` files named `input-<workerID>.jls` saved in the directory `filePath`.
 
 """
-function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
+function generateIO(filePath, md::DataFrame, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
 
     # determin the total size, the vector with sizes, and their running sum
     totalSize, inSize, runSum = getTotalSize(filePath, md, printLevel)
@@ -506,16 +528,51 @@ function generateIO(filePath, md, nWorkers, generateFiles=true, printLevel=0, sa
         end
 
         # output the file per worker
-        if generateFiles
-            open(f -> serialize(f,out), "input-$worker.jls", "w")
-            if printLevel > 0
-                printstyled("[ Info:  > File input-$worker.jls written.\n", color=:green, bold=true)
-            end
-        end
+        outputFile(out, "input-$worker.jls", generateFiles)
     end
 
     if saveIndices
         return localStartVect, localEndVect
+    end
+end
+
+"""
+    generateIO(filePath, fn::String, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
+
+Generate binary .jls files for a single file given a path and the number of workers
+
+# INPUTS
+
+- `filePath`: path to the files
+- `fn`: file name
+- `nWorkers`: number of workers
+- `generateFiles`: Boolean to actually generate files
+- `printLevel`: Verbose level (0: mute)
+- `saveIndices`: Boolean to save the local indices
+
+# OUTPUTS
+
+if `saveIndices` is `true`:
+    - `chunks`: start index of local file
+
+if `generateFiles` is `true`:
+    - `nWorkers` files named `input-<workerID>.jls` saved in the directory `filePath`.
+
+"""
+function generateIO(filePath, fn::String, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
+
+    # read the single file and split it according to the number of workers.
+    inFile = readFlowFrame(filePath * Base.Filesystem.path_separator * fn)
+    _, _, chunks = splitting(size(inFile, 1), nWorkers, 0)
+
+    for i in 1:length(chunks)
+        out = Dict()
+        out[i] = inFile[chunks[i], :]
+        outputFile(out, "input-$i.jls", generateFiles)
+    end
+
+    if saveIndices
+        return chunks
     end
 end
 
@@ -529,7 +586,7 @@ Remove a file.
 - `fileName`: name of file to be removed
 - `printLevel`: Verbose level (0: mute)
 """
-function rmFile(fileName, printLevel = 1)
+function rmFile(fileName, printLevel=0)
     try
         if printLevel > 0
             printstyled("> Removing $fileName ... ", color=:yellow)
@@ -541,6 +598,27 @@ function rmFile(fileName, printLevel = 1)
     catch
         if printLevel > 0
             printstyled("(file $fileName does not exist - skipping).\n", color=:red)
+        end
+    end
+end
+
+"""
+    outputFile(out, fileName, generateFiles=true, printLevel=0)
+
+Generate a file given a name and content.
+
+# INPUTS
+
+- `out`: content of the file
+- `fileName`: name of file to be removed
+- `generateFiles`: Boolean to actually generate files
+- `printLevel`: Verbose level (0: mute)
+"""
+function outputFile(out, fileName, generateFiles=true, printLevel=0)
+    if generateFiles
+        open(f -> serialize(f,out), fileName, "w")
+        if printLevel > 0
+            printstyled("[ Info:  > File $fileName written.\n", color=:green, bold=true)
         end
     end
 end

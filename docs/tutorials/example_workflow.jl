@@ -21,19 +21,16 @@ nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM
 
-generateIO(dataPath, md, nWorkers, true, 1, true)
-
-R =  Vector{Any}(undef,nWorkers)
-
-@time @sync for (idx, pid) in enumerate(workers())
-    @async R[idx] = fetch(@spawnat pid loadData(idx, "input-$idx.jls", md, panel))
-end
+# R: Array of reference to each data files per worker
+# use '_' or just "R, " to ignore the second return value
+# second return value is used later for indexing the data files
+R, _ = loadData(dataPath, md, nWorkers, panel=panel, reduce=true, transform=true)
 
 som = initGigaSOM(R, 10, 10)
 
 cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
-@time som = trainGigaSOM(som, R, cc)
+@time som = trainGigaSOM(som, R)
 
 winners = mapToGigaSOM(som, R)
 
