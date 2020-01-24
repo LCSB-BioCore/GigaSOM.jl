@@ -528,12 +528,7 @@ function generateIO(filePath, md::DataFrame, nWorkers, generateFiles=true, print
         end
 
         # output the file per worker
-        if generateFiles
-            open(f -> serialize(f,out), "input-$worker.jls", "w")
-            if printLevel > 0
-                printstyled("[ Info:  > File input-$worker.jls written.\n", color=:green, bold=true)
-            end
-        end
+        outputFile(out, "input-$worker.jls", generateFiles)
     end
 
     if saveIndices
@@ -558,11 +553,10 @@ Generate binary .jls files for a single file given a path and the number of work
 # OUTPUTS
 
 if `saveIndices` is `true`:
-    - `localStart`: start index of local file
-    - `localEnd`: end index of local file
+    - `chunks`: start index of local file
 
 if `generateFiles` is `true`:
-    `nWorkers` files named `input-<workerID>.jls` saved in the directory `filePath`.
+    - `nWorkers` files named `input-<workerID>.jls` saved in the directory `filePath`.
 
 """
 function generateIO(filePath, fn::String, nWorkers, generateFiles=true, printLevel=0, saveIndices=false)
@@ -574,13 +568,12 @@ function generateIO(filePath, fn::String, nWorkers, generateFiles=true, printLev
     for i in 1:length(chunks)
         out = Dict()
         out[i] = inFile[chunks[i], :]
-        open(f -> serialize(f,out), "input-$i.jls", "w")
+        outputFile(out, "input-$i.jls", generateFiles)
     end
 
     if saveIndices
         return chunks
     end
-
 end
 
 """
@@ -593,7 +586,7 @@ Remove a file.
 - `fileName`: name of file to be removed
 - `printLevel`: Verbose level (0: mute)
 """
-function rmFile(fileName, printLevel = 1)
+function rmFile(fileName, printLevel=0)
     try
         if printLevel > 0
             printstyled("> Removing $fileName ... ", color=:yellow)
@@ -605,6 +598,27 @@ function rmFile(fileName, printLevel = 1)
     catch
         if printLevel > 0
             printstyled("(file $fileName does not exist - skipping).\n", color=:red)
+        end
+    end
+end
+
+"""
+    outputFile(out, fileName, generateFiles=true, printLevel=0)
+
+Generate a file given a name and content.
+
+# INPUTS
+
+- `out`: content of the file
+- `fileName`: name of file to be removed
+- `generateFiles`: Boolean to actually generate files
+- `printLevel`: Verbose level (0: mute)
+"""
+function outputFile(out, fileName, generateFiles=true, printLevel=0)
+    if generateFiles
+        open(f -> serialize(f,out), fileName, "w")
+        if printLevel > 0
+            printstyled("[ Info:  > File $fileName written.\n", color=:green, bold=true)
         end
     end
 end
