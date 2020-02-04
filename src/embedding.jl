@@ -1,7 +1,7 @@
 """
 function embedGigaSOM(som::GigaSOM.Som, data::Array{Any,1}; knnTreeFun = BruteTree, metric = Euclidean(), k::Int64=0, adjust::Float64=1.0, smooth::Float64=0.0, m::Float64=10.0)
 
-    Ref-accepting version of embedGigaSOM
+    Ref-array-accepting version of embedGigaSOM.
 """
 function embedGigaSOM(som::GigaSOM.Som,
                       data::Array{Any,1};
@@ -63,8 +63,23 @@ Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 - `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
 - `metric`: Passed as metric argument to the KNN-tree constructor
 
-Data must have the same number of dimensions as the training dataset
-and will be normalised with the same parameters.
+Data must have the same number of dimensions as the training dataset,
+and must be normalized using the same parameters.
+
+Example:
+
+Produce a 2-column matrix with 2D cell coordinates:
+```
+e = embedGigaSOM(som, data)
+```
+
+Plot the result using 2D histogram from Gadfly:
+```
+using Gadfly
+draw(PNG("output.png",20cm,20cm),
+     plot(x=e[:,1], y=e[:,2],
+     Geom.histogram2d(xbincount=200, ybincount=200)))
+```
 """
 function embedGigaSOM(som::GigaSOM.Som,
                       data;
