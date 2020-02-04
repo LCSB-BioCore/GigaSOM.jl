@@ -1,56 +1,16 @@
 """
-    embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
-                 knnTreeFun = BruteTree,
-                 metric = Euclidean(),
-                 k::Int64=0, adjust::Float64=1.0, smooth::Float64=0.0)
+function embedGigaSOM(som::GigaSOM.Som, data::Array{Any,1}; knnTreeFun = BruteTree, metric = Euclidean(), k::Int64=0, adjust::Float64=1.0, smooth::Float64=0.0, m::Float64=10.0)
 
-Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
-
-# Arguments
-- `som`: a trained SOM
-- `data`: Array or DataFrame with the data.
-- `k`: number of nearest neighbors to consider (high values get quadratically
-  slower)
-- `adjust`: position adjustment parameter (higher values avoid non-local
-  approximations)
-- `smooth`: approximation smoothness (the higher the value, the larger the
-  neighborhood of approximate local linearity of the projection)
-- `m`: score decay speed for values closing to `k`
-- `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
-- `metric`: Passed as metric argument to the KNN-tree constructor
-
-Example:
-
-Produce a 2-column matrix with 2D cell coordinates:
-
-```
-e = embedGigaSOM(som, data)
-```
-
-Plotting of the result is best done using 2D histograms; e.g. with Gadfly:
-
-```
-using Gadfly
-draw(PNG("output.png",20cm,20cm),
-     plot(x=e[:,1], y=e[:,2],
-     Geom.histogram2d(xbincount=200, ybincount=200)))
-```
-
-Data must have the same number of dimensions as the training dataset
-and will be normalised with the same parameters.
+    Ref-accepting version of embedGigaSOM
 """
-function embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
+function embedGigaSOM(som::GigaSOM.Som,
+                      data::Array{Any,1};
                       knnTreeFun = BruteTree,
                       metric = Euclidean(),
-                      k::Int64=0, adjust::Float64=1.0,
+                      k::Int64=0,
+                      adjust::Float64=1.0,
                       smooth::Float64=0.0,
                       m::Float64=10.0)
-
-    data::Array{Float64,2} = convertTrainingData(data)
-    if size(data,2) != size(som.codes,2)
-        println("    data: $(size(data,2)), codes: $(size(som.codes,2))")
-        error(SOM_ERRORS[:ERR_COL_NUM])
-    end
 
     # convert `smooth` to `boost`
     boost = exp(-smooth-1)
@@ -68,23 +28,23 @@ function embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
     # prepare the kNN-tree for lookups
     tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
 
+    #TODO check whether size of the data actually matches the number of processes?
+
     # run the distributed computation
     nWorkers = nprocs()
     if nWorkers > 1
-        dData = distribute(data)
-
-        dRes = [ (@spawnat pid embedGigaSOM_internal(som, localpart(dData), tree,
+        dRes = [ (@spawnat pid embedGigaSOM_internal(som, data[p], tree,
                                                    k, adjust, boost, m))
                  for (p,pid) in enumerate(workers()) ]
 
         return vcat([fetch(r) for r in dRes]...)
     else
-        return embedGigaSOM_internal(som, data, tree, k, adjust, boost, m)
+        return embedGigaSOM_internal(som, data[1], tree, k, adjust, boost, m)
     end
 end
 
 """
-    embedGigaSOM(som::GigaSOM.Som, data::Array{Any,1};
+    embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
                  knnTreeFun = BruteTree,
                  metric = Euclidean(),
                  k::Int64=0, adjust::Float64=1.0, smooth::Float64=0.0)
@@ -93,7 +53,7 @@ Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 
 # Arguments
 - `som`: a trained SOM
-- `data`: Array or DataFrame with the data.
+- `data`: DataFrame with the data.
 - `k`: number of nearest neighbors to consider (high values get quadratically
   slower)
 - `adjust`: position adjustment parameter (higher values avoid non-local
@@ -106,18 +66,21 @@ Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 Data must have the same number of dimensions as the training dataset
 and will be normalised with the same parameters.
 """
-function embedGigaSOM(som::GigaSOM.Som, data::Array{Any,1};
+function embedGigaSOM(som::GigaSOM.Som,
+                      data;
                       knnTreeFun = BruteTree,
                       metric = Euclidean(),
-                      k::Int64=0, adjust::Float64=1.0,
-                      smooth::Float64=0.0, m::Float64=10.0)
+                      k::Int64=0,
+                      adjust::Float64=1.0,
+                      smooth::Float64=0.0,
+                      m::Float64=10.0)
 
     # convert `smooth` to `boost`
-    boost = ((1+sqrt(Float64(5)))/2)^(smooth-2)
+    boost = exp(-smooth-1)
 
     # default `k`
     if k == 0
-        k = Integer((som.xdim+som.ydim)/2)
+        k = Integer(1+sqrt(som.xdim*som.ydim))
     end
 
     # check if `k` isn't too high
@@ -126,36 +89,20 @@ function embedGigaSOM(som::GigaSOM.Som, data::Array{Any,1};
     end
 
     # prepare the kNN-tree for lookups
-    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
+    tree = knnTreeFun(Matrix{Float64}(transpose(som.codes)), metric)
 
     # run the distributed computation
     nWorkers = nprocs()
     if nWorkers > 1
-
-        dRes = [ (@spawnat pid embedGigaSOM_internal(som, data[p], tree,
+        dData = distribute(Matrix{Float64}(data))
+        dRes = [ (@spawnat pid embedGigaSOM_internal(som, localpart(dData), tree,
                                                    k, adjust, boost, m))
                  for (p,pid) in enumerate(workers()) ]
 
         return vcat([fetch(r) for r in dRes]...)
     else
-        return embedGigaSOM_internal(som, data, tree, k, adjust, boost)
+        return embedGigaSOM_internal(som, data, tree, k, adjust, boost, m)
     end
-end
-
-"""
-function embedGigaSOM_internal(som::GigaSOM.Som, data::Ref,
-                               tree, k::Int64,
-                               adjust::Float64,
-                               boost::Float64,
-                               m::Float64)
-    Ref-accepting wrapper around the matrix version of the same.
-"""
-function embedGigaSOM_internal(som::GigaSOM.Som, data::Ref,
-                               tree, k::Int64,
-                               adjust::Float64,
-                               boost::Float64,
-                               m::Float64)
-    return embedGigaSOM_internal(som, data.x, tree, k, adjust, boost, m)
 end
 
 """
@@ -165,7 +112,7 @@ end
 Internal function to compute parts of the embedding on a prepared kNN-tree
 structure (`tree`) and `smooth` converted to `boost`.
 """
-function embedGigaSOM_internal(som::GigaSOM.Som, data::Matrix{Float64},
+function embedGigaSOM_internal(som::GigaSOM.Som, data,
                                tree, k::Int64,
                                adjust::Float64,
                                boost::Float64,
@@ -191,7 +138,7 @@ function embedGigaSOM_internal(som::GigaSOM.Som, data::Matrix{Float64},
     for di in 1:size(data,1)
 
         # find the nearest neighbors of the point and sort them by distance
-        (knidx,kndist) = knn(tree, data[di,:], nk)
+        (knidx,kndist) = knn(tree, Array{Float64,1}(data[di,:]), nk)
         sortperm!(sp, kndist)
         knidx=knidx[sp] # nearest point indexes
         kndist=kndist[sp] # their corresponding distances
@@ -289,7 +236,7 @@ function embedGigaSOM_internal(som::GigaSOM.Som, data::Matrix{Float64},
                 # Higher `adjust` parameter lowers approximation influence of
                 # SOM points that are too far in 2D.
                 s = is*js * ((1+hp)^(-adjust)) * exp(-((scalar-.5)^2))
-                sihp = s/hp
+                sihp = s / hp
                 rhsc = s * (scalar + (hx*ix + hy*iy) / hp)
 
                 mtx[1,1] += hx * hx * sihp
@@ -312,4 +259,20 @@ function embedGigaSOM_internal(som::GigaSOM.Som, data::Matrix{Float64},
     end
 
     return e
+end
+
+"""
+function embedGigaSOM_internal(som::GigaSOM.Som, data::Ref,
+                               tree, k::Int64,
+                               adjust::Float64,
+                               boost::Float64,
+                               m::Float64)
+    Ref-accepting wrapper around the matrix version of the same.
+"""
+function embedGigaSOM_internal(som::GigaSOM.Som, data::Ref,
+                               tree, k::Int64,
+                               adjust::Float64,
+                               boost::Float64,
+                               m::Float64)
+    return embedGigaSOM_internal(som, data.x, tree, k, adjust, boost, m)
 end
