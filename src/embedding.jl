@@ -1,7 +1,14 @@
 """
-function embedGigaSOM(som::GigaSOM.Som, data::Array{Any,1}; knnTreeFun = BruteTree, metric = Euclidean(), k::Int64=0, adjust::Float64=1.0, smooth::Float64=0.0, m::Float64=10.0)
+    embedGigaSOM(som::GigaSOM.Som,
+                 data::Array{Any,1};
+                 knnTreeFun = BruteTree,
+                 metric = Euclidean(),
+                 k::Int64=0,
+                 adjust::Float64=1.0,
+                 smooth::Float64=0.0,
+                 m::Float64=10.0)
 
-    Ref-array-accepting version of embedGigaSOM.
+Ref-array-accepting version of embedGigaSOM.
 """
 function embedGigaSOM(som::GigaSOM.Som,
                       data::Array{Any,1};
@@ -44,14 +51,18 @@ function embedGigaSOM(som::GigaSOM.Som,
 end
 
 """
-    embedGigaSOM(som::GigaSOM.Som, data::DataFrame;
+    embedGigaSOM(som::GigaSOM.Som,
+                 data::DataFrame;
                  knnTreeFun = BruteTree,
                  metric = Euclidean(),
-                 k::Int64=0, adjust::Float64=1.0, smooth::Float64=0.0)
+                 k::Int64=0,
+                 adjust::Float64=1.0,
+                 smooth::Float64=0.0,
+                 m::Float64=10.0)
 
 Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 
-# Arguments
+# Arguments:
 - `som`: a trained SOM
 - `data`: DataFrame with the data.
 - `k`: number of nearest neighbors to consider (high values get quadratically
@@ -60,13 +71,14 @@ Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
   approximations)
 - `smooth`: approximation smoothness (the higher the value, the larger the
   neighborhood of approximate local linearity of the projection)
+- `m`: exponential decay rate for the score when approaching the `k+1`-th neighbor distance
 - `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
 - `metric`: Passed as metric argument to the KNN-tree constructor
 
 Data must have the same number of dimensions as the training dataset,
 and must be normalized using the same parameters.
 
-Example:
+# Examples:
 
 Produce a 2-column matrix with 2D cell coordinates:
 ```
@@ -121,14 +133,21 @@ function embedGigaSOM(som::GigaSOM.Som,
 end
 
 """
-    embedGigaSOM_internal(som::GigaSOM.Som, data::Matrix{Float64}, tree,
-                          k::Int64, adjust::Float64, boost::Float64)
+    embedGigaSOM_internal(som::GigaSOM.Som,
+                          data::Matrix{Float64},
+                          tree,
+                          k::Int64,
+                          adjust::Float64,
+                          boost::Float64,
+                          m::Float64)
 
 Internal function to compute parts of the embedding on a prepared kNN-tree
 structure (`tree`) and `smooth` converted to `boost`.
 """
-function embedGigaSOM_internal(som::GigaSOM.Som, data,
-                               tree, k::Int64,
+function embedGigaSOM_internal(som::GigaSOM.Som,
+                               data,
+                               tree,
+                               k::Int64,
                                adjust::Float64,
                                boost::Float64,
                                m::Float64)
@@ -277,15 +296,20 @@ function embedGigaSOM_internal(som::GigaSOM.Som, data,
 end
 
 """
-function embedGigaSOM_internal(som::GigaSOM.Som, data::Ref,
-                               tree, k::Int64,
-                               adjust::Float64,
-                               boost::Float64,
-                               m::Float64)
-    Ref-accepting wrapper around the matrix version of the same.
+    embedGigaSOM_internal(som::GigaSOM.Som,
+                          data::Ref,
+                          tree,
+                          k::Int64,
+                          adjust::Float64,
+                          boost::Float64,
+                          m::Float64)
+
+Ref-accepting wrapper around the matrix version of the same.
 """
-function embedGigaSOM_internal(som::GigaSOM.Som, data::Ref,
-                               tree, k::Int64,
+function embedGigaSOM_internal(som::GigaSOM.Som,
+                               data::Ref,
+                               tree,
+                               k::Int64,
                                adjust::Float64,
                                boost::Float64,
                                m::Float64)
