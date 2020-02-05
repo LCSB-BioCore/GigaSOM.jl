@@ -25,7 +25,7 @@ cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
 som = trainGigaSOM(som, R)
 winners = mapToGigaSOM(som, R)
-embed = embedGigaSOM(som, R, k=10, smooth=0.0, adjust=0.5)
+embed = embedGigaSOM(som, R, k=10)
 
 # Load the data again using the "classic serial approach"
 cd(dataPath)
@@ -44,7 +44,7 @@ som2 = initGigaSOM(dfSom, 10, 10)
 som2.codes = som2Codes
 som2 = trainGigaSOM(som2, dfSom)
 winners2 = mapToGigaSOM(som2, dfSom)
-embed2 = embedGigaSOM(som2, dfSom, k=10, smooth=0.0, adjust=0.5)
+embed2 = embedGigaSOM(som2, dfSom, k=10)
 
 @testset "Compare first row of concatenated train dataset between loading methods" begin
     t1 = R[1].x[1,:]

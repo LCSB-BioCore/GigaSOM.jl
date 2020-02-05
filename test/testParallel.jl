@@ -38,7 +38,7 @@ som2 = trainGigaSOM(som2, dfSom, epochs = 2, rStart = 6.0)
 
 winners = mapToGigaSOM(som2, dfSom)
 
-embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.0, adjust=0.5)
+embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.1, adjust=2.3, m=4.5)
 
 #test parallel
 @testset "Parallel" begin
