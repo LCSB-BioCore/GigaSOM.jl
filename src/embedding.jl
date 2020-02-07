@@ -128,7 +128,7 @@ function embedGigaSOM(som::GigaSOM.Som,
 
         return vcat([fetch(r) for r in dRes]...)
     else
-        return embedGigaSOM_internal(som, data, tree, k, adjust, boost, m)
+        return embedGigaSOM_internal(som, Matrix{Float64}(data), tree, k, adjust, boost, m)
     end
 end
 
@@ -145,7 +145,7 @@ Internal function to compute parts of the embedding on a prepared kNN-tree
 structure (`tree`) and `smooth` converted to `boost`.
 """
 function embedGigaSOM_internal(som::GigaSOM.Som,
-                               data,
+                               data::Matrix{Float64},
                                tree,
                                k::Int64,
                                adjust::Float64,
