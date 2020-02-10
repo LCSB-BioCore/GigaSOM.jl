@@ -218,7 +218,7 @@ function mapToGigaSOM(som::Som, dataVal, workers::Array{Int64};
 
     idxs = distributed_mapreduce(
         dataVal,
-        (d) -> (knn(tree, transpose(d), 1)[1]),
+        (d) -> (vcat(knn(tree, transpose(d), 1)[1]...)),
         (d1, d2) -> vcat(d1, d2),
         workers)
 
