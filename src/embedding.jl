@@ -1,58 +1,6 @@
 """
     embedGigaSOM(som::GigaSOM.Som,
-                 data::Array{Any,1};
-                 knnTreeFun = BruteTree,
-                 metric = Euclidean(),
-                 k::Int64=0,
-                 adjust::Float64=1.0,
-                 smooth::Float64=0.0,
-                 m::Float64=10.0)
-
-Ref-array-accepting version of embedGigaSOM.
-"""
-function embedGigaSOM(som::GigaSOM.Som,
-                      data::Array{Any,1};
-                      knnTreeFun = BruteTree,
-                      metric = Euclidean(),
-                      k::Int64=0,
-                      adjust::Float64=1.0,
-                      smooth::Float64=0.0,
-                      m::Float64=10.0)
-
-    # convert `smooth` to `boost`
-    boost = exp(-smooth-1)
-
-    # default `k`
-    if k == 0
-        k = Integer(1+sqrt(som.xdim*som.ydim))
-    end
-
-    # check if `k` isn't too high
-    if k > som.xdim*som.ydim
-        k = Integer(som.xdim * som.ydim)
-    end
-
-    # prepare the kNN-tree for lookups
-    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
-
-    #TODO check whether size of the data actually matches the number of processes?
-
-    # run the distributed computation
-    nWorkers = nprocs()
-    if nWorkers > 1
-        dRes = [ (@spawnat pid embedGigaSOM_internal(som, data[p], tree,
-                                                   k, adjust, boost, m))
-                 for (p,pid) in enumerate(workers()) ]
-
-        return vcat([fetch(r) for r in dRes]...)
-    else
-        return embedGigaSOM_internal(som, data[1], tree, k, adjust, boost, m)
-    end
-end
-
-"""
-    embedGigaSOM(som::GigaSOM.Som,
-                 data::DataFrame;
+                 data;
                  knnTreeFun = BruteTree,
                  metric = Euclidean(),
                  k::Int64=0,
@@ -103,6 +51,24 @@ function embedGigaSOM(som::GigaSOM.Som,
                       m::Float64=10.0)
 
     data = convertTrainingData(data)
+    dData = distribute(data)
+    distribute_data(:__embedGigaSOM, dData)
+    res = embedGigaSOM(som, :__embedGigaSOM, dData.pids,
+        knnTreeFun, metric, k, adjust, smooth, m)
+    undistribute_data(:__embedGigaSOM, dData)
+    return res
+end
+
+function embedGigaSOM(som::GigaSOM.Som,
+                      dataVal,
+                      workers::Array{Any,1};
+                      knnTreeFun = BruteTree,
+                      metric = Euclidean(),
+                      k::Int64=0,
+                      adjust::Float64=1.0,
+                      smooth::Float64=0.0,
+                      m::Float64=10.0)
+
     # convert `smooth` to `boost`
     boost = exp(-smooth-1)
 
@@ -117,20 +83,14 @@ function embedGigaSOM(som::GigaSOM.Som,
     end
 
     # prepare the kNN-tree for lookups
-    tree = knnTreeFun(Matrix{Float64}(transpose(som.codes)), metric)
+    tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
 
     # run the distributed computation
-    nWorkers = nprocs()
-    if nWorkers > 1
-        dData = distribute(data)
-        dRes = [ (@spawnat pid embedGigaSOM_internal(som, localpart(dData), tree,
-                                                   k, adjust, boost, m))
-                 for (p,pid) in enumerate(workers()) ]
-
-        return vcat([fetch(r) for r in dRes]...)
-    else
-        return embedGigaSOM_internal(som, Matrix{Float64}(data), tree, k, adjust, boost, m)
-    end
+    return distributed_mapreduce(
+        dataVal,
+        (d) -> (embedGigaSOM_internal(som, d, tree, k, adjust, boost, m)),
+        (e1, e2) -> vcat(e1, e2),
+        workers)
 end
 
 """
@@ -294,25 +254,4 @@ function embedGigaSOM_internal(som::GigaSOM.Som,
     end
 
     return e
-end
-
-"""
-    embedGigaSOM_internal(som::GigaSOM.Som,
-                          data::Ref,
-                          tree,
-                          k::Int64,
-                          adjust::Float64,
-                          boost::Float64,
-                          m::Float64)
-
-Ref-accepting wrapper around the matrix version of the same.
-"""
-function embedGigaSOM_internal(som::GigaSOM.Som,
-                               data::Ref,
-                               tree,
-                               k::Int64,
-                               adjust::Float64,
-                               boost::Float64,
-                               m::Float64)
-    return embedGigaSOM_internal(som, data.x, tree, k, adjust, boost, m)
 end
