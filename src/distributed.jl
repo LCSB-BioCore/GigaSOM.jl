@@ -27,7 +27,7 @@ function get_from(worker, val)
 end
 
 """
-    get_from_wait(worker,val)
+    get_val_from(worker,val)
 
 Shortcut for instantly fetching the future from `get_from`.
 """
@@ -72,10 +72,10 @@ end
 """
 Load filenames to each referenced worker.
 
-TODO: reduce the arguments a bit.
+TODO: reduce the arguments a bit (we have transform now!)
 TODO: remove the Ref when it's not needed
 """
-function distribute_data(sym::Symbol, fns::Array{String}, workers;
+function distribute_jls_data(sym::Symbol, fns::Array{String}, workers;
     panel=Nothing(), transform="asinh", cofactor=5, reduce=false, sort=false, transform=false)
     for (i, pid) in workers
         fn = fns[i]
@@ -137,7 +137,7 @@ main process.
         workers())
     println(sum/len)
 """
-function distributed_mapreduce(val, map::Function, fold::Function, workers)
+function distributed_mapreduce(val, map, fold, workers)
     if isempty(workers)
         return nothing
     end
