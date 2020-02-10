@@ -94,7 +94,7 @@ function trainGigaSOM(som::Som, train::DataFrame;
 
     dTrain = distribute(train) #this slices the data
     distribute_darray(:__trainGigaSOM, dTrain) #this actually sends them to workers
-    res = trainGigaSOM_(som, :__trainGigaSOM, dTrain.pids,
+    res = trainGigaSOM(som, :__trainGigaSOM, dTrain.pids,
                        kernelFun=kernelFun,
                        metric=metric,
                        knnTreeFun=knnTreeFun,
@@ -104,7 +104,7 @@ function trainGigaSOM(som::Som, train::DataFrame;
     return res
 end
 
-function trainGigaSOM_(som::Som, dataVal, workers;
+function trainGigaSOM(som::Som, dataVal, workers::Array{Int64};
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
                       knnTreeFun = BruteTree,

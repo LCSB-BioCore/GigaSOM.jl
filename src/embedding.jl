@@ -54,7 +54,8 @@ function embedGigaSOM(som::GigaSOM.Som,
     dData = distribute(data)
     distribute_darray(:__embedGigaSOM, dData)
     res = embedGigaSOM(som, :__embedGigaSOM, dData.pids,
-        knnTreeFun, metric, k, adjust, smooth, m)
+        knnTreeFun=knnTreeFun, metric=metric,
+        k=k, adjust=adjust, smooth=smooth, m=m)
     undistribute_darray(:__embedGigaSOM, dData)
     return res
 end
