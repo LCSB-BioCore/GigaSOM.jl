@@ -35,12 +35,28 @@ Return Gaussian(x) for μ=0.0 and σ = r/3.
 (a value of σ = r/3 makes the training results comparable between different kernels
 for same values of r).
 
-# Arguments
-
 """
 function gaussianKernel(x, r::Float64)
 
     return Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
+end
+
+function bubbleKernelSqScalar(x::Float64, r::Float64)
+    if x >= r
+        return 0
+    else
+        return sqrt(1 - x/r)
+    end
+end
+
+"""
+    bubbleKernel(x, r::Float64)
+
+Return a "bubble" (spherical) distribution kernel.
+
+"""
+function bubbleKernel(x, r::Float64)
+    return bubbleKernelSqScalar.(x.^2,r^2)
 end
 
 

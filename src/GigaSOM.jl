@@ -51,6 +51,8 @@ module GigaSOM
         generateIO
 
     export #satellites
+        gaussianKernel,
+        bubbleKernel,
         cleanNames!,
         createDaFrame,
         getMarkers,
