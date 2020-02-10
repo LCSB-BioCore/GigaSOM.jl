@@ -15,17 +15,17 @@ nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM, FCSFiles
 
-R, = loadData(dataPath, md, nWorkers, panel=panel, reduce=true, transform=true)
+dinfo = loadData(dataPath, md, nWorkers, panel=panel, reduce=true, transform=true)
 
-som = initGigaSOM(R, 10, 10)
+som = initGigaSOM(dinfo, 10, 10)
 # get a copy of the inititalized som object for the second training
 som2Codes = deepcopy(som.codes)
 
 cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
-som = trainGigaSOM(som, R)
-winners = mapToGigaSOM(som, R)
-embed = embedGigaSOM(som, R, k=10)
+som = trainGigaSOM(som, dinfo)
+winners = mapToGigaSOM(som, dinfo)
+embed = embedGigaSOM(som, dinfo, k=10)
 
 # Load the data again using the "classic serial approach"
 cd(dataPath)
@@ -47,13 +47,15 @@ winners2 = mapToGigaSOM(som2, dfSom)
 embed2 = embedGigaSOM(som2, dfSom, k=10)
 
 @testset "Compare first row of concatenated train dataset between loading methods" begin
-    t1 = R[1].x[1,:]
+    @test_nowarn t1 = get_val_from(dinfo.pids[1], dinfo.val)[1,:]
     t2 = dfSom[1,:]
     @test Array{Float32,1}(t2) == t1
 end
 
-@testset "Compare output classic vs new winners output" begin
-    @test winners == winners2
+@testset "Compare output equality" begin
+    @test isapprox(som, som2)
+    @test isapprox(winners, winners2)
+    @test isapprox(embed, embed2)
 end
 
 rmprocs(workers())

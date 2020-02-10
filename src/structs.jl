@@ -77,3 +77,18 @@ mutable struct Som
                                               toroidal,
                                               population)
 end
+
+"""
+    LoadedDataInfo
+
+represents data loaded & scattered on the workers
+"""
+struct LoadedDataInfo
+    val::Symbol
+    workers::Array{Int64}
+    dataRanges::Tuple{Array{Int64,1},Array{Int64,1}}
+    LoadedDataInfo(
+        val,
+        workers,
+        dataRanges=([],[])
+        ) = new(val, workers, datRanges)

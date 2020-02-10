@@ -78,9 +78,9 @@ function distribute_jls_data(sym::Symbol, fns::Array{String}, workers;
     for (i, pid) in workers
         fn = fns[i]
         save_at(pid, sym, :(
-            loadDataFile($i, $fn,
+            loadDataFile($fn,
                          $panel, $method, $cofactor,
-                         $reduce, $sort, $transform).x
+                         $reduce, $sort, $transform)
             ))
     end
 end

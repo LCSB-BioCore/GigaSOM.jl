@@ -61,6 +61,20 @@ function embedGigaSOM(som::GigaSOM.Som,
 end
 
 function embedGigaSOM(som::GigaSOM.Som,
+                      data::LoadedDataInfo;
+                      knnTreeFun = BruteTree,
+                      metric = Euclidean(),
+                      k::Int64=0,
+                      adjust::Float64=1.0,
+                      smooth::Float64=0.0,
+                      m::Float64=10.0)
+
+    embedGigaSOM(som, data.val, data.workers,
+        knnTreeFun=knnTreeFun, metric=metric,
+        k=k, adjust=adjust, smooth=smooth, m=m)
+end
+
+function embedGigaSOM(som::GigaSOM.Som,
                       dataVal,
                       workers::Array{Int64};
                       knnTreeFun = BruteTree,

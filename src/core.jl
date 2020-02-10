@@ -1,5 +1,5 @@
 """
-    initGigaSOM(train::DataFrame, xdim, ydim = xdim;
+    initGigaSOM(train, xdim, ydim = xdim;
                 norm::Symbol = :none, toroidal = false)
 
 Initialises a SOM.
@@ -48,6 +48,17 @@ function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim;
            toroidal = toroidal,
            population = zeros(Int, numCodes))
     return som
+end
+
+function initGigaSOM(trainInfo::LoadedDataInfo,
+    xdim::Int64, ydim :: Int64 = xdim;
+    norm::Symbol = :none, toroidal = false)
+
+    # Snatch the init data from the first available worker (for he cares not).
+    # To avoid copying the whole data to main thread, run the initialization on
+    # the worker and get only the result.
+    return get_val_from(trainInfo.workers[1],
+        :(initGigaSOM($(trainInfo.val), $xdim, $ydim, $norm, $toroidal)))
 end
 
 """
@@ -102,6 +113,20 @@ function trainGigaSOM(som::Som, train::DataFrame;
                        epochs=epochs)
     undistribute_darray(:__trainGigaSOM, dTrain)
     return res
+end
+
+function trainGigaSOM(som::Som, train::LoadedDataInfo;
+                      kernelFun::Function = gaussianKernel,
+                      metric = Euclidean(),
+                      knnTreeFun = BruteTree,
+                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
+                      epochs = 10)
+    trainGigaSOM(som, train.val, train.workers,
+                 kernelFun=kernelFun,
+                 metric=metric,
+                 knnTreeFun=knnTreeFun,
+                 rStart=rStart, rFinal=rFinal, radiusFun=radiusFun,
+                 epochs=epochs)
 end
 
 function trainGigaSOM(som::Som, dataVal, workers::Array{Int64};
@@ -209,6 +234,14 @@ function mapToGigaSOM(som::Som, data::DataFrame;
         knnTreeFun=knnTreeFun, metric=metric)
     undistribute_darray(:__mapToGigaSOM, dData)
     return res
+end
+
+function mapToGigaSOM(som::Som, data::LoadedDataInfo;
+                      knnTreeFun = BruteTree,
+                      metric = Euclidean())
+
+    mapToGigaSOM(som, data.val, data.workers,
+        knnTreeFun=knnTreeFun, metric=metric)
 end
 
 function mapToGigaSOM(som::Som, dataVal, workers::Array{Int64};

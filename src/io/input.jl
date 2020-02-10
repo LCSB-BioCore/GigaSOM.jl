@@ -95,40 +95,35 @@ This function is of 2 parts. Part 1: Generates the temporary binaray files to be
 - `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: false
 - `transform`: Boolean to indicate if the data will be transformed according to method, default: false
 """
-function loadData(dataPath, data, nWorkers; panel=Nothing(),
-                type = "fcs", method = "asinh", cofactor = 5,
-                reduce = false, sort = false, transform = false)
+function loadData(name, dataPath, data; pids=workers(), panel=Nothing(),
+                method = "asinh", cofactor = 5,
+                reduce = false, sort = false, transform = false)::LoadedDataInfo
 
-    xRange = generateIO(dataPath, data, nWorkers, true, 1, true)
+    xRange = generateIO(dataPath, data, length(pids), true, 1, true)
 
-    R =  Vector{Any}(undef,nWorkers)
+    distribute_jls_data(name,
+        ["input-$i.jls" for i in 1:length(pids)],
+        pids,
+        panel=panel,
+        method=method,
+        cofactor=cofactor,
+        reduce=reduce,
+        sort=sort,
+        transform=transform)
 
-    # Load the data by each worker
-    # Without panel file, all columns are loaded:
-    # loadData(idx, "input-$idx.jls")
-    # Columns ca be selected by an array of indicies:
-    # loadData(idx, "input-$idx.jls", [3:6;9:11]) <- this will concatenate ranges into arrays
-    # Please note that all optional arguments are by default "false"
-    if type == "fcs"
-        @sync for (idx, pid) in enumerate(workers())
-            @async R[idx] = fetch(@spawnat pid loadDataFile(idx, "input-$idx.jls", panel, method,
-                                cofactor,reduce, sort, transform))
-        end
-    else
-        @error "File Type not yet supported!"
-    end
+    return LoadedDataInfo(name, pids, xRange)
+end
 
-    return R, xRange
-
+function unloadData(data::LoadedDataInfo)
+    undistribute(data.val, data.pids)
 end
 
 """
-    loadDataFile(idx, fn, panel, method, cofactor, reduce, sort, transform)
+    loadDataFile(fn, panel, method, cofactor, reduce, sort, transform)
 
 Load the data in parallel on each worker. Returns a reference of the loaded Data
 
 # Arguments:
-- `idx`: worker index
 - `fn`: filename
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers,
     or Array::{Int} used as column indicies
@@ -140,11 +135,10 @@ Load the data in parallel on each worker. Returns a reference of the loaded Data
 - `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: true
 - `transform`: Boolean to indicate if the data will be transformed according to method
 """
-function loadDataFile(idx, fn, panel, method, cofactor, reduce, sort, transform)
+function loadDataFile(fn, panel, method, cofactor, reduce, sort, transform)
 
-    y = open(deserialize, fn)
-    fcsData = y[idx]
-    cleanNames!(fcsData)
+    data = deserialize(fn)
+    cleanNames!(data)
 
     # Define the clustering column by range object
     if typeof(panel) == Array{Int64,1}
@@ -159,26 +153,26 @@ function loadDataFile(idx, fn, panel, method, cofactor, reduce, sort, transform)
     else
         # If no panel is provided, use all column names as cc
         # and set reduce to false
-        cc = map(Symbol, names(fcsData))
+        cc = map(Symbol, names(data))
     end
 
     if transform
-        fcsData = transformData(fcsData, method, cofactor)
+        data = transformData(data, method, cofactor)
     end
-    sortReduce(fcsData, cc, reduce, sort)
+
+    sortReduce(data, cc, reduce, sort)
 
     # get the sample_id from md
     # return value is an array with only one entry -> take [1]
     # sid = md.sample_id[md.file_name .== fn][1]
-    # insertcols!(fcsData, 1, sample_id = sid)
+    # insertcols!(data, 1, sample_id = sid)
 
     # return a reference to dfall to be used by trainGigaSOM
-    dfallRefMatrix = convertTrainingData(fcsData[:, cc])
-    dfallRef = Ref{Array{Float64, 2}}(dfallRefMatrix)
+    dfallMatrix = convertTrainingData(data[:, cc])
 
     # remove all the temp file
     rmFile(fn)
 
-    return (dfallRef)
+    return dfallMatrix
 end
 
