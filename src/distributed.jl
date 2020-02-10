@@ -52,7 +52,7 @@ Distribute the distributed array parts from `dd` into worker-local variable
 
 Requires @everywhere import DistributedArrays.
 """
-function distribute_data(sym::Symbol, dd::DArray)
+function distribute_darray(sym::Symbol, dd::DArray)
     for pid in dd.pids
         save_at(pid, sym, :(DistributedArrays.localpart($dd)))
     end
@@ -63,10 +63,8 @@ end
 
 Removes the worker-local data created by the corresponding call of `distribute`
 """
-function undistribute_data(sym::Symbol, dd::Darray)
-    for pid in dd.pids
-        remove_from(pid, sym)
-    end
+function undistribute_darray(sym::Symbol, dd::DArray)
+    undistribute(sym, dd.pids)
 end
 
 """
@@ -76,7 +74,7 @@ TODO: reduce the arguments a bit (we have transform now!)
 TODO: remove the Ref when it's not needed
 """
 function distribute_jls_data(sym::Symbol, fns::Array{String}, workers;
-    panel=Nothing(), transform="asinh", cofactor=5, reduce=false, sort=false, transform=false)
+    panel=Nothing(), method="asinh", cofactor=5, reduce=false, sort=false, transform=false)
     for (i, pid) in workers
         fn = fns[i]
         save_at(pid, sym, :(
@@ -92,7 +90,7 @@ end
 
 Remove the loaded data from workers.
 """
-function undistribute_data(sym, workers)
+function undistribute(sym::Symbol, workers)
     for pid in workers
         remove_from(pid,sym)
     end
@@ -142,7 +140,7 @@ function distributed_mapreduce(val, map, fold, workers)
         return nothing
     end
 
-    futures = [remotecall(()->eval(:($fn($sym))), pid) for pid in workers ]
+    futures = [remotecall(()->eval(:($map($val))), pid) for pid in workers ]
     res = fetch(futures[1])
     for i in 2:length(futures)
         res = fold(res, fetch(futures[i]))

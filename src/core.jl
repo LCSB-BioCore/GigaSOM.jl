@@ -93,10 +93,10 @@ function trainGigaSOM(som::Som, train::DataFrame;
     train = convertTrainingData(train)
 
     dTrain = distribute(train) #this slices the data
-    distribute_data(:__trainGigaSOM, dTrain) #this actually sends them to workers
+    distribute_darray(:__trainGigaSOM, dTrain) #this actually sends them to workers
     res = trainGigaSOM(:__trainGigaSOM, som, dTrain.pids,
                        kernelFun, metric, knnTreeFun, rStart, rFinal, epochs)
-    undistribute_data(:__trainGigaSOM, dTrain)
+    undistribute_darray(:__trainGigaSOM, dTrain)
     return res
 end
 
@@ -200,9 +200,9 @@ function mapToGigaSOM(som::Som, data::DataFrame;
         @error "Data dimension ($(size(data,2))) does not match codebook dimension ($(size(som.codes,2)))."
     end
 
-    distribute_data(:__mapToGigaSOM, dData)
+    distribute_darray(:__mapToGigaSOM, dData)
     res = mapToGigaSOM(:__mapToGigaSOM, som, dData.pids, knnTreeFun, metric)
-    undistribute_data(:__mapToGigaSOM, dData)
+    undistribute_darray(:__mapToGigaSOM, dData)
     return res
 end
 
