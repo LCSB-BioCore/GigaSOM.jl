@@ -23,12 +23,12 @@ module GigaSOM
     include("distributed.jl")
     include("core.jl")
     include("trainutils.jl")
-    include("satellites.jl")
     include("embedding.jl")
 
-    # include IO files
+    # input/output handling
     include("io/input.jl")
     include("io/process.jl")
+    include("io/splitting.jl")
 
     # include visualization files
     # include("visualization/plotting.jl")
@@ -50,13 +50,15 @@ module GigaSOM
     export # structs
         daFrame
 
-    export #input
+    export #io/input
         readFlowset,
         readFlowFrame,
-        loadData,
+        loadData
+
+    export #io/splitting
         generateIO
 
-    export #satellites
+    export #io/process
         cleanNames!,
         createDaFrame,
         getMarkers,
