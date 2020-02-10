@@ -94,13 +94,17 @@ function trainGigaSOM(som::Som, train::DataFrame;
 
     dTrain = distribute(train) #this slices the data
     distribute_darray(:__trainGigaSOM, dTrain) #this actually sends them to workers
-    res = trainGigaSOM(som, :__trainGigaSOM, dTrain.pids,
-                       kernelFun, metric, knnTreeFun, rStart, rFinal, epochs)
+    res = trainGigaSOM_(som, :__trainGigaSOM, dTrain.pids,
+                       kernelFun=kernelFun,
+                       metric=metric,
+                       knnTreeFun=knnTreeFun,
+                       rStart=rStart, rFinal=rFinal, radiusFun=radiusFun,
+                       epochs=epochs)
     undistribute_darray(:__trainGigaSOM, dTrain)
     return res
 end
 
-function trainGigaSOM(som::Som, dataVal, workers::Array{Int64};
+function trainGigaSOM_(som::Som, dataVal, workers;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
                       knnTreeFun = BruteTree,
@@ -134,7 +138,7 @@ function trainGigaSOM(som::Som, dataVal, workers::Array{Int64};
         end
 
         wEpoch = kernelFun(dm, r)
-        codes = (wEpoch*globalSumNumerator) ./ (wEpoch*globalSumDenominator)
+        codes = (wEpoch*numerator) ./ (wEpoch*denominator)
     end
 
     som.codes = copy(codes)
@@ -201,12 +205,13 @@ function mapToGigaSOM(som::Som, data::DataFrame;
     end
 
     distribute_darray(:__mapToGigaSOM, dData)
-    res = mapToGigaSOM(som, :__mapToGigaSOM, dData.pids, knnTreeFun, metric)
+    res = mapToGigaSOM(som, :__mapToGigaSOM, dData.pids,
+        knnTreeFun=knnTreeFun, metric=metric)
     undistribute_darray(:__mapToGigaSOM, dData)
     return res
 end
 
-function mapToGigaSOM(som::Som, dataVal, workers::Array{Int64},
+function mapToGigaSOM(som::Som, dataVal, workers::Array{Int64};
     knnTreeFun = BruteTree, metric = Euclidean())
 
     tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
