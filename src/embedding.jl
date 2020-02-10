@@ -61,7 +61,7 @@ end
 
 function embedGigaSOM(som::GigaSOM.Som,
                       dataVal,
-                      workers::Array{Any,1};
+                      workers::Array{Int64};
                       knnTreeFun = BruteTree,
                       metric = Euclidean(),
                       k::Int64=0,
