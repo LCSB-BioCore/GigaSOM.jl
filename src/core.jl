@@ -24,6 +24,7 @@ function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim;
     numCodes = xdim * ydim
 
     # normalise training data:
+    # TODO: is this needed?
     train, normParams = normTrainData(train, norm)
 
     # initialise the codes with random samples
@@ -231,60 +232,4 @@ function scaleEpochTime(iteration::Int64, epochs::Int64)
     end
 
     return Float64(iteration-1) / Float64(epochs)
-end
-
-"""
-    linearRadius(initRadius::Float64, iteration::Int64, decay::String, epochs::Int64)
-
-Return a neighbourhood radius. Use as the `radiusFun` parameter for `trainGigaSOM`.
-
-# Arguments
-- `initRadius`: Initial Radius
-- `finalRadius`: Final Radius
-- `iteration`: Training iteration
-- `epochs`: Total number of epochs
-"""
-function linearRadius(initRadius::Float64, finalRadius::Float64,
-                      iteration::Int64, epochs::Int64)
-
-    scaledTime = scaleEpochTime(iteration,epochs)
-    return initRadius*(1-scaledTime) + finalRadius*scaledTime
-end
-
-"""
-    expRadius(steepness::Float64)
-
-Return a function to be used as a `radiusFun` of `trainGigaSOM`, which causes
-exponencial decay with the selected steepness.
-
-Use: `trainGigaSOM(..., radiusFun = expRadius(0.5))`
-
-# Arguments
-- `steepness`: Steepness of exponential descent. Good values range
-  from -100.0 (almost linear) to 100.0 (really quick decay).
-
-"""
-function expRadius(steepness::Float64 = 1.0)
-    return (initRadius::Float64, finalRadius::Float64,
-            iteration::Int64, epochs::Int64) -> begin
-
-        scaledTime = scaleEpochTime(iteration,epochs)
-
-        if steepness < -100.0
-            # prevent floating point underflows
-            error("Sanity check: steepness too low, use linearRadius instead.")
-        end
-
-        # steepness is simulated by moving both points closer to zero
-        adjust = finalRadius * (1 - 1.1^(-steepness))
-
-        if initRadius <= 0 || (initRadius-adjust) <= 0 || finalRadius <= 0
-            error("Radii must be positive. (Possible alternative cause: steepness is too high.)")
-        end
-
-        initRadius -= adjust
-        finalRadius -= adjust
-
-        return adjust + initRadius * ((finalRadius/initRadius)^scaledTime)
-    end
 end

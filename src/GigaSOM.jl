@@ -20,7 +20,9 @@ module GigaSOM
     using Serialization
 
     include("structs.jl")
+    include("distributed.jl")
     include("core.jl")
+    include("trainutils.jl")
     include("satellites.jl")
     include("embedding.jl")
 
@@ -34,9 +36,13 @@ module GigaSOM
     export #core
         initGigaSOM,
         trainGigaSOM,
-        mapToGigaSOM,
+        mapToGigaSOM
+
+    export #trainutils
         linearRadius,
-        expRadius
+        expRadius,
+        gaussianKernel,
+        bubbleKernel
 
     export #embedding
         embedGigaSOM
@@ -51,8 +57,6 @@ module GigaSOM
         generateIO
 
     export #satellites
-        gaussianKernel,
-        bubbleKernel,
         cleanNames!,
         createDaFrame,
         getMarkers,
