@@ -102,6 +102,7 @@ function embedGigaSOM(som::GigaSOM.Som,
                       smooth::Float64=0.0,
                       m::Float64=10.0)
 
+    data = convertTrainingData(data)
     # convert `smooth` to `boost`
     boost = exp(-smooth-1)
 
@@ -121,7 +122,7 @@ function embedGigaSOM(som::GigaSOM.Som,
     # run the distributed computation
     nWorkers = nprocs()
     if nWorkers > 1
-        dData = distribute(Matrix{Float64}(data))
+        dData = distribute(data)
         dRes = [ (@spawnat pid embedGigaSOM_internal(som, localpart(dData), tree,
                                                    k, adjust, boost, m))
                  for (p,pid) in enumerate(workers()) ]
