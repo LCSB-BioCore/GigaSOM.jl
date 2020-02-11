@@ -15,11 +15,11 @@ nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM, FCSFiles
 
-dinfo = loadData(dataPath, md, nWorkers, panel=panel, reduce=true, transform=true)
+dinfo = loadData(:equalityTest, dataPath, md, workers(), panel=panel, reduce=true, transform=true)
 
 som = initGigaSOM(dinfo, 10, 10)
 # get a copy of the inititalized som object for the second training
-som2Codes = deepcopy(som.codes)
+savedSomInit = deepcopy(som.codes)
 
 cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
@@ -41,21 +41,21 @@ dfSom = daf.fcstable[:,cc]
 # don't init GigaSOM again, use the initial som from the 1st run
 # to get the same starting som grid for training
 som2 = initGigaSOM(dfSom, 10, 10)
-som2.codes = som2Codes
+som2.codes = savedSomInit
 som2 = trainGigaSOM(som2, dfSom)
 winners2 = mapToGigaSOM(som2, dfSom)
 embed2 = embedGigaSOM(som2, dfSom, k=10)
 
 @testset "Compare first row of concatenated train dataset between loading methods" begin
-    @test_nowarn t1 = get_val_from(dinfo.pids[1], dinfo.val)[1,:]
+    t1 = get_val_from(dinfo.workers[1], dinfo.val)[1,:]
     t2 = dfSom[1,:]
     @test Array{Float32,1}(t2) == t1
 end
 
 @testset "Compare output equality" begin
-    @test isapprox(som, som2)
-    @test isapprox(winners, winners2)
-    @test isapprox(embed, embed2)
+    @test som.codes == som2.codes
+    @test embed == embed2
+    @test winners == winners2
 end
 
 rmprocs(workers())

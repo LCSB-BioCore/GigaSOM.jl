@@ -48,12 +48,15 @@ module GigaSOM
         embedGigaSOM
 
     export # structs
-        daFrame
+        daFrame,
+        Som,
+        LoadedDataInfo
 
     export #io/input
         readFlowset,
         readFlowFrame,
-        loadData
+        loadData,
+        unloadData
 
     export #io/splitting
         generateIO
@@ -67,5 +70,18 @@ module GigaSOM
     export # plotting
         plotCounts,
         plotPCA
+
+    export #distributed data tools
+        save_at,
+        get_from,
+        get_val_from,
+        remove_from,
+        distribute_darray,
+        undistribute_darray,
+        distribute_jls_data,
+        undistribute,
+        distributed_transform,
+        distributed_mapreuce
+
 
 end # module

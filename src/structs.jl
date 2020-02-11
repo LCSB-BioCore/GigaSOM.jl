@@ -86,9 +86,10 @@ represents data loaded & scattered on the workers
 struct LoadedDataInfo
     val::Symbol
     workers::Array{Int64}
-    dataRanges::Tuple{Array{Int64,1},Array{Int64,1}}
+    dataRanges::Any
     LoadedDataInfo(
         val,
         workers,
-        dataRanges=([],[])
-        ) = new(val, workers, datRanges)
+        dataRanges=[]
+        ) = new(val, workers, dataRanges)
+end

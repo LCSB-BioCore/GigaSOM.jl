@@ -5,6 +5,9 @@ Saves value `val` to symbol `sym` at `worker`. `sym` should be quoted (or
 contain a symbol). `val` gets unquoted in the processing and evaluated at the
 worker, quote it if you want to pass exact command to the worker.
 
+Returns a future with Nothing that can be fetched to see that the operation
+finished.
+
 Examples:
     addprocs(1)
     save_at(2,:x,123)       # saves 123
@@ -13,7 +16,7 @@ Examples:
     save_at(2,:x,:(:x))     # saves the symbol :x (just :x won't work because of unquoting)
 """
 function save_at(worker, sym::Symbol, val)
-    remote_do(()->eval(:($sym = $val)), worker)
+    remotecall(()->eval(:(begin; $sym = $val; (); end)), worker)
 end
 
 """
@@ -53,8 +56,9 @@ Distribute the distributed array parts from `dd` into worker-local variable
 Requires @everywhere import DistributedArrays.
 """
 function distribute_darray(sym::Symbol, dd::DArray)
-    for pid in dd.pids
-        save_at(pid, sym, :(DistributedArrays.localpart($dd)))
+    for f in [save_at(pid, sym, :(DistributedArrays.localpart($dd)))
+            for pid in dd.pids]
+        fetch(f)
     end
 end
 
@@ -75,13 +79,12 @@ TODO: remove the Ref when it's not needed
 """
 function distribute_jls_data(sym::Symbol, fns::Array{String}, workers;
     panel=Nothing(), method="asinh", cofactor=5, reduce=false, sort=false, transform=false)
-    for (i, pid) in workers
-        fn = fns[i]
-        save_at(pid, sym, :(
-            loadDataFile($fn,
+    for f in [save_at(pid, sym, :(
+            loadDataFile($(fns[i]),
                          $panel, $method, $cofactor,
-                         $reduce, $sort, $transform)
-            ))
+                         $reduce, $sort, $transform)))
+            for (i, pid) in enumerate(workers)]
+        fetch(f)
     end
 end
 
@@ -91,8 +94,8 @@ end
 Remove the loaded data from workers.
 """
 function undistribute(sym::Symbol, workers)
-    for pid in workers
-        remove_from(pid,sym)
+    for f in [remove_from(pid,sym) for pid in workers]
+        fetch(f)
     end
 end
 
@@ -107,10 +110,10 @@ in-place, by a function `fn`.
     distributed_transform(:myData, (d)->(2*d), workers())
 """
 function distributed_transform(sym::Symbol, fn, workers)
-    futures = [ remote_do(()->eval(:(begin; $sym = $fn($sym); nothing; end)), pid)
+    for f in [ remote_do(()->eval(:(begin; $sym = $fn($sym); nothing; end)), pid)
         for pid in workers ]
-    fetch.(futures)  #wait until all threads finish
-    nothing
+        fetch(f)
+    end
 end
 
 """

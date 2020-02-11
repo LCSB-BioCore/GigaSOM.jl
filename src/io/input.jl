@@ -95,11 +95,11 @@ This function is of 2 parts. Part 1: Generates the temporary binaray files to be
 - `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: false
 - `transform`: Boolean to indicate if the data will be transformed according to method, default: false
 """
-function loadData(name, dataPath, data; pids=workers(), panel=Nothing(),
+function loadData(name, dataPath, data, pids=workers(); panel=Nothing(),
                 method = "asinh", cofactor = 5,
                 reduce = false, sort = false, transform = false)::LoadedDataInfo
 
-    xRange = generateIO(dataPath, data, length(pids), true, 1, true)
+    xRange = generateIO(dataPath, data, length(pids), true, true)
 
     distribute_jls_data(name,
         ["input-$i.jls" for i in 1:length(pids)],
@@ -115,7 +115,7 @@ function loadData(name, dataPath, data; pids=workers(), panel=Nothing(),
 end
 
 function unloadData(data::LoadedDataInfo)
-    undistribute(data.val, data.pids)
+    undistribute(data.val, data.workers)
 end
 
 """

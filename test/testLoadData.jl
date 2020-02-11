@@ -2,7 +2,7 @@ Random.seed!(1)
 cd(dataPath)
 
 md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
-md = md[1, :]
+md = md[1:2, :]
 panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
 lineageMarkers, functionalMarkers = getMarkers(panel)
 
@@ -11,13 +11,13 @@ addprocs(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM, FCSFiles
 
 function firstmtx(dinfo)
-    get_val_from(dinfo.pids[1], dinfo.val)
+    get_val_from(dinfo.workers[1], dinfo.val)
 end
 
 @testset "Compare raw fcs load, columns and first rows" begin
     fcs = readFlowFrame(md.file_name[1]) # load the first file as reference 
 
-    dinfo = loadData(dataPath, md, nWorkers)
+    dinfo = loadData(:test, dataPath, md, workers())
 
     @test size(fcs,2) == size(firstmtx(dinfo), 2)
     @test Array(fcs[1:5,:]) == firstmtx(dinfo)[1:5,:]
@@ -28,7 +28,7 @@ end
 @testset "Test loading the data and reducing by column index" begin
 
     cols = [5:15;]
-    dinfo = loadData(dataPath, md, nWorkers, panel=cols, reduce=true)
+    dinfo = loadData(:test, dataPath, md, workers(), panel=cols, reduce=true)
 
     @test size(firstmtx(dinfo), 2) == 11
     unloadData(dinfo)
@@ -39,7 +39,7 @@ end
     fcs = readFlowFrame(md.file_name[1]) 
     cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
-    dinfo = loadData(dataPath, md, nWorkers, panel=panel, reduce=true)
+    dinfo = loadData(:test, dataPath, md, workers(), panel=panel, reduce=true)
 
     @test size(firstmtx(dinfo), 2) == length(cc)
     fcs = fcs[:,cc] # select the same columns and compare the order 
@@ -49,11 +49,11 @@ end
 
 @testset "Test loading the data and asinh transformation" begin
 
-    dinfo = loadData(dataPath, md, nWorkers)
+    dinfo = loadData(:test, dataPath, md, workers())
     rawDataRow = copy(firstmtx(dinfo)[1,:])
     unloadData(dinfo)
 
-    dinfo = loadData(dataPath, md, nWorkers, transform=true)
+    dinfo = loadData(:test, dataPath, md, workers(), transform=true)
     transformDataRow = copy(firstmtx(dinfo)[1,:])
     unloadData(dinfo)
 

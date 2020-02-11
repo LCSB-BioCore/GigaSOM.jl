@@ -379,7 +379,7 @@ function generateIO(filePath, fn::String, nWorkers, generateFiles=true, saveIndi
 
     # read the single file and split it according to the number of workers.
     inFile = readFlowFrame(filePath * Base.Filesystem.path_separator * fn)
-    _, _, chunks = splitting(size(inFile, 1), nWorkers, 0)
+    _, _, chunks = splitting(size(inFile, 1), nWorkers)
 
     for i in 1:length(chunks)
         outputFile(inFile[chunks[i], :], "input-$i.jls", generateFiles)
@@ -417,8 +417,11 @@ Generate a file given a name and content.
 
 - `out`: content of the file
 - `fileName`: name of file to be removed
+- `generateFiles`: actually write the file
 """
-function outputFile(out, fileName)
-    serialize(fileName, out)
-    @debug "Slice $fileName written."
+function outputFile(out, fileName, generateFiles)
+    if generateFiles
+        serialize(fileName, out)
+        @debug "Slice $fileName written."
+    end
 end

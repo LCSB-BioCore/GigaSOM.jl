@@ -17,15 +17,16 @@ nWorkers = 2
 addprocs(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM, FCSFiles
 
+dinfo = loadData(:testCase, dataPath, fn, workers(), transform=true)
+
 @testset "load data from a single file" begin
-    @test_nowarn dinfo = loadData(:testCase, dataPath, fn, workers(), transform=true)
     @test typeof(dinfo)==LoadedDataInfo
 end
 
 @testset "compare ranges and first rows of splitting and loading vs manual load" begin
-    @test length(dinfo.pids) == nWorkers
+    @test length(dinfo.workers) == nWorkers
     @test dinfo.val == :testCase
-    @test Array(df_firstLine) == get_val_from(dinfo.pids[1], :testCase)[1,:]
+    @test Array(df_firstLine) == get_val_from(dinfo.workers[1], :testCase)[1,:]
 end
 
 @testset "unloading data" begin

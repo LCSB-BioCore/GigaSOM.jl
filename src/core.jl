@@ -58,7 +58,10 @@ function initGigaSOM(trainInfo::LoadedDataInfo,
     # To avoid copying the whole data to main thread, run the initialization on
     # the worker and get only the result.
     return get_val_from(trainInfo.workers[1],
-        :(initGigaSOM($(trainInfo.val), $xdim, $ydim, $norm, $toroidal)))
+        Expr(:call, :initGigaSOM, trainInfo.val,
+             xdim, ydim,
+             Expr(:kw, :norm, QuoteNode(norm)),
+             Expr(:kw, :toroidal, toroidal)))
 end
 
 """
