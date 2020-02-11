@@ -142,7 +142,7 @@ function trainGigaSOM(som::Som, dataVal, workers::Array{Int64};
     # set the default radius
     if rStart == 0.0
         rStart = √(som.xdim^2 + som.ydim^2) / 2
-        @info "The radius has been determined automatically."
+        @debug "The radius has been determined automatically."
     end
 
     # get the SOM neighborhood distances
@@ -151,7 +151,7 @@ function trainGigaSOM(som::Som, dataVal, workers::Array{Int64};
     codes = som.codes
 
     for j in 1:epochs
-        @info "Epoch $j..."
+        @debug "Epoch $j..."
 
         numerator, denominator = distributedEpoch(
             dataVal,
@@ -160,7 +160,7 @@ function trainGigaSOM(som::Som, dataVal, workers::Array{Int64};
             workers)
 
         r = radiusFun(rStart, rFinal, j, epochs)
-        @info "radius: $r"
+        @debug "radius: $r"
         if r <= 0
             @error "Sanity check failed: radius must be positive"
         end
