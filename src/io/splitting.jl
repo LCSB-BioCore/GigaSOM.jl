@@ -272,7 +272,7 @@ function ocLocalFile(out, k, inSize, localStart, localEnd, slack, filePath, file
     end
 
     # concatenate the array
-    if isnothing(out)
+    if out === nothing
         out = inFile[localStart:localEnd, :]
     else
         out = vcat(out, inFile[localStart:localEnd, :])
