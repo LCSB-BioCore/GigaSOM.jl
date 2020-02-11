@@ -87,7 +87,7 @@ end
         # read in all the generated files
         yConcat = DataFrame()
         for k in 1:nWorkers
-            y = deserialize("input-$k.jls")
+            y = open(deserialize, "input-$k.jls")
             yConcat = vcat(yConcat, y)
         end
 

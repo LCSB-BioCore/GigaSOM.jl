@@ -137,7 +137,7 @@ Load the data in parallel on each worker. Returns a reference of the loaded Data
 """
 function loadDataFile(fn, panel, method, cofactor, reduce, sort, transform)
 
-    data = deserialize(fn)
+    data = open(deserialize, fn)
     cleanNames!(data)
 
     # Define the clustering column by range object

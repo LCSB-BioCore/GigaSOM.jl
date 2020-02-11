@@ -421,7 +421,7 @@ Generate a file given a name and content.
 """
 function outputFile(out, fileName, generateFiles)
     if generateFiles
-        serialize(fileName, out)
+        open(f -> serialize(f, out), fileName, "w")
         @debug "Slice $fileName written."
     end
 end
