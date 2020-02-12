@@ -2,10 +2,10 @@
     initGigaSOM(train, xdim, ydim = xdim;
                 norm::Symbol = :none, toroidal = false)
 
-Initialises a SOM.
+Initializes a SOM by random selection from the training data.
 
 # Arguments:
-- `initMatrix`: codeBook vector as random input matrix from random workers
+- `train`: codeBook vector as random input matrix from random workers
 - `xdim, ydim`: geometry of the SOM
 - `norm`: optional normalisation
 - `toroidal`: optional flag; if true, the SOM is toroidal.
@@ -51,13 +51,22 @@ function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim;
     return som
 end
 
+"""
+    initGigaSOM(trainInfo::LoadedDataInfo,
+                xdim::Int64, ydim :: Int64 = xdim;
+                norm::Symbol = :none, toroidal = false)
+
+`initGigaSOM` overloaded for working distributed `LoadedDataInfo` in
+`trainInfo`. The rest of arguments is the same.
+
+It uses the data saved on the first worker for initialization, the init work is
+actually done on that worker to avoid data copying.
+"""
 function initGigaSOM(trainInfo::LoadedDataInfo,
     xdim::Int64, ydim :: Int64 = xdim;
     norm::Symbol = :none, toroidal = false)
 
     # Snatch the init data from the first available worker (for he cares not).
-    # To avoid copying the whole data to main thread, run the initialization on
-    # the worker and get only the result.
     return get_val_from(trainInfo.workers[1],
         Expr(:call, :initGigaSOM, trainInfo.val,
              xdim, ydim,
@@ -66,18 +75,7 @@ function initGigaSOM(trainInfo::LoadedDataInfo,
 end
 
 """
-Distributed way to run the epoch.
-"""
-function distributedEpoch(dataVal, codes::Matrix{Float64}, tree, workers)
-    return distributed_mapreduce(
-        dataVal,
-        (x) -> doEpoch(x, codes, tree),
-        ((n1,d1), (n2,d2)) -> (n1+n2, d1+d2),
-        workers)
-end
-
-"""
-    trainGigaSOM(som::Som, train::DataFrame;
+    trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
                  kernelFun::Function = gaussianKernel,
                  metric = Euclidean(),
                  knnTreeFun = BruteTree,
@@ -86,54 +84,17 @@ end
 
 # Arguments:
 - `som`: object of type Som with an initialised som
-- `trainRef`: reference to data on each worker
-- `cc`: list of columns to be used in training
+- `dInfo`: `LoadedDataInfo` object that describes a loaded dataset
 - `kernelFun::function`: optional distance kernel; one of (`bubbleKernel, gaussianKernel`)
             default is `gaussianKernel`
 - `metric`: Passed as metric argument to the KNN-tree constructor
 - `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
-- `rStart`: optional training radius.
-       If r is not specified, it defaults to (xdim+ydim)/3
+- `rStart`: optional training radius. If zero (default), it is computed from the SOM grid size.
 - `rFinal`: target radius at the last epoch, defaults to 0.1
 - `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
 - `epochs`: number of SOM training iterations (default 10)
 """
-function trainGigaSOM(som::Som, train::DataFrame;
-                      kernelFun::Function = gaussianKernel,
-                      metric = Euclidean(),
-                      knnTreeFun = BruteTree,
-                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
-                      epochs = 10)
-
-    train = convertTrainingData(train)
-
-    dTrain = distribute(train) #this slices the data
-    distribute_darray(:__trainGigaSOM, dTrain) #this actually sends them to workers
-    res = trainGigaSOM(som, :__trainGigaSOM, dTrain.pids,
-                       kernelFun=kernelFun,
-                       metric=metric,
-                       knnTreeFun=knnTreeFun,
-                       rStart=rStart, rFinal=rFinal, radiusFun=radiusFun,
-                       epochs=epochs)
-    undistribute_darray(:__trainGigaSOM, dTrain)
-    return res
-end
-
-function trainGigaSOM(som::Som, train::LoadedDataInfo;
-                      kernelFun::Function = gaussianKernel,
-                      metric = Euclidean(),
-                      knnTreeFun = BruteTree,
-                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
-                      epochs = 10)
-    trainGigaSOM(som, train.val, train.workers,
-                 kernelFun=kernelFun,
-                 metric=metric,
-                 knnTreeFun=knnTreeFun,
-                 rStart=rStart, rFinal=rFinal, radiusFun=radiusFun,
-                 epochs=epochs)
-end
-
-function trainGigaSOM(som::Som, dataVal, workers::Array{Int64};
+function trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
                       knnTreeFun = BruteTree,
@@ -154,11 +115,9 @@ function trainGigaSOM(som::Som, dataVal, workers::Array{Int64};
     for j in 1:epochs
         @debug "Epoch $j..."
 
-        numerator, denominator = distributedEpoch(
-            dataVal,
+        numerator, denominator = distributedEpoch(dInfo,
             codes,
-            knnTreeFun(Array{Float64,2}(transpose(codes)), metric),
-            workers)
+            knnTreeFun(Array{Float64,2}(transpose(codes)), metric))
 
         r = radiusFun(rStart, rFinal, j, epochs)
         @debug "radius: $r"
@@ -173,6 +132,39 @@ function trainGigaSOM(som::Som, dataVal, workers::Array{Int64};
     som.codes = copy(codes)
 
     return som
+end
+
+"""
+function trainGigaSOM(som::Som, train::DataFrame;
+                      kernelFun::Function = gaussianKernel,
+                      metric = Euclidean(),
+                      knnTreeFun = BruteTree,
+                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
+                      epochs = 10)
+
+Overload of `trainGigaSOM` for simple DataFrames and matrices. This slices the
+data using `DistributedArrays`, sends them the workers, and runs normal
+`trainGigaSOM`. Data is `undistribute`d after the computation.
+"""
+function trainGigaSOM(som::Som, train;
+                      kernelFun::Function = gaussianKernel,
+                      metric = Euclidean(),
+                      knnTreeFun = BruteTree,
+                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
+                      epochs = 10)
+
+    train = convertTrainingData(train)
+
+    #this slices the data using `distribute` and sends them to workers
+    dInfo = distribute_darray(:trainDataVar, distribute(train))
+    res = trainGigaSOM(som, dInfo,
+                       kernelFun=kernelFun,
+                       metric=metric,
+                       knnTreeFun=knnTreeFun,
+                       rStart=rStart, rFinal=rFinal, radiusFun=radiusFun,
+                       epochs=epochs)
+    undistribute(dInfo)
+    return res
 end
 
 
@@ -194,7 +186,6 @@ function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, tree)
 
     # for each sample in dataset / trainingsset
     for s in 1:size(x, 1)
-
         (bmuIdx, bmuDist) = knn(tree, x[s, :], 1)
 
         target = bmuIdx[1]
@@ -206,9 +197,23 @@ function doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, tree)
     return sumNumerator, sumDenominator
 end
 
+"""
+    distributedEpoch(dInfo::LoadedDataInfo, codes::Matrix{Float64}, tree)
+
+Execute the `doEpoch` in parallel on workers described by `dInfo` and collect
+the results. Returns pair of numerator and denominator matrices.
+"""
+function distributedEpoch(dInfo::LoadedDataInfo, codes::Matrix{Float64}, tree)
+    return distributed_mapreduce(dInfo,
+        (data) ->
+          doEpoch(data, codes, tree),
+        ((n1, d1), (n2, d2)) ->
+          (n1 + n2, d1 + d2))
+end
+
 
 """
-    mapToGigaSOM(som::Som, data::DataFrame;
+    mapToGigaSOM(som::Som, dInfo::LoadedDataInfo;
                  knnTreeFun = BruteTree,
                  metric = Euclidean())
 
@@ -217,49 +222,47 @@ every row in data.
 
 # Arguments
 - `som`: a trained SOM
-- `data`: Array or DataFrame with training data.
+- `dInfo`: `LoadedDataInfo` that describes the loaded and distributed data
 - `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
 - `metric`: Passed as metric argument to the KNN-tree constructor
 
 Data must have the same number of dimensions as the training dataset
 and will be normalised with the same parameters.
 """
-function mapToGigaSOM(som::Som, data::DataFrame;
-                      knnTreeFun = BruteTree,
-                      metric = Euclidean())
-
-    dData = distribute(convertTrainingData(data))
-    if size(data,2) != size(som.codes,2)
-        @error "Data dimension ($(size(data,2))) does not match codebook dimension ($(size(som.codes,2)))."
-    end
-
-    distribute_darray(:__mapToGigaSOM, dData)
-    res = mapToGigaSOM(som, :__mapToGigaSOM, dData.pids,
-        knnTreeFun=knnTreeFun, metric=metric)
-    undistribute_darray(:__mapToGigaSOM, dData)
-    return res
-end
-
-function mapToGigaSOM(som::Som, data::LoadedDataInfo;
-                      knnTreeFun = BruteTree,
-                      metric = Euclidean())
-
-    mapToGigaSOM(som, data.val, data.workers,
-        knnTreeFun=knnTreeFun, metric=metric)
-end
-
-function mapToGigaSOM(som::Som, dataVal, workers::Array{Int64};
+function mapToGigaSOM(som::Som, dInfo::LoadedDataInfo;
     knnTreeFun = BruteTree, metric = Euclidean())
 
     tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
 
-    idxs = distributed_mapreduce(
-        dataVal,
+    idxs = distributed_mapreduce(dInfo,
         (d) -> (vcat(knn(tree, transpose(d), 1)[1]...)),
-        (d1, d2) -> vcat(d1, d2),
-        workers)
+        (d1, d2) -> vcat(d1, d2))
 
     return DataFrame(index = idxs)
+end
+
+"""
+    mapToGigaSOM(som::Som, data;
+                 knnTreeFun = BruteTree,
+                 metric = Euclidean())
+Overload of `mapToGigaSOM` for simple DataFrames and matrices. This slices the
+data using `DistributedArrays`, sends them the workers, and runs normal
+`mapToGigaSOM`. Data is `undistribute`d after the computation.
+"""
+function mapToGigaSOM(som::Som, data;
+                      knnTreeFun = BruteTree,
+                      metric = Euclidean())
+
+    data = convertTrainingData(data)
+
+    if size(data,2) != size(som.codes,2)
+        @error "Data dimension ($(size(data,2))) does not match codebook dimension ($(size(som.codes,2)))."
+    end
+
+    dInfo= distribute_darray(:mappingDataVar, distribute(data))
+    res = mapToGigaSOM(som, dInfo, knnTreeFun=knnTreeFun, metric=metric)
+    undistribute(dInfo)
+    return res
 end
 
 """

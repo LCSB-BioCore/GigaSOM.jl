@@ -99,7 +99,7 @@ function loadData(name, dataPath, data, pids=workers(); panel=Nothing(),
                 method = "asinh", cofactor = 5,
                 reduce = false, sort = false, transform = false)::LoadedDataInfo
 
-    xRange = generateIO(dataPath, data, length(pids), true, true)
+    generateIO(dataPath, data, length(pids), true, false)
 
     distribute_jls_data(name,
         ["input-$i.jls" for i in 1:length(pids)],
@@ -111,7 +111,7 @@ function loadData(name, dataPath, data, pids=workers(); panel=Nothing(),
         sort=sort,
         transform=transform)
 
-    return LoadedDataInfo(name, pids, xRange)
+    return LoadedDataInfo(name, pids)
 end
 
 function unloadData(data::LoadedDataInfo)

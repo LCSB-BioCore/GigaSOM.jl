@@ -1,6 +1,6 @@
 """
     embedGigaSOM(som::GigaSOM.Som,
-                 data;
+                 dInfo::LoadedDataInfo;
                  knnTreeFun = BruteTree,
                  metric = Euclidean(),
                  k::Int64=0,
@@ -12,7 +12,9 @@ Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 
 # Arguments:
 - `som`: a trained SOM
-- `data`: DataFrame with the data.
+- `dInfo`: `LoadedDataInfo` that describes the loaded dataset
+- `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
+- `metric`: Passed as metric argument to the KNN-tree constructor
 - `k`: number of nearest neighbors to consider (high values get quadratically
   slower)
 - `adjust`: position adjustment parameter (higher values avoid non-local
@@ -20,8 +22,6 @@ Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 - `smooth`: approximation smoothness (the higher the value, the larger the
   neighborhood of approximate local linearity of the projection)
 - `m`: exponential decay rate for the score when approaching the `k+1`-th neighbor distance
-- `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
-- `metric`: Passed as metric argument to the KNN-tree constructor
 
 Data must have the same number of dimensions as the training dataset,
 and must be normalized using the same parameters.
@@ -42,41 +42,7 @@ draw(PNG("output.png",20cm,20cm),
 ```
 """
 function embedGigaSOM(som::GigaSOM.Som,
-                      data;
-                      knnTreeFun = BruteTree,
-                      metric = Euclidean(),
-                      k::Int64=0,
-                      adjust::Float64=1.0,
-                      smooth::Float64=0.0,
-                      m::Float64=10.0)
-
-    data = convertTrainingData(data)
-    dData = distribute(data)
-    distribute_darray(:__embedGigaSOM, dData)
-    res = embedGigaSOM(som, :__embedGigaSOM, dData.pids,
-        knnTreeFun=knnTreeFun, metric=metric,
-        k=k, adjust=adjust, smooth=smooth, m=m)
-    undistribute_darray(:__embedGigaSOM, dData)
-    return res
-end
-
-function embedGigaSOM(som::GigaSOM.Som,
-                      data::LoadedDataInfo;
-                      knnTreeFun = BruteTree,
-                      metric = Euclidean(),
-                      k::Int64=0,
-                      adjust::Float64=1.0,
-                      smooth::Float64=0.0,
-                      m::Float64=10.0)
-
-    embedGigaSOM(som, data.val, data.workers,
-        knnTreeFun=knnTreeFun, metric=metric,
-        k=k, adjust=adjust, smooth=smooth, m=m)
-end
-
-function embedGigaSOM(som::GigaSOM.Som,
-                      dataVal,
-                      workers::Array{Int64};
+                      dInfo::LoadedDataInfo;
                       knnTreeFun = BruteTree,
                       metric = Euclidean(),
                       k::Int64=0,
@@ -102,11 +68,42 @@ function embedGigaSOM(som::GigaSOM.Som,
     tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
 
     # run the distributed computation
-    return distributed_mapreduce(
-        dataVal,
+    return distributed_mapreduce(dInfo,
         (d) -> (embedGigaSOM_internal(som, d, tree, k, adjust, boost, m)),
-        (e1, e2) -> vcat(e1, e2),
-        workers)
+        (e1, e2) -> vcat(e1, e2))
+end
+
+"""
+    embedGigaSOM(som::GigaSOM.Som,
+                 data;
+                 knnTreeFun = BruteTree,
+                 metric = Euclidean(),
+                 k::Int64=0,
+                 adjust::Float64=1.0,
+                 smooth::Float64=0.0,
+                 m::Float64=10.0)
+
+Overload of `embedGigaSOM` for simple DataFrames and matrices. This slices the
+data using `DistributedArrays`, sends them the workers, and runs normal
+`embedGigaSOM`. Data is `undistribute`d after the computation.
+"""
+function embedGigaSOM(som::GigaSOM.Som,
+                      data;
+                      knnTreeFun = BruteTree,
+                      metric = Euclidean(),
+                      k::Int64=0,
+                      adjust::Float64=1.0,
+                      smooth::Float64=0.0,
+                      m::Float64=10.0)
+
+    data = convertTrainingData(data)
+
+    dInfo = distribute_darray(:embeddingDataVar, distribute(data))
+    res = embedGigaSOM(som, dInfo,
+        knnTreeFun=knnTreeFun, metric=metric,
+        k=k, adjust=adjust, smooth=smooth, m=m)
+    undistribute(dInfo)
+    return res
 end
 
 """
