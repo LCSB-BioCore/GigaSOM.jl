@@ -15,8 +15,9 @@ function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim;
 
     if typeof(train) == DataFrame
         colNames = [String(x) for x in names(train)]
-    else # train::Array{Any,1}
+    else
         colNames = ["x$i" for i in 1:size(train,2)]
+        @debug "assuming default colNames"
     end
 
     train = convertTrainingData(train)
@@ -24,7 +25,7 @@ function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim;
     numCodes = xdim * ydim
 
     # normalise training data:
-    # TODO: is this needed?
+    # TODO: is this needed here?
     train, normParams = normTrainData(train, norm)
 
     # initialise the codes with random samples
@@ -142,7 +143,7 @@ function trainGigaSOM(som::Som, dataVal, workers::Array{Int64};
     # set the default radius
     if rStart == 0.0
         rStart = √(som.xdim^2 + som.ydim^2) / 2
-        @debug "The radius has been determined automatically."
+        @debug "The radius has been determined automatically." rStart rFinal
     end
 
     # get the SOM neighborhood distances

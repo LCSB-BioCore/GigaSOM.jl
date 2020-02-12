@@ -90,6 +90,7 @@ function embedGigaSOM(som::GigaSOM.Som,
     # default `k`
     if k == 0
         k = Integer(1+sqrt(som.xdim*som.ydim))
+        @debug "embedding defaults" k
     end
 
     # check if `k` isn't too high
