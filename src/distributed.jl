@@ -55,7 +55,7 @@ function remove_from(worker, sym::Symbol)
 end
 
 """
-    distribute(sym, dd::DArray)
+    distribute(sym, dd::DArray)::LoadedDataInfo
 
 Distribute the distributed array parts from `dd` into worker-local variable
 `sym`.
@@ -64,7 +64,7 @@ Requires @everywhere import DistributedArrays.
 
 Returns the `LoadedDataInfo` structure for the distributed data.
 """
-function distribute_darray(sym::Symbol, dd::DArray)
+function distribute_darray(sym::Symbol, dd::DArray)::LoadedDataInfo
     for f in [save_at(pid, sym, :(DistributedArrays.localpart($dd)))
             for pid in dd.pids]
         fetch(f)
@@ -82,7 +82,7 @@ Long-term TODO:
 reduce the arguments a bit (we have `distributed_transform` now!)
 """
 function distribute_jls_data(sym::Symbol, fns::Array{String}, workers;
-    panel=Nothing(), method="asinh", cofactor=5, reduce=false, sort=false, transform=false)
+    panel=Nothing(), method="asinh", cofactor=5, reduce=false, sort=false, transform=false)::LoadedDataInfo
     for f in [save_at(pid, sym, :(
             loadDataFile($(fns[i]),
                          $panel, $method, $cofactor,
@@ -90,6 +90,7 @@ function distribute_jls_data(sym::Symbol, fns::Array{String}, workers;
             for (i, pid) in enumerate(workers)]
         fetch(f)
     end
+    return LoadedDataInfo(sym, workers)
 end
 
 """
