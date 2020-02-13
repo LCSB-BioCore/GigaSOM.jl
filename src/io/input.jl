@@ -73,20 +73,18 @@ function readFlowFrame(filename::String)
 end
 
 """
-    loadData(dataPath, data, nWorkers; panel=Nothing(),
-            type = "fcs", method = "asinh", cofactor = 5,
-            reduce = false, sort = false, transform = false)
+    loadData(name::Symbol, dataPath, data, pids=workers(); panel=Nothing(),
+             method = "asinh", cofactor = 5,
+             reduce = false, sort = false, transform = false)::LoadedDataInfo
 
-This function is of 2 parts. Part 1: Generates the temporary binaray files to be loaded by the
-    workers. The Input data will be equally divided into n parts according to the number of workers.
-    Part2: each worker loads independently its own data-package in parallel and returns
+Generate a temporary binary "slice" files from the `data` in `dataPath`, then let each worker of the `pids` load its own slice of the data. Returns `LoadedDataInfo` that describes the loaded data.
 
 # Arguments:
+- `name`: the variable name (symbol) used for unique identification of the dataset, will be stored in the LoadedDataInfo. E.g.: `:myData`
 - `dataPath`: path to data folder
 - `data`: single filename::String or a metadata::DataFrame with a column sample_name
 - `panel`: Panel table with a column for Lineage Markers and one for Functional Markers,
     or Array::{Int} used as column indices, default: Nothing()
-- `type`: String, type of datafile, default FCS
 - `method`: transformation method, default arcsinh, optional
 - `cofactor`: Cofactor for transformation, default 5, optional
 - `reduce`: Selected only columns which are defined by lineage and functional, optional,
@@ -95,13 +93,13 @@ This function is of 2 parts. Part 1: Generates the temporary binaray files to be
 - `sort`: Sort columns by name to make sure the order when concatinating the dataframes, optional, default: false
 - `transform`: Boolean to indicate if the data will be transformed according to method, default: false
 """
-function loadData(name, dataPath, data, pids=workers(); panel=Nothing(),
+function loadData(name::Symbol, dataPath, data, pids=workers(); panel=Nothing(),
                 method = "asinh", cofactor = 5,
                 reduce = false, sort = false, transform = false)::LoadedDataInfo
 
     generateIO(dataPath, data, length(pids), true, false)
 
-    distribute_jls_data(name,
+    return distribute_jls_data(name,
         ["input-$i.jls" for i in 1:length(pids)],
         pids,
         panel=panel,
@@ -110,8 +108,6 @@ function loadData(name, dataPath, data, pids=workers(); panel=Nothing(),
         reduce=reduce,
         sort=sort,
         transform=transform)
-
-    return LoadedDataInfo(name, pids)
 end
 
 function unloadData(data::LoadedDataInfo)
