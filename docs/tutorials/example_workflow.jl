@@ -21,8 +21,14 @@ lineageMarkers, functionalMarkers = getMarkers(panel)
 const IN_SLURM = "SLURM_JOBID" in keys(ENV)
 
 nWorkers = parse(Int, ENV["SLURM_NTASKS"])
-pids = addprocs_slurm(nWorkers, topology=:master_worker)
+addprocs_slurm(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM
+
+using Logging
+global_logger(ConsoleLogger(stderr, Logging.Debug))
+
+#check this out
+@info "Distribution:" workers=workers()
 
 # dInfo: LoadedDataInfo object that describes the data distributed on the workers
 dInfo = loadData(:myData, dataPath, md, workers(), panel=panel, reduce=true, transform=true)
@@ -35,7 +41,7 @@ cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
 # winners = mapToGigaSOM(som, dInfo)
 
-# embed = embedGigaSOM(som, dInfo, k=10, smooth=0.0, adjust=0.5)
+# @time embed = embedGigaSOM(som, dInfo, k=10)
 
 rmprocs(workers())
 cd(cwd)
