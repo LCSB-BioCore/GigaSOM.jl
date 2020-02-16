@@ -214,31 +214,30 @@ end
 
 """
     mapToGigaSOM(som::Som, dInfo::LoadedDataInfo;
-                 knnTreeFun = BruteTree,
-                 metric = Euclidean())
+        knnTreeFun = BruteTree, metric = Euclidean(),
+        output::Symbol=tmpSym(dInfo)::LoadedDataInfo
 
-Return a DataFrame with X-, Y-indices and index of winner neuron for
-every row in data.
+Compute the index of the BMU for each row of the input data.
 
 # Arguments
 - `som`: a trained SOM
 - `dInfo`: `LoadedDataInfo` that describes the loaded and distributed data
 - `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
 - `metric`: Passed as metric argument to the KNN-tree constructor
+- `output`: Symbol to save the result, defaults to `tmpSym(dInfo)`
 
 Data must have the same number of dimensions as the training dataset
 and will be normalised with the same parameters.
 """
 function mapToGigaSOM(som::Som, dInfo::LoadedDataInfo;
-    knnTreeFun = BruteTree, metric = Euclidean())
+    knnTreeFun = BruteTree, metric = Euclidean(),
+    output::Symbol=tmpSym(dInfo))::LoadedDataInfo
 
     tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
 
-    idxs = distributed_mapreduce(dInfo,
+    return distributed_transform(dInfo,
         (d) -> (vcat(knn(tree, transpose(d), 1)[1]...)),
-        (d1, d2) -> vcat(d1, d2))
-
-    return DataFrame(index = idxs)
+        output)
 end
 
 """
@@ -260,9 +259,11 @@ function mapToGigaSOM(som::Som, data;
     end
 
     dInfo= distribute_darray(:mappingDataVar, distribute(data))
-    res = mapToGigaSOM(som, dInfo, knnTreeFun=knnTreeFun, metric=metric)
+    rInfo = mapToGigaSOM(som, dInfo, knnTreeFun=knnTreeFun, metric=metric)
+    res = distributed_collect(rInfo)
     undistribute(dInfo)
-    return res
+    undistribute(rInfo)
+    return DataFrame(index = res)
 end
 
 """

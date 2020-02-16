@@ -24,8 +24,8 @@ savedSomInit = deepcopy(som.codes)
 cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
 som = trainGigaSOM(som, dinfo)
-winners = mapToGigaSOM(som, dinfo)
-embed = embedGigaSOM(som, dinfo, k=10)
+winners = DataFrame(index=distributed_collect(mapToGigaSOM(som, dinfo), free=true))
+embed = distributed_collect(embedGigaSOM(som, dinfo, k=10), free=true)
 
 # Load the data again using the "classic serial approach"
 cd(dataPath)

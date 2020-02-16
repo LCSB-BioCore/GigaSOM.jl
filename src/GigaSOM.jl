@@ -81,7 +81,8 @@ module GigaSOM
         distribute_jls_data,
         undistribute,
         distributed_transform,
-        distributed_mapreuce
+        distributed_mapreduce,
+        distributed_collect
 
 
 end # module

@@ -6,7 +6,8 @@
                  k::Int64=0,
                  adjust::Float64=1.0,
                  smooth::Float64=0.0,
-                 m::Float64=10.0)
+                 m::Float64=10.0,
+                 output::Symbol=tmpSym(dInfo))::LoadedDataInfo
 
 Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 
@@ -22,6 +23,7 @@ Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 - `smooth`: approximation smoothness (the higher the value, the larger the
   neighborhood of approximate local linearity of the projection)
 - `m`: exponential decay rate for the score when approaching the `k+1`-th neighbor distance
+- `output`: variable name for storing the distributed result
 
 Data must have the same number of dimensions as the training dataset,
 and must be normalized using the same parameters.
@@ -48,7 +50,8 @@ function embedGigaSOM(som::GigaSOM.Som,
                       k::Int64=0,
                       adjust::Float64=1.0,
                       smooth::Float64=0.0,
-                      m::Float64=10.0)
+                      m::Float64=10.0,
+                      output::Symbol=tmpSym(dInfo))::LoadedDataInfo
 
     # convert `smooth` to `boost`
     boost = exp(-smooth-1)
@@ -68,9 +71,9 @@ function embedGigaSOM(som::GigaSOM.Som,
     tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
 
     # run the distributed computation
-    return distributed_mapreduce(dInfo,
+    return distributed_transform(dInfo,
         (d) -> (embedGigaSOM_internal(som, d, tree, k, adjust, boost, m)),
-        (e1, e2) -> vcat(e1, e2))
+        output)
 end
 
 """
@@ -99,10 +102,12 @@ function embedGigaSOM(som::GigaSOM.Som,
     data = convertTrainingData(data)
 
     dInfo = distribute_darray(:embeddingDataVar, distribute(data))
-    res = embedGigaSOM(som, dInfo,
+    rInfo = embedGigaSOM(som, dInfo,
         knnTreeFun=knnTreeFun, metric=metric,
         k=k, adjust=adjust, smooth=smooth, m=m)
+    res = distributed_collect(rInfo)
     undistribute(dInfo)
+    undistribute(rInfo)
     return res
 end
 

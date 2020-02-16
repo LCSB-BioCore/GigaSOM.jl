@@ -114,31 +114,30 @@ function undistribute(dInfo::LoadedDataInfo)
 end
 
 """
-    distributed_transform(sym::Symbol, fn::Function, workers)
+    distributed_transform(val, fn, workers, tgt::Symbol=val)
 
-Transform the worker-local distributed data stored as `sym` on `workers`
-in-place, by a function `fn`.
+Transform the worker-local distributed data available as `val` on `workers`
+in-place, by a function `fn`. Store the result as `tgt` (default `val`)
 
 # Example
     
     # multiply all saved data by 2
     distributed_transform(:myData, (d)->(2*d), workers())
 """
-function distributed_transform(sym::Symbol, fn, workers)
-    for f in [ save_at(pid, sym, :($fn($sym))) for pid in workers ]
+function distributed_transform(val, fn, workers, tgt::Symbol=val)
+    for f in [ save_at(pid, tgt, :($fn($val))) for pid in workers ]
         fetch(f)
     end
 end
 
 """
-    distributed_transform(dInfo::LoadedDataInfo, fn)
+    distributed_transform(dInfo::LoadedDataInfo, fn, tgt::Symbol=dInfo.val)::LoadedDataInfo
 
-Distributed transformation of distributed data described by `dInfo`.
+Same as `distributed_transform`, but specialized for `LoadedDataInfo`.
 """
-function distributed_transform(dInfo::LoadedDataInfo, fn)
-    for f in [ save_at(pid, sym, :($fn($sym))) for pid in workers ]
-        fetch(f)
-    end
+function distributed_transform(dInfo::LoadedDataInfo, fn, tgt::Symbol=dInfo.val)
+    distributed_transform(dInfo.val, fn, dInfo.workers, tgt)
+    return LoadedDataInfo(tgt, dInfo.workers)
 end
 
 """
@@ -184,4 +183,63 @@ that works with `LoadedDataInfo`.
 """
 function distributed_mapreduce(dInfo::LoadedDataInfo, map, fold)
     distributed_mapreduce(dInfo.val, map, fold, dInfo.workers)
+end
+
+"""
+    distributed_collect(val::Symbol, workers, dim=1)
+
+Collect the arrays distributed on `workers` under value `val` into an array. The
+individual arrays are pasted in the dimension specified by `dim`, i.e. `dim=1`
+is roughly equivalent to using `vcat`, and `dim=2` to `hcat`.
+
+If `free` is true, the `val` is undistributed after collection.
+
+This preallocates the array for results, and is thus more efficient than using
+`distributed_mapreduce` with `vcat` for folding.
+"""
+function distributed_collect(val::Symbol, workers, dim=1; free=false)
+    size0 = get_val_from(workers[1], :(size($val)))
+    sizes = distributed_mapreduce(val, d->size(d, dim), vcat, workers)
+    ressize = [size0[i] for i in 1:length(size0)]
+    ressize[dim] = sum(sizes)
+    result = zeros(ressize...)
+    off = 0
+    for (i,pid) in enumerate(workers)
+        idx = [(1:ressize[j]) for j in 1:length(ressize)]
+        idx[dim] = ((off+1):(off+sizes[i]))
+        result[idx...] = get_val_from(pid, val)
+        off += sizes[i]
+    end
+    if free
+        undistribute(val, workers)
+    end
+    return result
+end
+
+"""
+    distributed_collect(dInfo::LoadedDataInfo, dim=1)
+
+Distributed collect (just as the other overload) that works with
+`LoadedDataInfo`.
+"""
+function distributed_collect(dInfo::LoadedDataInfo, dim=1; free=false)
+    return distributed_collect(dInfo.val, dInfo.workers, dim, free=free)
+end
+
+"""
+    tmpSym(s::Symbol; prefix="", suffix="_tmp")
+
+Decorate a symbol `s` with prefix and suffix.
+"""
+function tmpSym(s::Symbol; prefix="", suffix="_tmp")
+    return Symbol(prefix*String(s)*suffix)
+end
+
+"""
+    tmpSym(dInfo::LoadedDataInfo; prefix="", suffix="_tmp")
+
+Decorate the symbol from `dInfo` with prefix and suffix.
+"""
+function tmpSym(dInfo::LoadedDataInfo; prefix="", suffix="_tmp")
+    return tmpSym(dInfo.val, prefix=prefix, suffix=suffix)
 end
