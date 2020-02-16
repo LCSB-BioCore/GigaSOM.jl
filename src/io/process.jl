@@ -236,48 +236,41 @@ function getMetaData(f)
     meta = f.params
     metaKeys = keys(meta)
     channel_properties = []
-    defaultValue = "None"
+    defaultValue = ""
 
     # determine the number of channels
     pars = parse(Int, strip(join(meta["\$PAR"])))
 
-    # determine the range of channel numbers
-    channel_numbers = 1:pars
-
-    # determine the channel properties
+    # determine the available channel properties
     for (key,) in meta
-        if key[1:3] == "\$P1"
-            if !occursin(key[4], "0123456789")
-                push!(channel_properties, key[4:end])
+        if key[1:2] == "\$P"
+            i=3
+            while i<=length(key) && isdigit(key[i])
+                i+=1
+            end
+            if i>length(key)
+                continue
+            end
+            if !in(key[i:end], channel_properties)
+                push!(channel_properties, key[i:end])
             end
         end
     end
 
-    # define the column names
-    column_names = ["\$Pn$p" for p in channel_properties]
+    # create a data frame for the results
+    df = Matrix{String}(undef, pars, length(channel_properties))
+    df .= defaultValue
+    df = DataFrame(df)
+    rename!(df, Symbol.(channel_properties))
 
-    # create a data frame
-    df = DataFrame([Vector{Any}(undef, 0) for i = 1:length(column_names)])
-
-    # fill the data frame
-    for ch in channel_numbers
-        # build first each row of the datatable
-        tmpV = []
+    # collect the data from params
+    for ch in 1:pars
         for p in channel_properties
             if "\$P$ch$p" in metaKeys
-                tmp = meta["\$P$ch$p"]
-            else
-                tmp = defaultValue
+                df[ch, Symbol(p)] = meta["\$P$ch$p"]
             end
-            push!(tmpV, tmp)
         end
-
-        # push the row to the dataframe
-        push!(df, tmpV)
     end
-
-    # set the names of the df
-    rename!(df, Symbol.(column_names))
 
     return df
 end
