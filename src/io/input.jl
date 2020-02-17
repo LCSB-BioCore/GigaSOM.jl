@@ -45,20 +45,24 @@ function readFlowFrame(filename::String)
     #flowFrame = Dict()
 
     # read single FCS file into flowFrame
-    flowrun = FileIO.load(filename) # FCS file
+    fcs = FileIO.load(filename) # FCS file
 
     # get metadata
     # FCSFiles returns a dict with coumn names as key
     # As the dict is not in order, use the name column form meta
     # to sort the Dataframe after cast.
-    meta = getMetaData(flowrun)
-    markers = meta[!, Symbol("\$PnS")]
-    markersIsotope = meta[!, Symbol("\$PnN")]
-    # if marker labels are empty use Isotope marker as column names
-    if markers[1] == " "
-        markers = markersIsotope
+    meta = getMetaData(fcs)
+    markersIsotope = Array{String}(meta[!, :N])
+    # collect better marker names
+    markers = copy(markersIsotope)
+    if hasproperty(meta, :S)
+        for i in 1:size(meta,1)
+            if meta[i, :S] != ""
+                markers[i] = meta[i, :S]
+            end
+        end
     end
-    flowDF = DataFrame(flowrun.data)
+    flowDF = DataFrame(fcs.data)
     # sort the DF according to the marker list
     flowDF = flowDF[:, Symbol.(markersIsotope)]
     cleanNames!(markers)
