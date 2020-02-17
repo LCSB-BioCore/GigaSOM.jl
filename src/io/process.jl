@@ -248,10 +248,7 @@ function getMetaData(f)
             while i<=length(key) && isdigit(key[i])
                 i+=1
             end
-            if i>length(key)
-                continue
-            end
-            if !in(key[i:end], channel_properties)
+            if i<=length(key) && !in(key[i:end], channel_properties)
                 push!(channel_properties, key[i:end])
             end
         end
