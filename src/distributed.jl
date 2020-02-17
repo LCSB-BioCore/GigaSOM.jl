@@ -60,7 +60,7 @@ end
 Distribute the distributed array parts from `dd` into worker-local variable
 `sym`.
 
-Requires @everywhere import DistributedArrays.
+Requires `@everywhere import DistributedArrays`.
 
 Returns the `LoadedDataInfo` structure for the distributed data.
 """
@@ -77,12 +77,10 @@ Load filenames to each referenced worker.
 
 This is called transparently from `loadData`, but can be used to load and
 distribute any list of file slices.
-
-Long-term TODO:
-reduce the arguments a bit (we have `distributed_transform` now!)
 """
 function distribute_jls_data(sym::Symbol, fns::Array{String}, workers;
     panel=Nothing(), method="asinh", cofactor=5, reduce=false, sort=false, transform=false)::LoadedDataInfo
+    #Long-term TODO: reduce the arguments a bit (we have `distributed_transform` now!)
     for f in [save_at(pid, sym, :(
             loadDataFile($(fns[i]),
                          $panel, $method, $cofactor,
@@ -194,8 +192,8 @@ is roughly equivalent to using `vcat`, and `dim=2` to `hcat`.
 
 If `free` is true, the `val` is undistributed after collection.
 
-This preallocates the array for results, and is thus more efficient than using
-`distributed_mapreduce` with `vcat` for folding.
+This preallocates the array for results, and is thus more efficient than e.g.
+using `distributed_mapreduce` with `vcat` for folding.
 """
 function distributed_collect(val::Symbol, workers, dim=1; free=false)
     size0 = get_val_from(workers[1], :(size($val)))
@@ -229,7 +227,8 @@ end
 """
     tmpSym(s::Symbol; prefix="", suffix="_tmp")
 
-Decorate a symbol `s` with prefix and suffix.
+Decorate a symbol `s` with prefix and suffix, to create a good name for a
+related temporary value.
 """
 function tmpSym(s::Symbol; prefix="", suffix="_tmp")
     return Symbol(prefix*String(s)*suffix)

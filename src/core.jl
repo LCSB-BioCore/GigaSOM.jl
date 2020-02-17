@@ -56,11 +56,12 @@ end
                 xdim::Int64, ydim :: Int64 = xdim;
                 norm::Symbol = :none, toroidal = false)
 
-`initGigaSOM` overloaded for working distributed `LoadedDataInfo` in
-`trainInfo`. The rest of arguments is the same.
+`initGigaSOM` overload for working with distributed-style `LoadedDataInfo`
+data. The rest of arguments is the same as in `initGigaSOM`.
 
-It uses the data saved on the first worker for initialization, the init work is
-actually done on that worker to avoid data copying.
+Note that this function only uses the data saved on the first worker for
+initialization, and the init work is actually done on that worker to avoid
+unnecessary data copying.
 """
 function initGigaSOM(trainInfo::LoadedDataInfo,
     xdim::Int64, ydim :: Int64 = xdim;

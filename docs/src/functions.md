@@ -1,24 +1,24 @@
 # Functions
 
-## Input
+## Data structures
 
 ```@autodocs
 Modules = [GigaSOM]
-Pages = ["input.jl"]
+Pages = ["structs.jl"]
 ```
 
-## Process
+## Data loading and preparation
 
 ```@autodocs
 Modules = [GigaSOM]
-Pages = ["process.jl"]
+Pages = ["input.jl", "process.jl", "splitting.jl"]
 ```
 
-## Core
+## SOM training
 
 ```@autodocs
 Modules = [GigaSOM]
-Pages = ["core.jl"]
+Pages = ["core.jl", "trainutils.jl"]
 ```
 
 ## Embedding
@@ -28,16 +28,9 @@ Modules = [GigaSOM]
 Pages = ["embedding.jl"]
 ```
 
-## Structs
+## Distributed processing tools
 
 ```@autodocs
 Modules = [GigaSOM]
-Pages = ["structs.jl"]
-```
-
-## Satellites
-
-```@autodocs
-Modules = [GigaSOM]
-Pages = ["satellites.jl"]
+Pages = ["distributed.jl"]
 ```

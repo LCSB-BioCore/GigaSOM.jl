@@ -27,21 +27,6 @@ Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 
 Data must have the same number of dimensions as the training dataset,
 and must be normalized using the same parameters.
-
-# Examples:
-
-Produce a 2-column matrix with 2D cell coordinates:
-```
-e = embedGigaSOM(som, data)
-```
-
-Plot the result using 2D histogram from Gadfly:
-```
-using Gadfly
-draw(PNG("output.png",20cm,20cm),
-     plot(x=e[:,1], y=e[:,2],
-     Geom.histogram2d(xbincount=200, ybincount=200)))
-```
 """
 function embedGigaSOM(som::GigaSOM.Som,
                       dInfo::LoadedDataInfo;
@@ -88,7 +73,22 @@ end
 
 Overload of `embedGigaSOM` for simple DataFrames and matrices. This slices the
 data using `DistributedArrays`, sends them the workers, and runs normal
-`embedGigaSOM`. Data is `undistribute`d after the computation.
+`embedGigaSOM`. All data is properly `undistribute`d after the computation.
+
+# Examples:
+
+Produce a 2-column matrix with 2D cell coordinates:
+```
+e = embedGigaSOM(som, data)
+```
+
+Plot the result using 2D histogram from Gadfly:
+```
+using Gadfly
+draw(PNG("output.png",20cm,20cm),
+     plot(x=e[:,1], y=e[:,2],
+     Geom.histogram2d(xbincount=200, ybincount=200)))
+```
 """
 function embedGigaSOM(som::GigaSOM.Som,
                       data;
