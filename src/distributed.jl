@@ -190,6 +190,8 @@ Collect the arrays distributed on `workers` under value `val` into an array. The
 individual arrays are pasted in the dimension specified by `dim`, i.e. `dim=1`
 is roughly equivalent to using `vcat`, and `dim=2` to `hcat`.
 
+`val` must be an Array-based type; the function will otherwise fail.
+
 If `free` is true, the `val` is undistributed after collection.
 
 This preallocates the array for results, and is thus more efficient than e.g.
@@ -197,10 +199,11 @@ using `distributed_mapreduce` with `vcat` for folding.
 """
 function distributed_collect(val::Symbol, workers, dim=1; free=false)
     size0 = get_val_from(workers[1], :(size($val)))
+    innerType = get_val_from(workers[1], :(typeof($val).parameters[1]))
     sizes = distributed_mapreduce(val, d->size(d, dim), vcat, workers)
     ressize = [size0[i] for i in 1:length(size0)]
     ressize[dim] = sum(sizes)
-    result = zeros(ressize...)
+    result = zeros(innerType, ressize...)
     off = 0
     for (i,pid) in enumerate(workers)
         idx = [(1:ressize[j]) for j in 1:length(ressize)]
