@@ -218,6 +218,18 @@ function distributed_collect(val::Symbol, workers, dim=1; free=false)
 end
 
 """
+    distributed_foreach(arr::Vector, fn, workers)
+
+Call a function `fn` on `workers`, with a single parameter arriving from the
+corresponding position in `arr`.
+"""
+function distributed_foreach(arr::Vector, fn, workers)
+    futures = [remotecall(() -> eval(:($fn($(arr[i])))), pid)
+            for (i, pid) in enumerate(workers)]
+    return [ fetch(f) for f in futures ]
+end
+
+"""
     distributed_collect(dInfo::LoadedDataInfo, dim=1)
 
 Distributed collect (just as the other overload) that works with
