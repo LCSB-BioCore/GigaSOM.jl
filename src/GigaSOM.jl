@@ -63,8 +63,7 @@ module GigaSOM
     export #io/process
         cleanNames!,
         createDaFrame,
-        getMarkers,
-        checkDir
+        getMarkers
 
     export # plotting
         plotCounts,

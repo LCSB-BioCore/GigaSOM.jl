@@ -3,6 +3,16 @@ using FileIO, Serialization, FCSFiles, DataFrames
 
 owd = pwd()
 
+"""
+Check if the `pwd()` is the `/test` directory, and if not it changes to it.
+"""
+function checkDir()
+    files = readdir()
+    if !in("runtests.jl", files)
+        cd(dirname(dirname(pathof(GigaSOM))))
+    end
+end
+
 checkDir()
 
 @testset "GigaSOM test suite" begin
