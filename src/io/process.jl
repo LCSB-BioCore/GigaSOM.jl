@@ -35,50 +35,35 @@ function transformData(flowframe::DataFrame, method, cofactor)
 end
 
 """
-    cleanNames!(mydata)
+    cleanNames!(mydata::Vector{String})
 
-Replaces problematic characters in column names.
-Checks if the column name contains a '-' and transforms it to and '_' and it checks if the name starts with a number.
+Replaces problematic characters in column names, avoids duplicate names, and
+prefixes an '_' if the name starts with a number.
 
 # Arguments:
-- `mydata`: dict fcsRaw or array of string
+- `mydata`: vector of names (gets modified)
 """
-function cleanNames!(mydata::Dict{Any, Any})
-    for (k,v) in mydata
-        colnames = names(v)
-        for i in eachindex(colnames)
-            colnames[i] = Symbol(replace(String(colnames[i]), "-"=>"_"))
-            if isnumeric(first(String(colnames[i])))
-                colnames[i] = Symbol("_" * String(colnames[i]))
-            end
-        end
-        rename!(v, colnames)
-    end
-end
-
-function cleanNames!(mydata::DataFrame)
-    # replace chritical characters
+function cleanNames!(mydata::Vector{String})
+    # replace problematic characters,
     # put "_" in front of colname in case it starts with a number
-    # println(typeof(mydata))
-        colnames = names(mydata)
-        for i in eachindex(colnames)
-            colnames[i] = Symbol(replace(String(colnames[i]), "-"=>"_"))
-            if isnumeric(first(String(colnames[i])))
-                colnames[i] = Symbol("_" * String(colnames[i]))
-            end
-        end
-        rename!(mydata, colnames)
-end
-
-function cleanNames!(mydata)
+    # avoid duplicate names (add suffixes _2, _3, ...)
+    usedNames=Set{String}()
     for j in eachindex(mydata)
         mydata[j] = replace(mydata[j], "-"=>"_")
         if isnumeric(first(mydata[j]))
             mydata[j] = "_" * mydata[j]
         end
+        # avoid
+        if mydata[j] in usedNames
+            idx=2
+            while "$(mydata[j])_$idx" in usedNames
+                idx += 1
+            end
+            mydata[j]*="_$idx"
+        end
+        push!(usedNames, mydata[j])
     end
 end
-
 
 """
     createDaFrame(fcsRaw, md, panel)
@@ -230,10 +215,9 @@ Collect the meta data information in a more user friendly format.
 # Arguments:
 - `f`: input structure with `.params` and `.data` fields
 """
-function getMetaData(f)
+function getMetaData(meta::Dict{String,String})::DataFrame
 
     # declarations and initializations
-    meta = f.params
     metaKeys = keys(meta)
     channel_properties = []
     defaultValue = ""
@@ -270,4 +254,24 @@ function getMetaData(f)
     end
 
     return df
+end
+
+"""
+    getMarkerNames(meta::DataFrame)::Tuple{Vector{String}, Vector{String}}
+
+Extract suitable raw names (useful for selecting columns) and pretty readable
+names (useful for humans) from FCS file metadata.
+
+"""
+function getMarkerNames(meta::DataFrame)::Tuple{Vector{String}, Vector{String}}
+    orig = Array{String}(meta[:,:N])
+    nice = copy(orig)
+    if hasproperty(meta, :S)
+        for i in 1:size(meta,1)
+            if strip(meta[i, :S]) != ""
+                nice[i] = meta[i, :S]
+            end
+        end
+    end
+    return (orig, nice)
 end

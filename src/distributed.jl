@@ -73,25 +73,6 @@ function distribute_darray(sym::Symbol, dd::DArray)::LoadedDataInfo
 end
 
 """
-Load filenames to each referenced worker.
-
-This is called transparently from `loadData`, but can be used to load and
-distribute any list of file slices.
-"""
-function distribute_jls_data(sym::Symbol, fns::Array{String}, workers;
-    panel=Nothing(), method="asinh", cofactor=5, reduce=false, sort=false, transform=false)::LoadedDataInfo
-    #Long-term TODO: reduce the arguments a bit (we have `distributed_transform` now!)
-    for f in [save_at(pid, sym, :(
-            loadDataFile($(fns[i]),
-                         $panel, $method, $cofactor,
-                         $reduce, $sort, $transform)))
-            for (i, pid) in enumerate(workers)]
-        fetch(f)
-    end
-    return LoadedDataInfo(sym, workers)
-end
-
-"""
     undistribute_data(sym, workers)
 
 Remove the loaded data from workers.
