@@ -11,7 +11,7 @@ intergrated Julia package manager.
 
 ### Option 1: Manually clone your fork
 
-:warning: Please make sure to have forked the repository as described above.
+:warning: Please make sure you have _forked_ the repository, as described above.
 
 You can do this as follows from the command line:
 
@@ -29,6 +29,8 @@ follows (make sure you are in the `GigaSOM.jl` directory):
 ```julia
 (v1.1) pkg> add .
 ```
+
+(press `]` to get into the packaging environment)
 
 This adds the `GigaSOM.jl` package and all its dependencies. You can verify
 that the installation worked by typing:
@@ -82,7 +84,7 @@ $ git fetch origin
 
 where `yourUsername` is your Github username.
 
-:warning: Please make sure that your fork exists under `github.com/yourUsername/GigaSOM.jl`.
+:warning: Make sure that your fork exists under `github.com/yourUsername/GigaSOM.jl`.
 
 Then, checkout a branch `yourNewBranch`:
 

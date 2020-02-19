@@ -20,13 +20,15 @@ module GigaSOM
     using Serialization
 
     include("structs.jl")
+    include("distributed.jl")
     include("core.jl")
-    include("satellites.jl")
+    include("trainutils.jl")
     include("embedding.jl")
 
-    # include IO files
+    # input/output handling
     include("io/input.jl")
     include("io/process.jl")
+    include("io/splitting.jl")
 
     # include visualization files
     # include("visualization/plotting.jl")
@@ -34,23 +36,32 @@ module GigaSOM
     export #core
         initGigaSOM,
         trainGigaSOM,
-        mapToGigaSOM,
+        mapToGigaSOM
+
+    export #trainutils
         linearRadius,
-        expRadius
+        expRadius,
+        gaussianKernel,
+        bubbleKernel
 
     export #embedding
         embedGigaSOM
 
     export # structs
-        daFrame
+        daFrame,
+        Som,
+        LoadedDataInfo
 
-    export #input
+    export #io/input
         readFlowset,
         readFlowFrame,
         loadData,
+        unloadData
+
+    export #io/splitting
         generateIO
 
-    export #satellites
+    export #io/process
         cleanNames!,
         createDaFrame,
         getMarkers,
@@ -59,5 +70,19 @@ module GigaSOM
     export # plotting
         plotCounts,
         plotPCA
+
+    export #distributed data tools
+        save_at,
+        get_from,
+        get_val_from,
+        remove_from,
+        distribute_darray,
+        undistribute_darray,
+        distribute_jls_data,
+        undistribute,
+        distributed_transform,
+        distributed_mapreduce,
+        distributed_collect
+
 
 end # module

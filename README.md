@@ -52,6 +52,12 @@ Alternatively, you can use the package manager by hitting `]`:
 (v1.1) pkg> test GigaSOM
 ```
 
+For debugging, it may be useful to enable the `@debug` messages from source, in the simplest case by:
+```julia
+using Logging
+global_logger(ConsoleLogger(stderr, Logging.Debug))
+```
+
 :warning: It is not advised to run indivual test files separately without
 expliciting activating the environment and loading the dependencies.  If this
 is required for debugging purposes, please activate the environment first and

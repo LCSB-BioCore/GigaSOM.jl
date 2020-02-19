@@ -10,11 +10,10 @@ In this example we will use a subset of the Cytometry data from Bodenmiller et a
 mononuclear cells (PBMCs) in unstimulated and stimulated conditions for 8 healthy donors.
 
 10 cell surface markers (lineage markers) are used to identify different cell populations:
-    - PBMC8_panel.xlsx (with Antigen name and columns for lineage markers and functional markers)
-    - PBMC8_metadata.xlsx (file names, sample id, condition and patient id)
+    - `PBMC8_panel.xlsx` (with Antigen name and columns for lineage markers and functional markers)
+    - `PBMC8_metadata.xlsx` (file names, sample id, condition and patient id)
 
 Before running this minimum working example, make sure to use the package:
-
 
 ```julia
 using GigaSOM
@@ -25,7 +24,6 @@ using GigaSOM
 The example data can be downloaded from [imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/](http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/)
 
 You can fetch the files directly from within Julia:
-
 
 ```julia
 # fetch the required data for testing and download the zip archive and unzip it
@@ -43,7 +41,6 @@ end
 Read meta-data and panel as a `DataFrame`, and make sure that the column names match the CyTOF
 FCS file names:
 
-
 ```julia
 # Read  files as DataFrames
 md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1")...)
@@ -57,7 +54,6 @@ print(panel.fcs_colname)
 ```
 
 Extract the lineage and functional markers with `getMarkers()` function:
-
 
 ```julia
 lineageMarkers, functionalMarkers = getMarkers(panel)
@@ -110,7 +106,7 @@ all the workers:
 
 ```julia
 using Distributed
-addprocs(2) # the number of workers can be higher than 2
+addprocs(2) # the number of workers can be higher than 2 -- generally use the number of CPUs available for the task
 @everywhere using GigaSOM
 ```
 

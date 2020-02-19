@@ -1,40 +1,47 @@
-# Test the GigaSOM package first:
 import Pkg
 Pkg.activate("GigaSOM")
-Pkg.update()
 
-#Pkg.test("GigaSOM")
 using Distributed
 using GigaSOM
+using ClusterManagers
 
 checkDir()
 cwd = pwd()
 
-dataPath = joinpath(dirname(pathof(GigaSOM)), "..")*"/test/data"
+metadataFile = "metadata_100.xlsx"
+panelFile = "panel.xlsx"
+dataPath = ENV["SCRATCH"]*"/GigaSOM/data" 
+
 cd(dataPath)
-md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
-panel = GigaSOM.DataFrame(GigaSOM.XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
+md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(metadataFile, "Sheet1", infer_eltypes=true)...)
+panel = GigaSOM.DataFrame(GigaSOM.XLSX.readtable(panelFile, "Sheet1", infer_eltypes=true)...)
 
 lineageMarkers, functionalMarkers = getMarkers(panel)
 
-nWorkers = 2
-addprocs(nWorkers, topology=:master_worker)
+const IN_SLURM = "SLURM_JOBID" in keys(ENV)
+
+nWorkers = parse(Int, ENV["SLURM_NTASKS"])
+addprocs_slurm(nWorkers, topology=:master_worker)
 @everywhere using GigaSOM
 
-# R: Array of reference to each data files per worker
-# use '_' or just "R, " to ignore the second return value
-# second return value is used later for indexing the data files
-R, _ = loadData(dataPath, md, nWorkers, panel=panel, reduce=true, transform=true)
+using Logging
+global_logger(ConsoleLogger(stderr, Logging.Debug))
 
-som = initGigaSOM(R, 10, 10)
+#check this out
+@info "Distribution:" workers=workers()
+
+# dInfo: LoadedDataInfo object that describes the data distributed on the workers
+dInfo = loadData(:myData, dataPath, md, workers(), panel=panel, reduce=true, transform=true)
+
+som = initGigaSOM(dInfo, 10, 10)
 
 cc = map(Symbol, vcat(lineageMarkers, functionalMarkers))
 
-@time som = trainGigaSOM(som, R)
+@time som = trainGigaSOM(som, dInfo)
 
-winners = mapToGigaSOM(som, R)
+# winners = mapToGigaSOM(som, dInfo)
 
-embed = embedGigaSOM(som, R, k=10, smooth=0.0, adjust=0.5)
+# @time embed = embedGigaSOM(som, dInfo, k=10)
 
 rmprocs(workers())
 cd(cwd)
