@@ -238,3 +238,60 @@ Decorate the symbol from `dInfo` with prefix and suffix.
 function tmpSym(dInfo::LoadedDataInfo; prefix="", suffix="_tmp")
     return tmpSym(dInfo.val, prefix=prefix, suffix=suffix)
 end
+
+"""
+    defaultFiles(s, pids)
+
+Make a good set of filenames for saving a dataset.
+"""
+function defaultFiles(s, pids)
+    return [String(s)*"-$i.slice" for i in eachindex(workers)]
+end
+
+"""
+    distributed_export(sym::Symbol, pids, files=defaultFiles(sym,pids))
+
+Export the content of symbol `sym` by each worker specified by `pids` to a
+corresponding filename in `files`.
+"""
+function distributed_export(sym::Symbol, pids, files=defaultFiles(sym,pids))
+    distributed_foreach(files,
+        (fn)->eval(
+            :(begin
+                open(f->serialize(f, $sym), fn, "w")
+                nothing
+            end)), pids)
+end
+
+"""
+    distributed_export(dInfo::LoadedDataInfo, files=defaultFiles(dInfo.val, dInfo.workers))
+
+Overloaded functionality for `LoadedDataInfo`.
+"""
+function distributed_export(dInfo::LoadedDataInfo, files=defaultFiles(dInfo.val, dInfo.workers))
+    distributed_export(dInfo.val, dInfo.workers, files=files)
+end
+
+"""
+    distributed_import(sym::Symbol, pids, files=defaultFiles(sym,pids))
+
+Import the content of symbol `sym` by each worker specified by `pids` from the
+corresponding filename in `files`.
+"""
+function distributed_import(sym::Symbol, pids, files=defaultFiles(sym,pids))
+    distributed_foreach(files,
+        (fn)->eval(
+            :(begin
+                $sym = open(deserialize, fn)
+                nothing
+            end)), pids)
+end
+
+"""
+    distributed_import(dInfo::LoadedDataInfo, files=defaultFiles(dInfo.val, dInfo.workers))
+
+Overloaded functionality for `LoadedDataInfo`.
+"""
+function distributed_import(dInfo::LoadedDataInfo, files=defaultFiles(dInfo.val, dInfo.workers))
+    distributed_import(dInfo.val, dInfo.workers, files=files)
+end
