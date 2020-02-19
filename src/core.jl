@@ -124,6 +124,7 @@ function trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
         @debug "radius: $r"
         if r <= 0
             @error "Sanity check failed: radius must be positive"
+            error("Radius check")
         end
 
         wEpoch = kernelFun(dm, r)
@@ -257,6 +258,7 @@ function mapToGigaSOM(som::Som, data;
 
     if size(data,2) != size(som.codes,2)
         @error "Data dimension ($(size(data,2))) does not match codebook dimension ($(size(som.codes,2)))."
+        error("Data dimensions do not match")
     end
 
     dInfo= distribute_darray(:mappingDataVar, distribute(data))
