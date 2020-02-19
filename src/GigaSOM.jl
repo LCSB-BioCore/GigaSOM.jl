@@ -24,10 +24,11 @@ module GigaSOM
     include("dataops.jl")
     include("distributed.jl")
     include("embedding.jl")
-    include("io/input.jl")
-    include("io/process.jl")
-    include("io/splitting.jl")
     include("trainutils.jl")
+
+    include("io/process.jl")
+    include("io/input.jl")
+    include("io/splitting.jl")
 
     # include visualization files
     # include("visualization/plotting.jl")
