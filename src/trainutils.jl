@@ -209,11 +209,7 @@ Converts the training data to an Array of type Float64.
 
 """
 function convertTrainingData(data)::Array{Float64,2}
-
-    if typeof(data) == DataFrame
-        train = convert(Matrix{Float64}, data)
-
-    elseif typeof(data) != Matrix{Float64}
+    if typeof(data) != Matrix{Float64}
         try
             train = convert(Matrix{Float64}, data)
         catch ex
