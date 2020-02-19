@@ -11,7 +11,7 @@ Pages = ["structs.jl"]
 
 ```@autodocs
 Modules = [GigaSOM]
-Pages = ["input.jl", "process.jl", "splitting.jl"]
+Pages = ["input.jl", "process.jl", "splitting.jl", "dataops.jl"]
 ```
 
 ## SOM training
