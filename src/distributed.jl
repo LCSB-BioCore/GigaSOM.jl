@@ -199,6 +199,16 @@ function distributed_collect(val::Symbol, workers, dim=1; free=false)
 end
 
 """
+    distributed_collect(dInfo::LoadedDataInfo, dim=1)
+
+Distributed collect (just as the other overload) that works with
+`LoadedDataInfo`.
+"""
+function distributed_collect(dInfo::LoadedDataInfo, dim=1; free=false)
+    return distributed_collect(dInfo.val, dInfo.workers, dim, free=free)
+end
+
+"""
     distributed_foreach(arr::Vector, fn, workers)
 
 Call a function `fn` on `workers`, with a single parameter arriving from the
@@ -208,16 +218,6 @@ function distributed_foreach(arr::Vector, fn, workers)
     futures = [remotecall(() -> eval(:($fn($(arr[i])))), pid)
             for (i, pid) in enumerate(workers)]
     return [ fetch(f) for f in futures ]
-end
-
-"""
-    distributed_collect(dInfo::LoadedDataInfo, dim=1)
-
-Distributed collect (just as the other overload) that works with
-`LoadedDataInfo`.
-"""
-function distributed_collect(dInfo::LoadedDataInfo, dim=1; free=false)
-    return distributed_collect(dInfo.val, dInfo.workers, dim, free=free)
 end
 
 """
@@ -245,7 +245,7 @@ end
 Make a good set of filenames for saving a dataset.
 """
 function defaultFiles(s, pids)
-    return [String(s)*"-$i.slice" for i in eachindex(workers)]
+    return [String(s)*"-$i.slice" for i in eachindex(pids)]
 end
 
 """
@@ -258,9 +258,10 @@ function distributed_export(sym::Symbol, pids, files=defaultFiles(sym,pids))
     distributed_foreach(files,
         (fn)->eval(
             :(begin
-                open(f->serialize(f, $sym), fn, "w")
+                open(f->serialize(f, $sym), $fn, "w")
                 nothing
             end)), pids)
+    nothing
 end
 
 """
@@ -282,9 +283,10 @@ function distributed_import(sym::Symbol, pids, files=defaultFiles(sym,pids))
     distributed_foreach(files,
         (fn)->eval(
             :(begin
-                $sym = open(deserialize, fn)
+                $sym = open(deserialize, $fn)
                 nothing
             end)), pids)
+    nothing
 end
 
 """

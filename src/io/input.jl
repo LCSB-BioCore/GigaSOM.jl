@@ -136,7 +136,7 @@ function loadData(name::Symbol, fns::Vector{String}, pids=workers())::LoadedData
     distributed_foreach(slices,
         (slice) -> eval(:(
             begin
-                $name = vcollectSlice(loadMtxFCS($fns), $slice)
+                $name = vcollectSlice((i)->last(loadFCS($fns[i])), $slice)
                 nothing
             end
         )), pids)

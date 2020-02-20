@@ -53,7 +53,7 @@ function cleanNames!(mydata::Vector{String})
         if isnumeric(first(mydata[j]))
             mydata[j] = "_" * mydata[j]
         end
-        # avoid
+        # avoid duplicate names
         if mydata[j] in usedNames
             idx=2
             while "$(mydata[j])_$idx" in usedNames
