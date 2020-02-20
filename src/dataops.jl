@@ -4,7 +4,7 @@
 
 Copy the dataset into a new place.
 """
-function dcopy(dInfo::LoadedDataInfo, newName::Symbol)
+function dcopy(dInfo::LoadedDataInfo, newName::Symbol)::LoadedDataInfo
     distributed_transform(dInfo, x->x, newName)
 end
 
@@ -13,8 +13,40 @@ end
 
 Reduce dataset to selected columns, optionally save it under a different name.
 """
-function dselect(dInfo::LoadedDataInfo, columns::Vector{Int}; tgt=dInfo.val)
+function dselect(dInfo::LoadedDataInfo, columns::Vector{Int}; tgt=dInfo.val)::LoadedDataInfo
     distributed_transform(dInfo, mtx->mtx[:,columns], tgt)
+end
+
+"""
+    colnameIndexes(colnames::Vector{String}, query::Vector{String})
+
+Return indexes of `query` items in `colnames`; returns `0` if the query item
+was not found.
+
+Useful for getting the column indexes for functions like `dapply_cols` by
+names.
+"""
+function colnameIndexes(colnames::Vector{String}, query::Vector{String})::Vector{Int}
+    [begin
+        idx = findfirst(x -> x==q, colnames)
+        if idx == nothing
+            idx = 0
+        end
+        idx
+    end for q in query ]
+end
+
+"""
+    function dselect(dInfo::LoadedDataInfo,
+        currentColnames::Vector{String}, selectColnames::Vector{String};
+        tgt=dInfo.val)::LoadedDataInfo
+
+Convenience overload of `dselect` that works with column names.
+"""
+function dselect(dInfo::LoadedDataInfo,
+    currentColnames::Vector{String}, selectColnames::Vector{String};
+    tgt=dInfo.val)::LoadedDataInfo
+    dselect(dInfo, colnameIndexes(currentColnames, selectColnames), tgt)
 end
 
 """
