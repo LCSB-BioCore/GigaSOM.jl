@@ -55,11 +55,15 @@ module GigaSOM
     export #io/input
         readFlowset,
         readFlowFrame,
-        loadData,
-        unloadData
+        loadFCS,
+        loadFCSHeader,
+        getFCSSize,
+        loadFCSSizes,
+        loadData
 
     export #io/splitting
-        generateIO
+        slicesof,
+        vcollectSlice
 
     export #io/process
         cleanNames!,
