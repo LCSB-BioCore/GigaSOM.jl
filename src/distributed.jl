@@ -140,6 +140,17 @@ main process.
         ((s1, l1), (s2, l2)) -> (s1+s2, l1+l2),
         workers())
     println(sum/len)
+
+# Processing multiple arguments (a.k.a. "zipWith")
+
+The `val` here does not necessarily need to refer to a symbol, you can easily
+pass in a quoted tuple, which will be unquoted in the function parameter. For
+example, distributed values `:a` and `:b` can be joined as such:
+
+    distributed_mapreduce(:((a,b)),
+        ((a,b)::Tuple) -> [a b],
+        vcat,
+        workers())
 """
 function distributed_mapreduce(val, map, fold, workers)
     if isempty(workers)
