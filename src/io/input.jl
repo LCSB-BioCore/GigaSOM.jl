@@ -134,7 +134,7 @@ The loaded dataset can be manipulated by the distributed functions, e.g.
 function loadData(name::Symbol, fns::Vector{String}, pids=workers())::LoadedDataInfo
     slices = slicesof(loadFCSSizes(fns), length(pids))
     distributed_foreach(slices,
-        (slice) -> eval(:(
+        (slice) -> Base.eval(Main, :(
             begin
                 $name = vcollectSlice((i)->last(loadFCS($fns[i])), $slice)
                 nothing

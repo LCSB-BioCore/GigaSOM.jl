@@ -20,10 +20,17 @@ Examples:
     save_at(2,:x,123)       # saves 123
     save_at(2,:x,myid())    # saves 1
     save_at(2,:x,:(myid())) # saves 2
-    save_at(2,:x,:(:x))     # saves the symbol :x (just :x won't work because of unquoting)
+    save_at(2,:x,:(:x))     # saves the symbol :x
+                            # (just :x won't work because of unquoting)
+
+# Note: Symbol scope
+
+The symbols are saved in Main module on the corresponding worker. For example,
+`save_at(1, :x, nothing)` _will_ erase your local `x` variable. Beware of name
+collisions.
 """
 function save_at(worker, sym::Symbol, val)
-    remotecall(()->eval(:(begin; $sym = $val; nothing; end)), worker)
+    remotecall(()->Base.eval(Main, :(begin; $sym = $val; nothing; end)), worker)
 end
 
 """
@@ -33,7 +40,7 @@ Get a value `val` from a remote `worker`; quoting of `val` works just as with
 `save_at`. Returns a future with the requested value.
 """
 function get_from(worker, val)
-    remotecall(()->eval(:($val)), worker)
+    remotecall(()->Base.eval(Main, :($val)), worker)
 end
 
 """
@@ -103,7 +110,7 @@ in-place, by a function `fn`. Store the result as `tgt` (default `val`)
     # multiply all saved data by 2
     distributed_transform(:myData, (d)->(2*d), workers())
 """
-function distributed_transform(val, fn, workers, tgt::Symbol=val)
+function distributed_transform(val, fn, workers, tgt::Symbol=val)::LoadedDataInfo
     for f in [ save_at(pid, tgt, :($fn($val))) for pid in workers ]
         fetch(f)
     end
@@ -115,7 +122,7 @@ end
 
 Same as `distributed_transform`, but specialized for `LoadedDataInfo`.
 """
-function distributed_transform(dInfo::LoadedDataInfo, fn, tgt::Symbol=dInfo.val)
+function distributed_transform(dInfo::LoadedDataInfo, fn, tgt::Symbol=dInfo.val)::LoadedDataInfo
     distributed_transform(dInfo.val, fn, dInfo.workers, tgt)
 end
 
@@ -226,7 +233,7 @@ Call a function `fn` on `workers`, with a single parameter arriving from the
 corresponding position in `arr`.
 """
 function distributed_foreach(arr::Vector, fn, workers)
-    futures = [remotecall(() -> eval(:($fn($(arr[i])))), pid)
+    futures = [remotecall(() -> Base.eval(Main, :($fn($(arr[i])))), pid)
             for (i, pid) in enumerate(workers)]
     return [ fetch(f) for f in futures ]
 end
@@ -267,7 +274,7 @@ corresponding filename in `files`.
 """
 function distributed_export(sym::Symbol, pids, files=defaultFiles(sym,pids))
     distributed_foreach(files,
-        (fn)->eval(
+        (fn)->Base.eval(Main,
             :(begin
                 open(f->serialize(f, $sym), $fn, "w")
                 nothing
@@ -292,7 +299,7 @@ corresponding filename in `files`.
 """
 function distributed_import(sym::Symbol, pids, files=defaultFiles(sym,pids))
     distributed_foreach(files,
-        (fn)->eval(
+        (fn)->Base.eval(Main,
             :(begin
                 $sym = open(deserialize, $fn)
                 nothing
