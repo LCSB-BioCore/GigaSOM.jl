@@ -36,13 +36,12 @@ end
     di = distribute_darray(:test, dd)
     @test di.val == :test
     @test Set(di.workers) == Set(W)
-    @test distributed_collect(di)==d
     @test begin
         d1 = get_val_from(di.workers[1], :test)
         d1 == d[1:size(d1,1),:]
     end
 
-    undistribute(di)
+    @test distributed_collect(di, free=true)==d
 
     @test sum([sizeof(get_val_from(w, :test)) for w in W])==0
 end
@@ -75,6 +74,8 @@ end
     @test distributed_foreach(t, (i) -> eval(:(sum($i .* $(di.val)))), W) == exp
 
     undistribute(di)
+
+    @test distributed_mapreduce(:noname, x->x, (a,b)->a+b, []) == nothing
 end
 
 @testset "Distributed utilities" begin
@@ -100,6 +101,9 @@ end
     di2=distributed_import(:test2, di.workers, files)
 
     @test orig==distributed_collect(di2)
+
+    undistribute(di)
+    undistribute(di2)
 
     distributed_unlink(di)
 
