@@ -59,7 +59,7 @@ module GigaSOM
         loadFCSHeader,
         getFCSSize,
         loadFCSSizes,
-        loadData
+        loadFCSSet
 
     export #io/splitting
         slicesof,
@@ -67,8 +67,8 @@ module GigaSOM
 
     export #io/process
         cleanNames!,
-        createDaFrame,
-        getMarkers
+        getMetaData,
+        getMarkerNames
 
     export # plotting
         plotCounts,
@@ -77,6 +77,7 @@ module GigaSOM
     export #dataops (higher-level operations on data)
         dcopy,
         dselect,
+        colnameIndexes,
         dapply_cols,
         dapply_rows,
         dstat,

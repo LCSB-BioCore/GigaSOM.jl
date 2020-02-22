@@ -1,4 +1,6 @@
 
+@testset "Distributed data handling" begin
+
 @testset "Distributed data transfers -- local" begin
     data=rand(5)
     save_at(1, :test, data)
@@ -112,3 +114,5 @@ end
 
 rmprocs(W)
 W = nothing
+
+end

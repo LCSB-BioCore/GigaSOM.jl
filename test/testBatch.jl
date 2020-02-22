@@ -1,37 +1,28 @@
 
-checkDir()
-cwd = pwd()
-#fix the seed
+@testset "Single-CPU batch processing" begin
+
 Random.seed!(1)
+som = initGigaSOM(pbmc8_data, 10, 10)
 
-# only use lineageMarkers for clustering
-(lineageMarkers,)= getMarkers(panel)
-cc = map(Symbol, lineageMarkers)
-dfSom = daf.fcstable[:,cc]
-
-som2 = initGigaSOM(dfSom, 10, 10)
-
-@testset "Dimensions - batch" begin
-    @test size(som2.codes) == (100,10)
-    @test som2.xdim == 10
-    @test som2.ydim == 10
-    @test som2.numCodes == 100
+@testset "Check SOM dimensions" begin
+    @test size(som.codes) == (100,10)
+    @test som.xdim == 10
+    @test som.ydim == 10
+    @test som.numCodes == 100
 end
 
-# using batch som with epochs
-som2 = trainGigaSOM(som2, dfSom, epochs = 1)
+som = trainGigaSOM(som, pbmc8_data, epochs = 1)
 
-winners = mapToGigaSOM(som2, dfSom)
+winners = mapToGigaSOM(som, pbmc8_data)
 
-embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.1, adjust=2.3, m=4.5)
+embed = embedGigaSOM(som, pbmc8_data, k=10, smooth=0.1, adjust=2.3, m=4.5)
 
-#test batch
-@testset "Batch" begin
-    codes = som2.codes
+@testset "Check results" begin
+    codes = som.codes
     @test size(codes) == (100,10)
 
     dfCodes = DataFrame(codes)
-    rename!(dfCodes, Symbol.(som2.colNames))
+    rename!(dfCodes, Symbol.(antigens))
     dfEmbed = DataFrame(embed)
     CSV.write(genDataPath*"/batchDfCodes.csv", dfCodes)
     CSV.write(genDataPath*"/batchWinners.csv", winners)
@@ -54,8 +45,6 @@ embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.1, adjust=2.3, m=4.5)
     @test refBatchWinners == batchWinnersTest
     @test refBatchDfCodes == batchDfCodesTest
     @test Array{Float64,2}(refBatchEmbedded) ≈ Array{Float64,2}(batchEmbeddedTest) atol=1e-4
+end
 
-    for (i, j) in zip(batchDfCodesTest[:,1], refBatchDfCodes[:,1])
-        @test isapprox(i, j; atol = 0.001)
-    end
 end

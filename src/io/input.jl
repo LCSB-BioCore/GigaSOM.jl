@@ -21,7 +21,9 @@ Create a dictionary with a single flowframe
 - `filename`: string
 """
 function readFlowFrame(fn::String)::DataFrame
-    _, _, colnames, data = loadFCS(fn)
+    params, data = loadFCS(fn)
+    _, colnames = getMarkerNames(getMetaData(params))
+    cleanNames!(colnames)
     return DataFrame(data, Symbol.(colnames))
 end
 
@@ -75,10 +77,10 @@ function getFCSSize(offsets, params)::Tuple{Int,Int}
 
     #check that the $TOT and $PAR look okay
     if !(offsets[3]==0 && offsets[4]==0) &&
-        (1+offsets[4]-offsets[3] != nData*nParams*4 ||
+        ((1+offsets[4]-offsets[3] != nData*nParams*4 &&
+        offsets[4]-offsets[3] != nData*nParams*4) ||
         offsets[3]!=beginData || offsets[4] != endData)
-        @error "Data size mismatch, FCS is likely broken."
-        error("Data size mismatch")
+        @warn "Data size mismatch, FCS is likely broken."
     end
 
     return (nData, nParams)
@@ -107,17 +109,15 @@ Read a FCS file. Return a tuple that contains in order:
 - prettified and annotated column names
 - raw data matrix
 """
-function loadFCS(fn::String)::Tuple{Dict{String,String}, Vector{String}, Vector{String}, Matrix{Float64}}
+function loadFCS(fn::String)::Tuple{Dict{String,String}, Matrix{Float64}}
     fcs = FileIO.load(fn)
     meta = getMetaData(fcs.params)
-    colnames, nicenames = getMarkerNames(meta)
-    cleanNames!(nicenames)
-    data = hcat(map(x->Vector{Float64}(fcs.data[x]), colnames)...)
-    return (fcs.params, colnames, nicenames, data)
+    data = hcat(map(x->Vector{Float64}(fcs.data[x]), meta[:,:N])...)
+    return (fcs.params, data)
 end
 
 """
-    loadData(name::Symbol, fns::Vector{String}, pids=workers())::LoadedDataInfo
+    loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers())::LoadedDataInfo
 
 This runs the FCS loading machinery in a distributed way, so that the files
 `fns` (with full path) are sliced into equal parts and saved as a distributed
@@ -131,7 +131,7 @@ The loaded dataset can be manipulated by the distributed functions, e.g.
 - `dtransform_asinh` (and others) for transformation
 - etc.
 """
-function loadData(name::Symbol, fns::Vector{String}, pids=workers())::LoadedDataInfo
+function loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers())::LoadedDataInfo
     slices = slicesof(loadFCSSizes(fns), length(pids))
     distributed_foreach(slices,
         (slice) -> Base.eval(Main, :(

@@ -67,12 +67,10 @@ end
 Distribute the distributed array parts from `dd` into worker-local variable
 `sym`.
 
-Requires `@everywhere import DistributedArrays`.
-
 Returns the `LoadedDataInfo` structure for the distributed data.
 """
 function distribute_darray(sym::Symbol, dd::DArray)::LoadedDataInfo
-    for f in [save_at(pid, sym, :(DistributedArrays.localpart($dd)))
+    for f in [save_at(pid, sym, :($localpart($dd)))
             for pid in dd.pids]
         fetch(f)
     end

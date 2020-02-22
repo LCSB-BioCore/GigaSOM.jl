@@ -18,9 +18,9 @@ checkDir()
 @testset "GigaSOM test suite" begin
     include("testDistributed.jl")
     #include("testDataOps.jl")
-    #include("testIO.jl")
-    #include("testBatch.jl")
-    #include("testParallel.jl")
+    include("testLoadPBMC8.jl") #this loads the PBMC dataset
+    include("testBatch.jl")
+    include("testParallel.jl")
     #include("testSatellites.jl")
     #include("testSplitting.jl")
     #include("testTrainingOuputEquality.jl")

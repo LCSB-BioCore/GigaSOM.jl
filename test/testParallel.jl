@@ -1,52 +1,33 @@
 
-checkDir()
-cdw = pwd()
+@testset "Parallel processing" begin
 
 #fix the seed
 Random.seed!(1)
 
-if nprocs() <= 2
-    p = addprocs(2)
-end
-@everywhere using DistributedArrays
+W = addprocs(2)
 @everywhere using GigaSOM
-@everywhere using Distances
 
+som = initGigaSOM(pbmc8_data, 10, 10)
 
-# only use lineageMarkers for clustering
-(lineageMarkers,)= getMarkers(panel)
-cc = map(Symbol, lineageMarkers)
-dfSom = daf.fcstable[:,cc]
-
-# concatenate the dataset for performance testing
-n = 0
-for i in 1:n
-    global dfSom
-    dfSom = vcat(dfSom, dfSom)
+@testset "Check SOM dimensions" begin
+    @test size(som.codes) == (100,10)
+    @test som.xdim == 10
+    @test som.ydim == 10
+    @test som.numCodes == 100
 end
 
-som2 = initGigaSOM(dfSom, 10, 10)
+som = trainGigaSOM(som, pbmc8_data, epochs = 2, rStart = 6.0)
 
-@testset "Dimensions - parallel" begin
-    @test size(som2.codes) == (100,10)
-    @test som2.xdim == 10
-    @test som2.ydim == 10
-    @test som2.numCodes == 100
-end
+winners = mapToGigaSOM(som, pbmc8_data)
 
-som2 = trainGigaSOM(som2, dfSom, epochs = 2, rStart = 6.0)
+embed = embedGigaSOM(som, pbmc8_data, k=10, smooth=0.1, adjust=2.3, m=4.5)
 
-winners = mapToGigaSOM(som2, dfSom)
-
-embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.1, adjust=2.3, m=4.5)
-
-#test parallel
-@testset "Parallel" begin
-    codes = som2.codes
+@testset "Check results" begin
+    codes = som.codes
     @test size(codes) == (100,10)
 
     dfCodes = DataFrame(codes)
-    rename!(dfCodes, Symbol.(som2.colNames))
+    rename!(dfCodes, Symbol.(antigens))
     dfEmbed = DataFrame(embed)
     CSV.write(genDataPath*"/parallelDfCodes.csv", dfCodes)
     CSV.write(genDataPath*"/parallelWinners.csv", winners)
@@ -69,27 +50,8 @@ embed = embedGigaSOM(som2, dfSom, k=10, smooth=0.1, adjust=2.3, m=4.5)
     @test refParallelWinners == parallelWinnersTest
     @test refParallelDfCodes == parallelDfCodesTest
     @test Array{Float64,2}(refParallelEmbedded) ≈ Array{Float64,2}(parallelEmbeddedTest) atol=1e-4
-
-    #test parallel
-    for (i, j) in zip(parallelDfCodes[:,1], refParallelDfCodes[:,1])
-        @test isapprox(i, j; atol = 0.001)
-    end
-
 end
 
-@testset "single file training (to be deprecated)" begin
-    cd(dataPath)
-    filename = md.file_name[1]
-    ff = readFlowFrame(filename)
-    cleanNames!(ff)
-    dafsingle = createDaFrame(ff, md, panel)
-    dfSom = dafsingle.fcstable[:,cc]
-    som2 = initGigaSOM(dfSom, 10, 10)
-    som2 = trainGigaSOM(som2, dfSom, epochs = 2, rStart = 6.0)
-    winners = mapToGigaSOM(som2, dfSom)
-    @test typeof(winners) == DataFrame
+rmprocs(W)
+
 end
-
-rmprocs(workers())
-
-cd(cdw)
