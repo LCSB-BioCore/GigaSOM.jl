@@ -107,6 +107,7 @@ function distributed_transform(val, fn, workers, tgt::Symbol=val)
     for f in [ save_at(pid, tgt, :($fn($val))) for pid in workers ]
         fetch(f)
     end
+    return LoadedDataInfo(tgt, workers)
 end
 
 """
@@ -116,7 +117,6 @@ Same as `distributed_transform`, but specialized for `LoadedDataInfo`.
 """
 function distributed_transform(dInfo::LoadedDataInfo, fn, tgt::Symbol=dInfo.val)
     distributed_transform(dInfo.val, fn, dInfo.workers, tgt)
-    return LoadedDataInfo(tgt, dInfo.workers)
 end
 
 """

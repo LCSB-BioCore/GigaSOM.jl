@@ -21,7 +21,7 @@ Create a dictionary with a single flowframe
 - `filename`: string
 """
 function readFlowFrame(fn::String)::DataFrame
-    _, _, colnames, data = readFCS(fn)
+    _, _, colnames, data = loadFCS(fn)
     return DataFrame(data, Symbol.(colnames))
 end
 

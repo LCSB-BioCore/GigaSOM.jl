@@ -90,10 +90,10 @@ module GigaSOM
         remove_from,
         distribute_darray,
         undistribute_darray,
-        distribute_jls_data,
         undistribute,
         distributed_transform,
         distributed_mapreduce,
+        distributed_foreach,
         distributed_collect
 
 
