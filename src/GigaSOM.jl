@@ -94,7 +94,10 @@ module GigaSOM
         distributed_transform,
         distributed_mapreduce,
         distributed_foreach,
-        distributed_collect
+        distributed_collect,
+        distributed_export,
+        distributed_import,
+        distributed_unlink
 
 
 end # module
