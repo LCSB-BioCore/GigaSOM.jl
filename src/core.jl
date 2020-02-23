@@ -93,6 +93,7 @@ end
 function trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
+                      somDistFun = distMatrix(Chebyshev()),
                       knnTreeFun = BruteTree,
                       rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
                       epochs = 10)
@@ -104,7 +105,7 @@ function trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
     end
 
     # get the SOM neighborhood distances
-    dm = distMatrix(som.grid, som.toroidal)
+    dm = somDistFun(som.grid)
 
     codes = som.codes
 

@@ -130,31 +130,19 @@ Return the distance matrix for a non-toroidal or toroidal SOM.
 with x-coordinates in 1st column and y-coordinates in 2nd column.
 - `toroidal`: true for a toroidal SOM.
 """
-function distMatrix(grid::Array, toroidal::Bool)::Array{Float64, 2}
+function distMatrix(metric)
+    return (grid::Matrix{Float64}) -> begin
+        n = size(grid,1)
+        dm = zeros(Float64, n, n)
 
-    X = 1
-    Y = 2
-    xdim = maximum(grid[:,X]) - minimum(grid[:,X]) + 1.0
-    ydim = maximum(grid[:,Y]) - minimum(grid[:,Y]) + 1.0
-
-    numNeurons = size(grid,1)
-
-    dm = zeros(Float64, (numNeurons,numNeurons))
-    for i in 1:numNeurons
-        for j in 1:numNeurons
-            Δx = abs(grid[i,X] - grid[j,X])
-            Δy = abs(grid[i,Y] - grid[j,Y])
-
-            if toroidal
-                Δx = min(Δx, xdim-Δx)
-                Δy = min(Δy, ydim-Δy)
+        for i in 1:n
+            for j in 1:n
+                dm[i,j] = metric(grid[i,:], grid[j,:])
             end
-
-            dm[i,j] = √(Δx^2 + Δy^2)
         end
-    end
 
-    return dm
+        return dm::Matrix{Float64}
+    end
 end
 
 
