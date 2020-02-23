@@ -50,7 +50,7 @@ cleanNames!(fcsAntigens)
 di=loadFCSSet(:fcsData, md[:,:file_name], [myid()])
 
 #prepare the data a bit
-dselect(di, colnameIndexes(fcsAntigens, antigens))
+dselect(di, fcsAntigens, antigens)
 cols=Vector(1:length(antigens))
 dtransform_asinh(di, cols, 5)
 dscale(di, cols)

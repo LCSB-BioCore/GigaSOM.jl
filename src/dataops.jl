@@ -13,8 +13,21 @@ end
 
 Reduce dataset to selected columns, optionally save it under a different name.
 """
-function dselect(dInfo::LoadedDataInfo, columns::Vector{Int}; tgt=dInfo.val)::LoadedDataInfo
+function dselect(dInfo::LoadedDataInfo, columns::Vector{Int}, tgt::Symbol=dInfo.val)::LoadedDataInfo
     distributed_transform(dInfo, mtx->mtx[:,columns], tgt)
+end
+
+"""
+    function dselect(dInfo::LoadedDataInfo,
+        currentColnames::Vector{String}, selectColnames::Vector{String};
+        tgt=dInfo.val)::LoadedDataInfo
+
+Convenience overload of `dselect` that works with column names.
+"""
+function dselect(dInfo::LoadedDataInfo,
+    currentColnames::Vector{String}, selectColnames::Vector{String},
+    tgt=dInfo.val)::LoadedDataInfo
+    dselect(dInfo, colnameIndexes(currentColnames, selectColnames), tgt)
 end
 
 """
@@ -34,19 +47,6 @@ function colnameIndexes(colnames::Vector{String}, query::Vector{String})::Vector
         end
         idx
     end for q in query ]
-end
-
-"""
-    function dselect(dInfo::LoadedDataInfo,
-        currentColnames::Vector{String}, selectColnames::Vector{String};
-        tgt=dInfo.val)::LoadedDataInfo
-
-Convenience overload of `dselect` that works with column names.
-"""
-function dselect(dInfo::LoadedDataInfo,
-    currentColnames::Vector{String}, selectColnames::Vector{String};
-    tgt=dInfo.val)::LoadedDataInfo
-    dselect(dInfo, colnameIndexes(currentColnames, selectColnames), tgt)
 end
 
 """

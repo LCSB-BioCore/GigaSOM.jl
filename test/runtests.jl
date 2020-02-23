@@ -26,9 +26,8 @@ checkDir()
 
     include("testBatch.jl")
     include("testParallel.jl")
-    #include("testTrainingOuputEquality.jl")
-    #include("testSingleFileSplitting.jl")
-    #include("testLoadData.jl")
+
+    include("testFileSplitting.jl")
 end
 
 cd(owd)

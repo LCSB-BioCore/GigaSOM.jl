@@ -72,4 +72,12 @@ undistribute(di1)
 undistribute(di2)
 rmprocs(W)
 
+d=ones(Float64, 2,2)
+di = distribute_array(:test, d, [1])
+dscale(di, [1,2])
+@testset "dscale does not produce NaNs on sdev==0" begin
+    @test distributed_collect(di)==zeros(Float64, 2,2)
+end
+undistribute(di)
+
 end

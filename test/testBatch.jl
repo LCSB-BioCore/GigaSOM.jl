@@ -4,6 +4,13 @@
 Random.seed!(1)
 som = initGigaSOM(pbmc8_data, 10, 10)
 
+#check whether the distributed version works the same
+save_at(1, :test, pbmc8_data)
+Random.seed!(1)
+som2 = initGigaSOM(LoadedDataInfo(:test, [1]), 10, 10)
+@test som.codes == som2.codes
+remove_from(1, :test)
+
 @testset "Check SOM dimensions" begin
     @test size(som.codes) == (100,10)
     @test som.xdim == 10
