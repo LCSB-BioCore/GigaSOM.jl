@@ -35,17 +35,12 @@ function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim;
     normParams = convert(DataFrame, normParams)
     rename!(normParams, Symbol.(colNames))
 
-    # create X,Y-indices for neurons:
-    #
-    x = y = collect(1:numCodes)
-    indices = DataFrame(X = x, Y = y)
-
     # make SOM object:
     som = Som(codes = codes, colNames = colNames,
            normParams = normParams, norm = norm,
            xdim = xdim, ydim = ydim,
            numCodes = numCodes,
-           grid = grid, indices = indices,
+           grid = grid,
            toroidal = toroidal,
            population = zeros(Int, numCodes))
     return som

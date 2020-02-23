@@ -33,7 +33,6 @@ Structure to hold all data of a trained SOM.
 - `grid::Array{Float64,2}`: 2D-array of coordinates of neurons on the map
           (2 columns (x,y)] for rectangular and hexagonal maps
            3 columns (x,y,z) for spherical maps)
-- `indices::DataFrame`: X-, Y-indices of the neurons
 - `topol::Symbol`: topology of the SOM; one of `:rectangular, :hexagonal, :spherical`
 - `toroidal::Bool`: if `true`, the SOM is toroidal (has no edges)
 - `population::Array{Int,1}`: 1D-array of numbers of training samples mapped to
@@ -48,7 +47,6 @@ mutable struct Som
     ydim::Int
     numCodes::Int
     grid::Array{Float64,2}
-    indices::DataFrame
     topol::Symbol       # one of :rectangular :hexagonal :spherical
     toroidal::Bool
     population::Array{Int,1}
@@ -61,8 +59,7 @@ mutable struct Som
         ydim::Int = 1,
         numCodes::Int = 1,
         grid::Array{Float64,2} = zeros(1,1),
-        indices::DataFrame = DataFrame(),
-        topol::Symbol = :hexagonal,
+        topol::Symbol = :rectangular,
         toroidal::Bool = false,
         population::Array{Int,1} = [1]) = new(codes,
                                               colNames,
@@ -72,7 +69,6 @@ mutable struct Som
                                               ydim,
                                               numCodes,
                                               grid,
-                                              indices,
                                               topol,
                                               toroidal,
                                               population)
