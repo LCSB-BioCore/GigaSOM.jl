@@ -34,8 +34,8 @@
     @testset "slice collection" begin
         s = slicesof([4,4], 3)
         
-        @test vcollectSlice(i -> repeat([i],4), s[1]) == [1;1;1]
-        @test vcollectSlice(i -> repeat([i],4), s[2]) == [1;2;2]
-        @test vcollectSlice(i -> repeat([i],4), s[3]) == [2;2]
+        @test vcollectSlice(i -> repeat([i],4), s[1])[:,1] == [1,1,1]
+        @test vcollectSlice(i -> repeat([i],4), s[2])[:,1] == [1,2,2]
+        @test vcollectSlice(i -> repeat([i],4), s[3])[:,1] == [2,2]
     end
 end

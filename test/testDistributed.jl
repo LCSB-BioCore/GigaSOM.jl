@@ -44,7 +44,12 @@ end
     end
 
     @test distributed_collect(di, free=true)==d
+    @test sum([sizeof(get_val_from(w, :test)) for w in W])==0
 
+    di = distribute_array(:test, d, W)
+    @test distributed_collect(di, free=false)==d
+    @test sum([sizeof(get_val_from(w, :test)) for w in W])>0
+    undistribute(di)
     @test sum([sizeof(get_val_from(w, :test)) for w in W])==0
 end
 

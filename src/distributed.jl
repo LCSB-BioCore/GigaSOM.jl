@@ -62,7 +62,30 @@ function remove_from(worker, sym::Symbol)
 end
 
 """
-    distribute(sym, dd::DArray)::LoadedDataInfo
+    distribute_array(sym, x::Array, pids; dim=1)::LoadedDataInfo
+
+Distribute roughly equal parts of array `x` separated on dimension `dim` among
+`pids` into a worker-local variable `sym`.
+
+Returns the `LoadedDataInfo` structure for the distributed data.
+"""
+function distribute_array(sym::Symbol, x::Array, pids; dim=1)::LoadedDataInfo
+    n = length(pids)
+    dims = size(x)
+
+    for f in [begin
+            extent=[(1:s) for s in dims]
+            extent[dim]=(1+div((wid-1)*dims[dim],n)):div(wid*dims[dim],n)
+            save_at(pid, sym, x[extent...])
+        end for (wid,pid) in enumerate(pids)]
+        fetch(f)
+    end
+
+    return LoadedDataInfo(sym, pids)
+end
+
+"""
+    distribute_darray(sym, dd::DArray)::LoadedDataInfo
 
 Distribute the distributed array parts from `dd` into worker-local variable
 `sym`.
@@ -78,7 +101,7 @@ function distribute_darray(sym::Symbol, dd::DArray)::LoadedDataInfo
 end
 
 """
-    undistribute_data(sym, workers)
+    undistribute(sym, workers)
 
 Remove the loaded data from workers.
 """
@@ -89,7 +112,7 @@ function undistribute(sym::Symbol, workers)
 end
 
 """
-    undistribute_data(dInfo::LoadedDataInfo)
+    undistribute(dInfo::LoadedDataInfo)
 
 Remove the loaded data described by `dInfo` from the corresponding workers.
 """

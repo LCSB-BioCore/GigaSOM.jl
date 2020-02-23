@@ -101,7 +101,7 @@ function embedGigaSOM(som::GigaSOM.Som,
 
     data = convertTrainingData(data)
 
-    dInfo = distribute_darray(:embeddingDataVar, distribute(data))
+    dInfo = distribute_array(:embeddingDataVar, data, workers())
     rInfo = embedGigaSOM(som, dInfo,
         knnTreeFun=knnTreeFun, metric=metric,
         k=k, adjust=adjust, smooth=smooth, m=m)

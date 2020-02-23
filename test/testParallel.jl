@@ -1,12 +1,10 @@
 
 @testset "Parallel processing" begin
 
-#fix the seed
-Random.seed!(1)
-
 W = addprocs(2)
 @everywhere using GigaSOM
 
+Random.seed!(1)
 som = initGigaSOM(pbmc8_data, 10, 10)
 
 @testset "Check SOM dimensions" begin

@@ -17,12 +17,15 @@ checkDir()
 
 @testset "GigaSOM test suite" begin
     include("testDistributed.jl")
-    #include("testDataOps.jl")
-    include("testLoadPBMC8.jl") #this loads the PBMC dataset
-    include("testBatch.jl")
-    include("testParallel.jl")
+    include("testDataOps.jl")
     include("testTrainutils.jl")
     include("testSplitting.jl")
+
+    #this loads the PBMC dataset required for the following tests
+    include("testLoadPBMC8.jl")
+
+    include("testBatch.jl")
+    include("testParallel.jl")
     #include("testTrainingOuputEquality.jl")
     #include("testSingleFileSplitting.jl")
     #include("testLoadData.jl")
