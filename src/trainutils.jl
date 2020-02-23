@@ -31,7 +31,7 @@ Use: `trainGigaSOM(..., radiusFun = expRadius(0.5))`
   from -100.0 (almost linear) to 100.0 (really quick decay).
 
 """
-function expRadius(steepness::Float64 = 1.0)
+function expRadius(steepness::Float64 = 0.0)
     return (initRadius::Float64, finalRadius::Float64,
             iteration::Int64, epochs::Int64) -> begin
 
