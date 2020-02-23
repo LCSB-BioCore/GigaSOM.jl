@@ -100,7 +100,7 @@ function trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
 
     # set the default radius
     if rStart == 0.0
-        rStart = √(som.xdim^2 + som.ydim^2) / 2
+        rStart = (som.xdim + som.ydim) / 2
         @debug "The radius has been determined automatically." rStart rFinal
     end
 

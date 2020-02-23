@@ -90,14 +90,11 @@ end
 """
     gaussianKernel(x, r::Float64)
 
-Return Gaussian(x) for μ=0.0 and σ = r/3.
-(a value of σ = r/3 makes the training results comparable between different kernels
-for same values of r).
-
+Return the value of normal distribution PDF (σ=`r`, μ=0) at `x`
 """
 function gaussianKernel(x, r::Float64)
 
-    return Distributions.pdf.(Distributions.Normal(0.0,r/3), x)
+    return Distributions.pdf.(Distributions.Normal(0.0,r), x)
 end
 
 function bubbleKernelSqScalar(x::Float64, r::Float64)
