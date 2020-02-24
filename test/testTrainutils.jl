@@ -33,7 +33,7 @@
 
     @testset "distMatrix" begin
         g = GigaSOM.gridRectangular(2,2)
-        dm = GigaSOM.distMatrix(g, false)
+        dm = GigaSOM.distMatrix(g)
         @test size(dm) == (4,4)
         @test all([dm[i,i]==0 for i in 1:4])
     end
