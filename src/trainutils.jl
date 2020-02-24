@@ -116,6 +116,17 @@ function bubbleKernel(x, r::Float64)
     return bubbleKernelSqScalar.(x.^2,r^2)
 end
 
+"""
+    thresholdKernel(x, r::Float64)
+
+Simple FlowSOM-like hard-threshold kernel
+"""
+function thresholdKernel(x, r::Float64, maxRatio=1/3, zero=1e-6)
+    if r >= maxRatio*maximum(x) #prevent smoothing everything to a single point
+        r = maxRatio*maximum(x)
+    end
+    return zero.+(x.<=r)
+end
 
 """
     distMatrix(grid::Array, toroidal::Bool)::Array{Float64, 2}
@@ -141,7 +152,6 @@ function distMatrix(metric)
         return dm::Matrix{Float64}
     end
 end
-
 
 """
     normTrainData(train::Array{Float64, 2}, norm::Symbol)

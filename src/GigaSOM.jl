@@ -42,7 +42,8 @@ module GigaSOM
         linearRadius,
         expRadius,
         gaussianKernel,
-        bubbleKernel
+        bubbleKernel,
+        thresholdKernel
 
     export #embedding
         embedGigaSOM
