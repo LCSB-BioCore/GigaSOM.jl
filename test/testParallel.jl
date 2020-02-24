@@ -18,7 +18,7 @@ som = trainGigaSOM(som, pbmc8_data, epochs = 2, rStart = 6.0)
 
 winners = mapToGigaSOM(som, pbmc8_data)
 
-embed = embedGigaSOM(som, pbmc8_data, k=10, smooth=0.1, adjust=2.3, m=4.5)
+embed = embedGigaSOM(som, pbmc8_data)
 
 @testset "Check results" begin
     codes = som.codes
