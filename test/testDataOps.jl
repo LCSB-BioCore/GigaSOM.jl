@@ -19,6 +19,16 @@ dd=dd[:,subsel]
 dselect(di1, subsel)
 dselect(di2, subsel)
 
+@testset "dapply_cols, dapply_rows" begin
+    diV=distribute_array(:testV, dd, W[1:1])
+    diH=distribute_array(:testH, Matrix(dd'), W[1:1])
+    dapply_cols(diV, (x,_) -> x./sum(x), Vector(1:3))
+    dapply_rows(diH, x -> x./sum(x))
+    @test isapprox(distributed_collect(diV), Matrix(distributed_collect(diH)'))
+    undistribute(diV)
+    undistribute(diH)
+end
+
 @testset "dselect" begin
     @test distributed_collect(di1) == dd
     @test distributed_collect(di2) == dd
