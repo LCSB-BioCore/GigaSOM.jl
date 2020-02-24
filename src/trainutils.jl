@@ -121,7 +121,7 @@ end
 
 Simple FlowSOM-like hard-threshold kernel
 """
-function thresholdKernel(x, r::Float64, maxRatio=1/3, zero=1e-6)
+function thresholdKernel(x, r::Float64, maxRatio=4/5, zero=1e-6)
     if r >= maxRatio*maximum(x) #prevent smoothing everything to a single point
         r = maxRatio*maximum(x)
     end
