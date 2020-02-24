@@ -154,7 +154,7 @@ function trainGigaSOM(som::Som, train;
     train = convertTrainingData(train)
 
     #this slices the data into parts and and sends them to workers
-    dInfo = distribute_array(:trainDataVar, train, workers())
+    dInfo = distribute_array(:GigaSOMtrainDataVar, train, workers())
     res = trainGigaSOM(som, dInfo,
                        kernelFun=kernelFun,
                        metric=metric,
@@ -257,7 +257,7 @@ function mapToGigaSOM(som::Som, data;
         error("Data dimensions do not match")
     end
 
-    dInfo= distribute_array(:mappingDataVar, data, workers())
+    dInfo= distribute_array(:GigaSOMmappingDataVar, data, workers())
     rInfo = mapToGigaSOM(som, dInfo, knnTreeFun=knnTreeFun, metric=metric)
     res = distributed_collect(rInfo)
     undistribute(dInfo)
