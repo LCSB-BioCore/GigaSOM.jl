@@ -50,8 +50,8 @@ embed = embedGigaSOM(som, pbmc8_data, k=10, smooth=0.1, adjust=2.3, m=4.5)
 
     # test the generated data against the reference data
     @test refBatchWinners == batchWinnersTest
-    @test refBatchDfCodes == batchDfCodesTest
-    @test Array{Float64,2}(refBatchEmbedded) ≈ Array{Float64,2}(batchEmbeddedTest) atol=1e-4
+    @test Matrix{Float64}(refBatchDfCodes) ≈ Matrix{Float64}(batchDfCodesTest) atol=1e-4
+    @test Matrix{Float64}(refBatchEmbedded) ≈ Matrix{Float64}(batchEmbeddedTest) atol=1e-4
 end
 
 end
