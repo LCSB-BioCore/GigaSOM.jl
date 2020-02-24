@@ -1,17 +1,13 @@
 """
-    initGigaSOM(train, xdim, ydim = xdim;
-                norm::Symbol = :none, toroidal = false)
+    initGigaSOM(train, xdim, ydim = xdim)
 
 Initializes a SOM by random selection from the training data.
 
 # Arguments:
 - `train`: codeBook vector as random input matrix from random workers
 - `xdim, ydim`: geometry of the SOM
-- `norm`: optional normalisation
-- `toroidal`: optional flag; if true, the SOM is toroidal.
 """
-function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim;
-                     norm::Symbol = :none, toroidal = false)
+function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim)
 
     if typeof(train) == DataFrame
         colNames = [String(x) for x in names(train)]
@@ -24,32 +20,21 @@ function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim;
 
     numCodes = xdim * ydim
 
-    # normalise training data:
-    # TODO: is this needed here?
-    train, normParams = normTrainData(train, norm)
-
     # initialise the codes with random samples
     codes = train[rand(1:size(train,1), numCodes),:]
     grid = gridRectangular(xdim, ydim)
 
-    normParams = convert(DataFrame, normParams)
-    rename!(normParams, Symbol.(colNames))
-
     # make SOM object:
     som = Som(codes = codes, colNames = colNames,
-           normParams = normParams, norm = norm,
            xdim = xdim, ydim = ydim,
            numCodes = numCodes,
-           grid = grid,
-           toroidal = toroidal,
-           population = zeros(Int, numCodes))
+           grid = grid)
     return som
 end
 
 """
     initGigaSOM(trainInfo::LoadedDataInfo,
-                xdim::Int64, ydim :: Int64 = xdim;
-                norm::Symbol = :none, toroidal = false)
+                xdim::Int64, ydim :: Int64 = xdim)
 
 `initGigaSOM` overload for working with distributed-style `LoadedDataInfo`
 data. The rest of arguments is the same as in `initGigaSOM`.
@@ -59,15 +44,11 @@ initialization, and the init work is actually done on that worker to avoid
 unnecessary data copying.
 """
 function initGigaSOM(trainInfo::LoadedDataInfo,
-    xdim::Int64, ydim :: Int64 = xdim;
-    norm::Symbol = :none, toroidal = false)
+    xdim::Int64, ydim :: Int64 = xdim)
 
     # Snatch the init data from the first available worker (for he cares not).
     return get_val_from(trainInfo.workers[1],
-        Expr(:call, :initGigaSOM, trainInfo.val,
-             xdim, ydim,
-             Expr(:kw, :norm, QuoteNode(norm)),
-             Expr(:kw, :toroidal, toroidal)))
+        :(initGigaSOM($(trainInfo.val), $xdim, $ydim)))
 end
 
 """
