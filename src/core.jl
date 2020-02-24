@@ -20,7 +20,7 @@ function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim;
         @debug "assuming default colNames"
     end
 
-    train = convertTrainingData(train)
+    train = Matrix{Float64}(train)
 
     numCodes = xdim * ydim
 
@@ -151,7 +151,7 @@ function trainGigaSOM(som::Som, train;
                       rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
                       epochs = 10)
 
-    train = convertTrainingData(train)
+    train = Matrix{Float64}(train)
 
     #this slices the data into parts and and sends them to workers
     dInfo = distribute_array(:GigaSOMtrainDataVar, train, workers())
@@ -250,7 +250,7 @@ function mapToGigaSOM(som::Som, data;
                       knnTreeFun = BruteTree,
                       metric = Euclidean())
 
-    data = convertTrainingData(data)
+    data = Matrix{Float64}(data)
 
     if size(data,2) != size(som.codes,2)
         @error "Data dimension ($(size(data,2))) does not match codebook dimension ($(size(som.codes,2)))."

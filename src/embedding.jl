@@ -99,7 +99,7 @@ function embedGigaSOM(som::GigaSOM.Som,
                       smooth::Float64=0.0,
                       m::Float64=10.0)
 
-    data = convertTrainingData(data)
+    data = Matrix{Float64}(data)
 
     dInfo = distribute_array(:GigaSOMembeddingDataVar, data, workers())
     rInfo = embedGigaSOM(som, dInfo,

@@ -1,49 +1,4 @@
 """
-    readFlowset(filenames::AbstractArray)
-
-Create a dictionary with filenames as keys and daFrame as values
-
-# Arguments:
-- `filenames`: Array of type string with names of files
-"""
-function readFlowset(filenames::AbstractArray)::Dict{String, DataFrame}
-    @warn "This function will be deprecated in a future version. Please use readFlowFrame(filenames)."
-
-    readFlowFrame(filenames)
-end
-
-"""
-    readFlowFrame(filename)
-
-Create a dictionary with a single flowframe
-
-# Arguments:
-- `filename`: string
-"""
-function readFlowFrame(fn::String)::DataFrame
-    params, data = loadFCS(fn)
-    _, colnames = getMarkerNames(getMetaData(params))
-    cleanNames!(colnames)
-    return DataFrame(data, Symbol.(colnames))
-end
-
-"""
-    readFlowFrame(filenames::AbstractArray)
-
-Create a dictionary with filenames as keys and daFrame as values
-
-# Arguments:
-- `filenames`: Array of type string with names of files
-"""
-function readFlowFrame(filenames::AbstractArray)::Dict{String, DataFrame}
-    flowFrame = Dict()
-    for name in filenames # file list
-        flowFrame[name] = readFlowFrame(name)
-    end
-    return flowFrame
-end
-
-"""
     loadFCSHeader(fn::String)::Tuple{Vector{Int}, Dict{String,String}}
 
 Efficiently extract data offsets and keyword dictionary from an FCS file.
