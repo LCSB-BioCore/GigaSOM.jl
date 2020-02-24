@@ -7,13 +7,21 @@
 
     @testset "Kernels" begin
         @test isapprox(
-            GigaSOM.gaussianKernel(Vector{Float64}(1:7), 5.0),
+            gaussianKernel(Vector{Float64}(1:7), 5.0),
             [0.199934, 0.116511, 0.047370, 0.013436, 0.002659, 0.000367, 0.000035],
             atol = 0.001)
         @test isapprox(
-            GigaSOM.bubbleKernel(Vector{Float64}(1:6), 5.0),
+            bubbleKernel(Vector{Float64}(1:6), 5.0),
             [0.979796, 0.916515, 0.8, 0.6, 0, 0],
             atol = 0.001)
+        @test isapprox(
+            thresholdKernel(Vector{Float64}(1:10), 5.0),
+            [1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            atol=1e-3)
+        @test isapprox(
+            thresholdKernel(Vector{Float64}(1:10), 10.1),
+            [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0],
+            atol=1e-3)
     end
 
     @testset "Radii-generating functions" begin
