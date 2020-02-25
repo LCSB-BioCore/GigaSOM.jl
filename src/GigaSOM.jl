@@ -43,13 +43,13 @@ module GigaSOM
         expRadius,
         gaussianKernel,
         bubbleKernel,
-        thresholdKernel
+        thresholdKernel,
+        distMatrix
 
     export #embedding
         embedGigaSOM
 
     export # structs
-        daFrame,
         Som,
         LoadedDataInfo
 

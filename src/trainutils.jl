@@ -129,7 +129,7 @@ function thresholdKernel(x, r::Float64, maxRatio=4/5, zero=1e-6)
 end
 
 """
-    distMatrix(metric=Euclidean())
+    distMatrix(metric=Chebyshev())
 
 Return a function that uses the `metric` (compatible with metrics from package `Distances`) calculates distance matrixes from normal row-wise data matrices, using the `metric`.
 
