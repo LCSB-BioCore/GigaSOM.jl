@@ -76,8 +76,8 @@ function trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
                       metric = Euclidean(),
                       somDistFun = distMatrix(Chebyshev()),
                       knnTreeFun = BruteTree,
-                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
-                      epochs = 10)
+                      rStart = 0.0, rFinal=0.1, radiusFun=expRadius(-5.0),
+                      epochs = 20)
 
     # set the default radius
     if rStart == 0.0
