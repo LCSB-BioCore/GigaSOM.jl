@@ -55,7 +55,7 @@ function loadFCSSizes(fns::Vector{String})
 end
 
 """
-    loadFCS(fn::String)::Tuple{Dict{String,String}, Vector{String}, Vector{String}, Matrix{Float64}}
+    loadFCS(fn::String; applyCompensation::Bool=true)::Tuple{Dict{String,String}, Matrix{Float64}}
 
 Read a FCS file. Return a tuple that contains in order:
 
@@ -63,20 +63,38 @@ Read a FCS file. Return a tuple that contains in order:
 - raw column names
 - prettified and annotated column names
 - raw data matrix
+
+If `applyCompensation` is set, the function parses and retrieves a spillover
+matrix (if any valid keyword in the FCS is found that would contain it) and
+applies it to compensate the data.
 """
-function loadFCS(fn::String)::Tuple{Dict{String,String}, Matrix{Float64}}
+function loadFCS(fn::String; applyCompensation::Bool=true)::Tuple{Dict{String,String}, Matrix{Float64}}
     fcs = FileIO.load(fn)
     meta = getMetaData(fcs.params)
     data = hcat(map(x->Vector{Float64}(fcs.data[x]), meta[:,:N])...)
+    if applyCompensation
+        spill = getSpillover(fcs.params)
+        if spill!=nothing
+            names, mtx = spill
+            cols = indexin(names, meta[:,:N])
+            if any(cols.==nothing)
+                @error "Unknown columns in compensation matrix" names cols
+                error("Invalid compensation matrix")
+            end
+            compensate!(data, mtx, Vector{Int}(cols))
+        end
+    end
     return (fcs.params, data)
 end
 
 """
-    loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers())::LoadedDataInfo
+    loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyCompensation=true)::LoadedDataInfo
 
 This runs the FCS loading machinery in a distributed way, so that the files
 `fns` (with full path) are sliced into equal parts and saved as a distributed
 variable `name` on workers specified by `pids`.
+
+`applyCompensation` is passed to loadFCS function.
 
 See `slicesof` for description of the slicing.
 
@@ -86,12 +104,12 @@ The loaded dataset can be manipulated by the distributed functions, e.g.
 - `dtransform_asinh` (and others) for transformation
 - etc.
 """
-function loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers())::LoadedDataInfo
+function loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyCompensation=true)::LoadedDataInfo
     slices = slicesof(loadFCSSizes(fns), length(pids))
     distributed_foreach(slices,
         (slice) -> Base.eval(Main, :(
             begin
-                $name = vcollectSlice((i)->last(loadFCS($fns[i])), $slice)
+                $name = vcollectSlice((i)->last(loadFCS($fns[i]; applyCompensation=$applyCompensation)), $slice)
                 nothing
             end
         )), pids)

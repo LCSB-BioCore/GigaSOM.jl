@@ -96,3 +96,51 @@ function getMarkerNames(meta::DataFrame)::Tuple{Vector{String}, Vector{String}}
     end
     return (orig, nice)
 end
+
+
+"""
+    compensate!(data::Matrix{Float64}, spillover::Matrix{Float64}, cols::Vector{Int})
+
+Apply a compensation matrix in `spillover` (the individual columns of which
+describe, in order, the spillover of `cols` in `data`) to the matrix `data`
+in-place.
+"""
+function compensate!(data::Matrix{Float64}, spillover::Matrix{Float64}, cols::Vector{Int})
+    data[:,cols] = data[:,cols] * inv(spillover)
+end
+
+"""
+    parseSpillover(str::String)::Union{Tuple{Vector{String},Matrix{Float64}}, Nothing}
+
+Parses the spillover matrix from the string from FCS parameter value.
+"""
+function parseSpillover(str::String)::Tuple{Vector{String},Matrix{Float64}}
+    fields = split(str, ',')
+    n = parse(Int, fields[1])
+    if length(fields) != 1 + n + n*n
+        @error "Spillover matrix of size $n expects $(1+n+n*n) fields, got $(length(fields)) instead."
+        error("Invalid spillover matrix")
+    end
+
+    names = fields[2:(1+n)]
+    spill = collect(transpose(reshape(parse.(Float64, fields[(2+n):length(fields)]), n, n)))
+
+    names, spill
+end
+
+"""
+    getSpillover(params::Dict{String, String})::Union{Tuple{Vector{String},Matrix{Float64}}, Nothing}
+
+Get a spillover matrix from FCS `params`. Returns a pair with description of
+columns to be applied, and with the actual spillover matrix. Returns `nothing`
+in case spillover is not present.
+"""
+function getSpillover(params::Dict{String, String})::Union{Tuple{Vector{String},Matrix{Float64}}, Nothing}
+    spillNames = ["\$SPILL", "\$SPILLOVER", "SPILL", "SPILLOVER"]
+    for i in spillNames
+        if in(i, keys(params))
+            return parseSpillover(params[i])
+        end
+    end
+    return nothing
+end
