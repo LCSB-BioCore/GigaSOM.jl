@@ -20,6 +20,7 @@ checkDir()
     include("testDataOps.jl")
     include("testTrainutils.jl")
     include("testSplitting.jl")
+    include("testInput.jl")
 
     #this loads the PBMC dataset required for the following tests
     include("testLoadPBMC8.jl")
