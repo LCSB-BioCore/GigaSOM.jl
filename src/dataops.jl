@@ -27,26 +27,12 @@ Convenience overload of `dselect` that works with column names.
 function dselect(dInfo::LoadedDataInfo,
     currentColnames::Vector{String}, selectColnames::Vector{String},
     tgt=dInfo.val)::LoadedDataInfo
-    dselect(dInfo, colnameIndexes(currentColnames, selectColnames), tgt)
-end
-
-"""
-    colnameIndexes(colnames::Vector{String}, query::Vector{String})
-
-Return indexes of `query` items in `colnames`; returns `0` if the query item
-was not found.
-
-Useful for getting the column indexes for functions like `dapply_cols` by
-names.
-"""
-function colnameIndexes(colnames::Vector{String}, query::Vector{String})::Vector{Int}
-    [begin
-        idx = findfirst(x -> x==q, colnames)
-        if idx == nothing
-            idx = 0
-        end
-        idx
-    end for q in query ]
+    colIdxs = indexin(selectColnames, currentColnames)
+    if any(colIdxs.==nothing)
+        @error "Some columns were not found"
+        error("unknown column")
+    end
+    dselect(dInfo, Vector{Int}(colIdxs), tgt)
 end
 
 """

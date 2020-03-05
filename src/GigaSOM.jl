@@ -78,7 +78,6 @@ module GigaSOM
     export #dataops (higher-level operations on data)
         dcopy,
         dselect,
-        colnameIndexes,
         dapply_cols,
         dapply_rows,
         dstat,
