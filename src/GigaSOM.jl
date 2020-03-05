@@ -82,7 +82,11 @@ module GigaSOM
         dapply_rows,
         dstat,
         dscale,
-        dtransform_asinh
+        dtransform_asinh,
+        bucketmap
+        dmedian,
+        dstat_buckets,
+        dmedian_buckets
 
     export #distributed data tools
         save_at,

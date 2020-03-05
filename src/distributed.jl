@@ -204,7 +204,40 @@ function distributed_mapreduce(dInfo::LoadedDataInfo, map, fold)
 end
 
 """
-    distributed_collect(val::Symbol, workers, dim=1)
+    distributed_mapreduce(vals::Vector, map, fold, workers)
+
+Variant of `distributed_mapreduce` that works with more distributed variables
+at once.
+"""
+function distributed_mapreduce(vals::Vector, map, fold, workers)
+    return distributed_mapreduce(Expr(:vect, vals...),
+        vals -> map(vals...),
+        fold,
+        workers)
+end
+
+"""
+    distributed_mapreduce(dInfo1::LoadedDataInfo, dInfo2::LoadedDataInfo, map, fold)
+
+Variant of `distributed_mapreduce` that works with more `LoadedDataInfo`s at
+once.  The data must be distributed on the same set of workers, in the same
+order.
+"""
+function distributed_mapreduce(dInfos::Vector{LoadedDataInfo}, map, fold)
+    if(isempty(dInfos))
+        return nothing
+    end
+
+    if any([dInfos[1].workers] .!= [di.workers for di in dInfos])
+        @error "workers in LoadedDataInfo objects do not match" dInfos[1].workers
+        error("data distribution mismatch")
+    end
+
+    return distributed_mapreduce([di.val for di in dInfos], map, fold, dInfos[1].workers)
+end
+
+"""
+    distributed_collect(val::Symbol, workers, dim=1; free=false)
 
 Collect the arrays distributed on `workers` under value `val` into an array. The
 individual arrays are pasted in the dimension specified by `dim`, i.e. `dim=1`
@@ -238,7 +271,7 @@ function distributed_collect(val::Symbol, workers, dim=1; free=false)
 end
 
 """
-    distributed_collect(dInfo::LoadedDataInfo, dim=1)
+    distributed_collect(dInfo::LoadedDataInfo, dim=1; free=false)
 
 Distributed collect (just as the other overload) that works with
 `LoadedDataInfo`.
