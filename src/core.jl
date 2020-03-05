@@ -55,9 +55,10 @@ end
     trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
                  kernelFun::Function = gaussianKernel,
                  metric = Euclidean(),
+                 somDistFun = distMatrix(Chebyshev()),
                  knnTreeFun = BruteTree,
-                 rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
-                 epochs = 10)
+                 rStart = 0.0, rFinal=0.1, radiusFun=expRadius(-5.0),
+                 epochs = 20)
 
 # Arguments:
 - `som`: object of type Som with an initialised som
@@ -65,6 +66,7 @@ end
 - `kernelFun::function`: optional distance kernel; one of (`bubbleKernel, gaussianKernel`)
             default is `gaussianKernel`
 - `metric`: Passed as metric argument to the KNN-tree constructor
+- `somDistFun`: Function for computing the distances in the SOM map
 - `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
 - `rStart`: optional training radius. If zero (default), it is computed from the SOM grid size.
 - `rFinal`: target radius at the last epoch, defaults to 0.1
@@ -114,12 +116,13 @@ function trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
 end
 
 """
-function trainGigaSOM(som::Som, train::DataFrame;
-                      kernelFun::Function = gaussianKernel,
-                      metric = Euclidean(),
-                      knnTreeFun = BruteTree,
-                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
-                      epochs = 10)
+    trainGigaSOM(som::Som, train;
+                 kernelFun::Function = gaussianKernel,
+                 metric = Euclidean(),
+                 somDistFun = distMatrix(Chebyshev()),
+                 knnTreeFun = BruteTree,
+                 rStart = 0.0, rFinal=0.1, radiusFun=expRadius(-5.0),
+                 epochs = 20)
 
 Overload of `trainGigaSOM` for simple DataFrames and matrices. This slices the
 data using `DistributedArrays`, sends them the workers, and runs normal
@@ -128,9 +131,10 @@ data using `DistributedArrays`, sends them the workers, and runs normal
 function trainGigaSOM(som::Som, train;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
+                      somDistFun = distMatrix(Chebyshev()),
                       knnTreeFun = BruteTree,
-                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
-                      epochs = 10)
+                      rStart = 0.0, rFinal=0.1, radiusFun=expRadius(-5.0),
+                      epochs = 20)
 
     train = Matrix{Float64}(train)
 
@@ -139,6 +143,7 @@ function trainGigaSOM(som::Som, train;
     res = trainGigaSOM(som, dInfo,
                        kernelFun=kernelFun,
                        metric=metric,
+                       somDistFun=somDistFun,
                        knnTreeFun=knnTreeFun,
                        rStart=rStart, rFinal=rFinal, radiusFun=radiusFun,
                        epochs=epochs)
