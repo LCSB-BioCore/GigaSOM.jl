@@ -99,7 +99,6 @@ In the result, `index` is a cluster ID for the original datapoint from `d` at
 the same row.
 ```
 10000×1 DataFrames.DataFrame
-10000×1 DataFrames.DataFrame
 │ Row   │ index │
 │       │ Int64 │
 ├───────┼───────┤
@@ -416,11 +415,11 @@ The second parameter of `distributed_mapreduce` describes the "map" step
 (summing/measuring the large matrix), the third is the "reduce" step, which
 takes two intermediate results from 2 workers and reduces it to one.
 
-Row-wise mean (if you don't want to use `dstat`) is slightly more useful (and a
-bit more complicated):
+Column-wise mean (if you don't want to use `dstat`) is slightly more useful
+(and a bit more complicated):
 
 ```julia
-distributed_mapreduce(di, d -> mapslices(sum, d, dims=1), +) ./ distributed_mapreduce(di, length, +)
+distributed_mapreduce(di, d -> mapslices(sum, d, dims=1), +) ./ distributed_mapreduce(di, x->size(x,1), +)
 ```
 
 Finally, for distributed computation of per-cluster mean, the clustering
@@ -428,45 +427,121 @@ information needs to be distributed as well (Fortunately, that is easy, because
 the distributed `mapToGigaSOM` does exactly that).
 
 ```julia
-mapping = mapToGigaSOM(som, mapping)
+mapping = mapToGigaSOM(som, di)
 
 # Optionally, we can transform the mapping to metaclustering with 10 clusters, as above
-metaClustering = cutree(k=10, .....)
+metaClusters = cutree(k=10, .....)
 distributed_transform(mapping, m -> metaClusters[m])
 
-# Run the distributed computation
-sums, counts = distributed_mapreduce(:($(di.val), $(mapping.val)), # combine the distributed variable names
-    ((d, cl)::Tuple) ->
-        ([mapslices(sum, d[cl.==ci,:], dims=1) for ci in 1:10], # per-cluster sums
-         count.([cl.==ci for ci in 1:10])), # cluster cell counts
-    ((s1,c1),(s2,c2)) ->
-        (s1+s2, c1+c2), # combine sums and counts
-    di.workers) # run on workers where the dataset is distributed (mapToGigaSOM preserves this)
+# Run the distributed computation (mapreduce can accept multiple datasets as well)
+# `bucketmap` applies a function over buckets, effectively running the mean over clusters,
+# `catmapbuckets` nicely combines the results into an array
+sumscounts = distributed_mapreduce([di, mapping],
+    (d, mapping) -> catmapbuckets(
+        (_,clData) -> (sum(clData), length(clData)),
+	d, 10, mapping),
+    (a,b) -> (((as,al),(bs,bl)) -> ((as+bs), (al+bl))).(a,b))
+```
 
-clusterMeans = sums ./ counts
+```
+10×4 Array{Tuple{Float64,Int64},2}:
+ (5949.71, 1228)  (-21.9789, 1228)  (12231.3, 1228)  (12303.1, 1228)
+ (6379.98, 1246)  (12464.3, 1246)   (12427.9, 1246)  (12479.8, 1246)
+ (6513.41, 1294)  (12968.8, 1294)   (12960.7, 1294)  (-28.1922, 1294)
+ (6312.37, 1236)  (-26.7392, 1236)  (6.74384, 1236)  (12401.7, 1236)
+ (6395.73, 1285)  (12867.7, 1285)   (-52.653, 1285)  (-26.9795, 1285)
+ (6229.72, 622)   (10.7578, 622)    (6200.1, 622)    (0.882128, 622)
+ (6141.97, 612)   (6078.56, 612)    (45.9878, 612)   (6079.3, 612)
+ (51.3709, 616)   (23.4306, 616)    (6117.53, 616)   (1.15342, 616)
+ (6177.16, 1207)  (-50.4624, 1207)  (48.8023, 1207)  (-5.549, 1207)
+ (8.56597, 654)   (6536.1, 654)     (-29.2208, 654)  (6539.94, 654)
+```
+
+This can be aggregated by distributing the `/` to tuples:
+```julia
+clusterMeans = (x->(/)(x...)).(sumcounts)
 
 # remove the temporary data from workers
 undistribute(mapping)
 ```
 
-If this is used for the first hypercube dataset, you will see many obvious
+If this was used for the first hypercube dataset, you will see many obvious
 hypercube clusters (although not all, because `k=10` is not enough to capture
-all the actual clusters:
+all of the actual 16 clusters):
 
 ```julia
 clusterMeans
 ```
 
 ```
-10-element Array{Array{Float64,2},1}:
- [10.030517727720023 4.969835206294571 -0.002550714707511989 -0.04645512428786515]
- [-0.05756988211396393 9.989581063057557 0.0070989183907681185 0.007732728630400461]
- [0.06642788133290563 0.012891136200321923 0.007461465448833184 0.011347000311884337]
- [-0.01661781514179996 4.926105824766316 10.008631852601253 0.04138709838816687]
- [0.019056476274056117 -0.01733512062946413 4.756495890572492 9.961501755505]
- [9.995998375509929 9.994349888060675 9.960178331885636 -0.0023545779355493087]
- [9.999826927398248 -0.04498249059714222 10.001950728982699 -0.07043172174629345]
- [0.01655170597672653 9.987304613751386 5.1417740549113065 10.018189676094703]
- [10.012585740990803 4.960617697782793 10.054247289887263 10.042549640024358]
- [10.027515119157513 5.060174747324343 -0.06042755838171319 9.988939846372283]
+10×4 Array{Float64,2}:
+  4.84504    -0.0178982   9.96031     10.0188
+  5.12037    10.0034      9.97428     10.0159
+  5.03354    10.0223     10.016       -0.0217869
+  5.10709    -0.0216336   0.00545618  10.0337
+  4.97722    10.0138     -0.0409751   -0.0209958
+ 10.0156      0.0172955   9.968        0.00141821
+ 10.0359      9.93229     0.0751434    9.9335
+  0.0833944   0.0380366   9.93105      0.00187243
+  5.11778    -0.0418081   0.0404327   -0.00459735
+  0.0130978   9.99403    -0.0446802    9.99991
+```
+
+Notably, several of the most used stats functions are available, with a nice frontend.
+
+Distributed median computation (approximative):
+```julia
+dmedian(di, [1,2,3,4])
+```
+
+The medians are slightly off-center because there is a lot of empty space between the clusters:
+```
+3-element Array{Float64,1}:
+ 6.947097488861494
+ 7.934405685940568
+ 7.069149844215707
+ 2.558892109203585
+```
+
+`dstat` function also has the bucketed variant
+
+```julia
+dstat_buckets(di, 10, mapping, [1,2,3,4])[2]   # (taking out only the sdevs, for niceness)
+```
+
+We can count there are 4 "nice" clusters, and 6 clusters that span 2 of the
+original clusters, totally giving 16. (validation succeeded!)
+```
+10×4 Array{Float64,2}:
+ 5.09089   0.997824  1.01815   0.980758
+ 5.13971   1.02019   0.977637  1.00124
+ 5.13209   0.974332  1.00058   0.99874
+ 5.11529   0.998166  1.01825   1.01885
+ 5.10542   1.01686   0.975993  0.991992
+ 0.991075  0.993312  1.00667   1.05048
+ 0.996443  1.02699   0.938742  0.98831
+ 0.946917  0.989543  1.0056    0.999609
+ 5.09963   1.00131   0.978803  0.984435
+ 1.00892   0.998226  1.05538   0.994829
+```
+
+The same for the approximate median:
+```julia
+dmedian_buckets(di, 10, mapping, [1,2,3,4])
+```
+
+Medians should be roughly similar to means, but some of our clusters have a
+hole that the median dodges:
+```
+10×4 Array{Float64,2}:
+  1.97831    -0.0120118    9.98967    10.0161
+  7.99438    10.0263       9.9988     10.0033
+  3.27907     9.98728     10.0254      0.00444198
+  7.91739    -0.0623953   -0.0240277  10.0374
+  2.445      10.0101      -0.0471141  -0.0253346
+ 10.0121      0.00935064   9.94992     0.0459787
+ 10.0512      9.93359      0.0923141   9.91175
+  0.0675462  -0.0142712    9.93406     0.0343599
+  8.09972    -0.0217352    0.0575258  -0.010485
+ -0.0183372  10.0392      -0.115253   10.0101
 ```
