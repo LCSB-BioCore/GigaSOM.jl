@@ -144,6 +144,13 @@ function mapbuckets(map, a::Array, nbuckets::Int, buckets::Vector{Int}; bucketdi
     end for bucket in 1:nbuckets]
 end
 
+"""
+    catmapbuckets(map, a::Array, nbuckets::Int, buckets::Vector{Int}; bucketdim::Int=1)
+
+Same as `mapbuckets`, except concatenates the bucketing results in the
+bucketing dimension, thus creating a slightly neater matrix. `slicedims` is
+therefore fixed to `bucketdim`.
+"""
 function catmapbuckets(map, a::Array, nbuckets::Int, buckets::Vector{Int}; bucketdim::Int=1)
     cat(mapbuckets(map, a, nbuckets, buckets, bucketdim=bucketdim, slicedims=bucketdim)..., dims=bucketdim)
 end
