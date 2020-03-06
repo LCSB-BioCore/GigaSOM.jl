@@ -2,7 +2,7 @@
 """
     dcopy(dInfo::LoadedDataInfo, newName::Symbol)
 
-Copy the dataset into a new place.
+Clone the dataset and store it under a new distributed name `newName`.
 """
 function dcopy(dInfo::LoadedDataInfo, newName::Symbol)::LoadedDataInfo
     distributed_transform(dInfo, x->x, newName)
