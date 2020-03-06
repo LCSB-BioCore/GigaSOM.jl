@@ -32,5 +32,5 @@ Pages = ["embedding.jl"]
 
 ```@autodocs
 Modules = [GigaSOM]
-Pages = ["distributed.jl"]
+Pages = ["distributed.jl", "dio.jl"]
 ```

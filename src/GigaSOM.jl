@@ -18,16 +18,18 @@ module GigaSOM
     using NearestNeighbors
     using Serialization
 
-    include("structs.jl")
+    include("base/structs.jl")
 
-    include("core.jl")
-    include("dataops.jl")
-    include("distributed.jl")
-    include("embedding.jl")
-    include("trainutils.jl")
+    include("base/dataops.jl")
+    include("base/distributed.jl")
+    include("base/trainutils.jl")
 
-    include("io/process.jl")
+    include("analysis/core.jl")
+    include("analysis/embedding.jl")
+
+    include("io/dio.jl")
     include("io/input.jl")
+    include("io/process.jl")
     include("io/splitting.jl")
 
     # include visualization files
