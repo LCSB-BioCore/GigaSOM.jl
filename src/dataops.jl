@@ -40,18 +40,16 @@ end
 
 Apply a function `fn` over columns of a distributed dataset.
 
-`fn` gets 2 parameters:
+`fn` gets _2_ parameters:
 - a data vector for (the whole column saved at one worker)
 - index of the column in the `columns` array (i.e. a number from
   `1:length(columns)`)
 """
 function dapply_cols(dInfo::LoadedDataInfo, fn, columns::Vector{Int})
-    distributed_mapreduce(dInfo,
-        x -> (
-            for (idx,c) in enumerate(columns)
-                x[:,c]=fn(x[:,c], idx)
-            end
-        ), (_,_) -> nothing)
+    distributed_exec(dInfo, x -> (
+        for (idx,c) in enumerate(columns)
+            x[:,c]=fn(x[:,c], idx)
+        end))
 end
 
 """
@@ -62,12 +60,10 @@ Apply a function `fn` over rows of a distributed dataset.
 `fn` gets a single vector parameter for each row to transform.
 """
 function dapply_rows(dInfo::LoadedDataInfo, fn)
-    distributed_mapreduce(dInfo,
-        x -> (
-            for i in 1:size(x,1)
-                x[i,:]=fn(x[i,:])
-            end
-        ), (_,_) -> nothing)
+    distributed_exec(dInfo, x -> (
+        for i in 1:size(x,1)
+            x[i,:]=fn(x[i,:])
+        end))
 end
 
 """

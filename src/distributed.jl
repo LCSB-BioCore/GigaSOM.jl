@@ -121,6 +121,28 @@ function undistribute(dInfo::LoadedDataInfo)
 end
 
 """
+    distributed_exec(val, fn, workers)
+
+Execute a function on workers, taking `val` as a parameter. Results are not
+collected. This is optimal for various side-effect-causing computations that
+are not expressible with `distributed_transform`.
+"""
+function distributed_exec(val, fn, workers)
+    for f in [get_from(pid, :(begin; $fn($val); nothing; end)) for pid in workers]
+        fetch(f)
+    end
+end
+
+"""
+    distributed_exec(dInfo::LoadedDataInfo, fn)
+
+Variant of `distributed_exec` that works with `LoadedDataInfo`.
+"""
+function distributed_exec(dInfo::LoadedDataInfo, fn)
+    distributed_exec(dInfo.val, fn, dInfo.workers)
+end
+
+"""
     distributed_transform(val, fn, workers, tgt::Symbol=val)
 
 Transform the worker-local distributed data available as `val` on `workers`
