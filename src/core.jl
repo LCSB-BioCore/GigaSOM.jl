@@ -140,15 +140,15 @@ function trainGigaSOM(som::Som, train;
 
     #this slices the data into parts and and sends them to workers
     dInfo = distribute_array(:GigaSOMtrainDataVar, train, workers())
-    res = trainGigaSOM(som, dInfo,
-                       kernelFun=kernelFun,
-                       metric=metric,
-                       somDistFun=somDistFun,
-                       knnTreeFun=knnTreeFun,
-                       rStart=rStart, rFinal=rFinal, radiusFun=radiusFun,
-                       epochs=epochs)
+    som_res = trainGigaSOM(som, dInfo,
+                           kernelFun=kernelFun,
+                           metric=metric,
+                           somDistFun=somDistFun,
+                           knnTreeFun=knnTreeFun,
+                           rStart=rStart, rFinal=rFinal, radiusFun=radiusFun,
+                           epochs=epochs)
     undistribute(dInfo)
-    return res
+    return som_res
 end
 
 
