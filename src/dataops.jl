@@ -46,10 +46,12 @@ Apply a function `fn` over columns of a distributed dataset.
   `1:length(columns)`)
 """
 function dapply_cols(dInfo::LoadedDataInfo, fn, columns::Vector{Int})
-    distributed_exec(dInfo, x -> (
+    transform_columns = x ->
         for (idx,c) in enumerate(columns)
             x[:,c]=fn(x[:,c], idx)
-        end))
+        end
+
+    distributed_exec(dInfo, transform_columns)
 end
 
 """
@@ -60,10 +62,22 @@ Apply a function `fn` over rows of a distributed dataset.
 `fn` gets a single vector parameter for each row to transform.
 """
 function dapply_rows(dInfo::LoadedDataInfo, fn)
-    distributed_exec(dInfo, x -> (
+    transform_rows = x ->
         for i in 1:size(x,1)
             x[i,:]=fn(x[i,:])
-        end))
+        end
+
+    distributed_exec(dInfo, transform_rows)
+end
+
+"""
+    combine_stats((s1, sqs1, n1), (s2, sqs2, n2))
+
+Helper for `dstat`-style functions that just adds up elements in triplets of
+vectors.
+"""
+function combine_stats((s1, sqs1, n1), (s2, sqs2, n2))
+    return (s1.+s2, sqs1.+sqs2, n1.+n2)
 end
 
 """
@@ -73,13 +87,24 @@ Compute mean and standard deviation of the columns in dataset. Returns a tuple
 with a vector of means in `columns`, and a vector of corresponding sdevs.
 """
 function dstat(dInfo::LoadedDataInfo, columns::Vector{Int})
-    (s, sqs, n) = distributed_mapreduce(dInfo,
-        d->(mapslices(sum, d[:,columns], dims=1),
-            mapslices((x)->sum(x.^2), d[:,columns], dims=1),
-            mapslices(x->length(x), d[:,columns], dims=1)),
-        ((s1, sqs1, n1), (s2, sqs2, n2)) ->
-            (s1.+s2, sqs1.+sqs2, n1.+n2))
-    return (s./n, sqrt.(sqs./n - (s./n).^2))
+
+    sum_squares = x -> sum(x.^2)
+
+    # extraction of the statistics from individual dataset slices
+    get_stats = d -> (
+        mapslices(sum,         d[:,columns], dims=1),
+        mapslices(sum_squares, d[:,columns], dims=1),
+        mapslices(length,      d[:,columns], dims=1)
+    )
+
+    # extract the stats
+    (sums, sqsums, ns) =
+        distributed_mapreduce(dInfo, get_stats, combine_stats)
+
+    return (
+        sums./ns, #means
+        sqrt.(sqsums./ns - (sums./ns).^2) #sdevs
+    )
 end
 
 """
@@ -88,13 +113,23 @@ end
 A version of `dstat` that works with bucketing information (e.g. clusters).
 """
 function dstat_buckets(dInfo::LoadedDataInfo, nbuckets::Int, buckets::LoadedDataInfo, columns::Vector{Int})
-    (sums, sqsums, ns) = distributed_mapreduce([dInfo, buckets],
-        (d,b)->(catmapbuckets((_,x) -> sum(x), d[:,columns], nbuckets, b),
-            catmapbuckets((_,x)->sum(x.^2), d[:,columns], nbuckets, b),
-            catmapbuckets((_,x)->length(x), d[:,columns], nbuckets, b)),
-        ((s1, sqs1, n1), (s2, sqs2, n2)) ->
-            (s1.+s2, sqs1.+sqs2, n1.+n2))
-    return (sums./ns, sqrt.(sqsums./ns - (sums./ns).^2))
+    # this produces a triplet of matrices (1 row per each bucket)
+    get_bucketed_stats = (d, b) -> (
+        catmapbuckets((_,x) -> sum(x),    d[:,columns], nbuckets, b), # sums
+        catmapbuckets((_,x) -> sum(x.^2), d[:,columns], nbuckets, b), # squared sums
+        catmapbuckets((_,x) -> length(x), d[:,columns], nbuckets, b)  # data sizes
+    )
+
+    # extract the bucketed stats
+    (sums, sqsums, ns) =
+        distributed_mapreduce([dInfo, buckets],
+                              get_bucketed_stats,
+                              combine_stats)
+
+    return (
+        sums./ns, #means
+        sqrt.(sqsums./ns - (sums./ns).^2) #sdevs
+    )
 end
 
 """
@@ -106,12 +141,12 @@ Prevents creation of NaNs by avoiding division by zero sdevs.
 """
 function dscale(dInfo::LoadedDataInfo, columns::Vector{Int})
     mean, sd = dstat(dInfo, columns)
-    for i in 1:length(sd)
-        if sd[i]==0
-            sd[i]=1
-        end
-    end
-    dapply_cols(dInfo, (v,idx) -> (v.-mean[idx])./sd[idx], columns)
+    sd[sd.==0] .= 1 # prevent division by zero
+
+    normalize = (coldata,idx) ->
+        (coldata.-mean[idx])./sd[idx]
+
+    dapply_cols(dInfo, normalize, columns)
 end
 
 """
@@ -120,35 +155,77 @@ end
 Transform columns of the dataset by asinh transformation with `cofactor`.
 """
 function dtransform_asinh(dInfo::LoadedDataInfo, columns::Vector{Int}, cofactor=5)
-    dapply_cols(dInfo, (v,_) -> asinh.(v./cofactor), columns)
+    dapply_cols(dInfo,
+        (v,_) -> asinh.(v./cofactor),
+        columns)
 end
 
 """
-    mapbuckets(a::Array, nbuckets::Int, buckets::Vector{Int}, map; bucketdim::Int=1, slicedims=1)
+    mapbuckets(fn, a::Array, nbuckets::Int, buckets::Vector{Int}; bucketdim::Int=1, slicedims=bucketdim)
 
-Apply the function `map` over array `a` so that it processes the data by
+Apply the function `fn` over array `a` so that it processes the data by
 buckets defined by `buckets` (that contains integers in range `1:nbuckets`).
 
 The buckets are sliced out in dimension specified by `bucketdim`.
 """
-function mapbuckets(map, a::Array, nbuckets::Int, buckets::Vector{Int}; bucketdim::Int=1, slicedims=1)
+function mapbuckets(fn, a::Array, nbuckets::Int, buckets::Vector{Int}; bucketdim::Int=1, slicedims=bucketdim)
     ndims = length(size(a))
-    sx = [ i == bucketdim ? (0 .== buckets) : (1:size(a,i)) for i in 1:ndims]
-    [begin
-        sx[bucketdim] = bucket.==buckets
-        mapslices(x -> map(bucket, x), a[sx...], dims=slicedims)
-    end for bucket in 1:nbuckets]
+
+    # precompute the range of the array
+    extent = [ i == bucketdim ? (0 .== buckets) : (1:size(a,i)) for i in 1:ndims]
+
+    # return a list of reduced dataset for each bucket
+    return [ begin
+            # replace the bucketing dimension in the extent by the filter for current bucket
+            extent[bucketdim] = bucket.==buckets
+            # reduce the array and run the operation
+            mapslices(x -> fn(bucket, x), a[extent...], dims=slicedims)
+        end for bucket in 1:nbuckets]
 end
 
 """
-    catmapbuckets(map, a::Array, nbuckets::Int, buckets::Vector{Int}; bucketdim::Int=1)
+    catmapbuckets(fn, a::Array, nbuckets::Int, buckets::Vector{Int}; bucketdim::Int=1)
 
 Same as `mapbuckets`, except concatenates the bucketing results in the
 bucketing dimension, thus creating a slightly neater matrix. `slicedims` is
 therefore fixed to `bucketdim`.
 """
-function catmapbuckets(map, a::Array, nbuckets::Int, buckets::Vector{Int}; bucketdim::Int=1)
-    cat(mapbuckets(map, a, nbuckets, buckets, bucketdim=bucketdim, slicedims=bucketdim)..., dims=bucketdim)
+function catmapbuckets(fn, a::Array, nbuckets::Int, buckets::Vector{Int}; bucketdim::Int=1)
+    cat(mapbuckets(fn, a, nbuckets, buckets, bucketdim=bucketdim, slicedims=bucketdim)...,
+        dims=bucketdim)
+end
+
+
+"""
+    collect_extrema(ex1, ex2)
+
+Helper for collecting the minimums and maximums of the data. `ex1`, `ex2` are
+arrays of pairs (min,max), this function combines the arrays element-wise and
+finds combined minima and maxima.
+"""
+function collect_extrema(ex1, ex2)
+    broadcast(
+        ((a,b),(c,d)) -> (min(a,c), max(b,d)),
+        ex1, ex2)
+end
+
+"""
+    update_extrema(counts, target, lim, mid)
+
+Helper for distributed median computation -- returns updated extrema in `lims`
+depending on whether the item count in `counts` of values less than `mids` is
+less or higher than `targets`.
+"""
+function update_extrema(counts, targets, lims, mids)
+    broadcast(
+        (cnt, target, lim, mid) ->
+            cnt >= target ? # if the count is too high,
+                (lim[1],mid) : # median is going to be in the lower half
+                (mid,lim[2]),  # otherwise in the higher half
+        counts,
+        targets,
+        lims,
+        mids)
 end
 
 """
@@ -165,20 +242,36 @@ to improve precision, each value adds roughly 1 bit to the precision. The
 default value is 20, which corresponds to precision 10e-6 times the data range.
 """
 function dmedian(dInfo::LoadedDataInfo, columns::Vector{Int}; iters=20)
-    target = distributed_mapreduce(dInfo, d -> size(d,1), +) ./ 2
+    # how many items in the dataset should be smaller than the median (roughly size/2)
+    target = distributed_mapreduce(dInfo,
+                                   d -> size(d,1),
+                                   +) ./ 2
+
+    # current estimation range for the median (tuples of min, max)
     lims = distributed_mapreduce(dInfo,
         d -> mapslices(extrema, d[:,columns], dims=1),
-        (ex1, ex2) -> (((a,b),(c,d)) -> (min(a,c), max(b,d))).(ex1,ex2))
+        collect_extrema)
+
+    # convert the limits to a simple vector
     lims=cat(lims..., dims=1)
+
     for iter in 1:iters
         mids = sum.(lims) ./ 2
-        counts = distributed_mapreduce(dInfo,
-            d -> [count(x -> x<mids[i], d[:,c])
-                for (i,c) in enumerate(columns)], +)
-        lims = ((cnt, target, lim, mid) -> cnt>=target ? (lim[1],mid) : (mid,lim[2])).(counts,target,lims,mids)
+
+        count_smaller_than_mids = d -> [
+            count(x -> x<mids[i], d[:,c])
+            for (i,c) in enumerate(columns)
+        ]
+
+        # compute the total number of elements smaller than `mids`
+        counts = distributed_mapreduce(dInfo, count_smaller_than_mids, +)
+
+        # update lims into lower/upper half depending on whether the count was
+        # lower or higher than target
+        lims = update_extrema(counts, target, lims, mids)
     end
 
-    sum.(lims) ./ 2
+    return sum.(lims) ./ 2
 end
 
 """
@@ -188,21 +281,46 @@ A version of `dmedian` that works with the bucketing information (i.e.
 clusters) from `nbuckets` and `buckets`.
 """
 function dmedian_buckets(dInfo::LoadedDataInfo, nbuckets::Int, buckets::LoadedDataInfo, columns::Vector{Int}; iters=20)
+    # count things in the buckets (produces a matrix with one row per bucket,
+    # one column for `columns`)
     targets = distributed_mapreduce([dInfo, buckets],
-        (d,b) -> catmapbuckets((_,x) -> size(x,1), d[:,columns], nbuckets, b), +) ./ 2
+        (d,b) -> catmapbuckets((_,x) -> size(x,1), d[:,columns], nbuckets, b),
+        +) ./ 2
+
+    # measure the minima and maxima of the datasets. In case the bucket is not
+    # present in the data partition, `extrema()` fails, so we replace it with
+    # `(Inf, -Inf)` which will eventually get coalesced with other numbers to
+    # normal values.
+    get_bucket_extrema = (d, b) ->
+        catmapbuckets(
+            (_,x) -> length(x)>0 ? # if there are some elements
+                extrema(x) : # just take the extrema
+                (Inf, -Inf), # if not, use backup values
+            d[:,columns],
+            nbuckets, b)
+
+    # collect the extrema
     lims = distributed_mapreduce([dInfo, buckets],
-        (d,b) -> catmapbuckets((_,x) -> length(x)>0 ? extrema(x) : (Inf, -Inf), d[:,columns], nbuckets, b),
-        (ex1, ex2) -> (((a,b),(c,d)) -> (min(a,c), max(b,d))).(ex1,ex2))
+        get_bucket_extrema, collect_extrema)
 
     for iter in 1:iters
         mids = sum.(lims) ./ 2
+
+        # this counts the elements smaller than mids in buckets
+        # (both mids and elements are bucketed and column-sliced into matrices)
+        bucketed_count_smaller_than_mids = (d, b) ->
+            vcat(mapbuckets(
+                (bucketID, d) ->
+                    [count(x -> x<mids[bucketID,colID], d[:,colID])
+                     for (colID,c) in enumerate(columns)]',
+                d, nbuckets, b, slicedims=(1,2))...)
+
+        # collect the counts
         counts = distributed_mapreduce([dInfo, buckets],
-            (d, b) -> vcat(
-                mapbuckets((bid, d) -> [count(x -> x<mids[bid,cid], d[:,cid])
-                             for (cid,c) in enumerate(columns)]',
-                            d, nbuckets, b, slicedims=(1,2))...), +)
-        lims = ((cnt, target, lim, mid) -> cnt>=target ? (lim[1],mid) : (mid,lim[2])).(counts,targets,lims,mids)
+            bucketed_count_smaller_than_mids, +)
+
+        lims = update_extrema(counts, targets, lims, mids)
     end
 
-    sum.(lims) ./ 2
+    return sum.(lims) ./ 2
 end
