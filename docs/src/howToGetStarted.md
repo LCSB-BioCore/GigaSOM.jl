@@ -507,8 +507,8 @@ sumscounts = distributed_mapreduce([di, mapping],
 ```
 
 With a bit of Julia, this can be aggregated to actual per-cluster means:
-```juliagg
-clusterMeans = (x->(/)(x...)).(sumcounts)
+```julia
+clusterMeans = [ sum/count for (sum,count) in sumcounts ]
 ```
 
 ```
