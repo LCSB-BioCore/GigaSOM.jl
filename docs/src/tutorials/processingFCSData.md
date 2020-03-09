@@ -50,7 +50,7 @@ e = embedGigaSOM(som, data)
 # ... save/plot results, etc...
 ```
 
-# Work with distributed data
+## Work with distributed data
 
 Usual experiments produce multiple FCS files, and distributed or parallel
 processing is very helpful in crunching through all the data.
@@ -123,10 +123,10 @@ e = distributed_collect(e)
   ⋮
 ```
 
-# Working with larger datasets
+## Working with larger datasets
 
 In this example we will use a subset of the Cytometry data [by Bodenmiller et
-al.](https://www.nature.com/articles/nbt.2317). This data-set contains samples
+al.](https://doi.org/10.1038/nbt.2317). This data-set contains samples
 from peripheral blood mononuclear cells (PBMCs) in unstimulated and stimulated
 conditions for 8 healthy donors.
 
@@ -136,7 +136,7 @@ populations. The dataset is described in two files:
 - `PBMC8_panel.xlsx` (with antigen names categorized as lineage markers and functional markers)
 - `PBMC8_metadata.xlsx` (file names, sample IDs, condition IDs and patient IDs)
 
-## Download and prepare the dataset
+### Download and prepare the dataset
 
 The example data can be downloaded from [imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/](http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/)
 
@@ -185,7 +185,7 @@ cleanNames!(antigens)
 cleanNames!(fcsAntigens)
 ```
 
-## Load and prepare the data
+### Load and prepare the data
 
 Now we have the vector of `fcsAntigens` that the FCS files store, and list of
 `antigens` that we want to analyze. We continue by loading the data, reducing
@@ -214,7 +214,7 @@ dtransform_asinh(di, cols, 5)
 dscale(di, cols)
 ```
 
-## Create a Self Organizing MAP (SOM)
+### Create a Self Organizing MAP (SOM)
 
 With the data prepared, running the SOM algorithm is straightforward:
 
@@ -233,7 +233,7 @@ Finally, calculate the clustering:
 somClusters = mapToGigaSOM(som, di)
 ```
 
-## FlowSOM-style metaclustering
+### FlowSOM-style metaclustering
 
 One disadvantage of SOMs is that they output a large amount of small
 clusters that are relatively hard to interpret manually. FlowSOM improved that
