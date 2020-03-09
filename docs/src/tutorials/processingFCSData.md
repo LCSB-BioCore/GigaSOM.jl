@@ -126,7 +126,7 @@ e = distributed_collect(e)
 # Working with larger datasets
 
 In this example we will use a subset of the Cytometry data [by Bodenmiller et
-al.](https://dx.doi.org/10.1038%2Fnbt.2317). This data-set contains samples
+al.](https://www.nature.com/articles/nbt.2317). This data-set contains samples
 from peripheral blood mononuclear cells (PBMCs) in unstimulated and stimulated
 conditions for 8 healthy donors.
 
