@@ -1,17 +1,13 @@
 """
-    initGigaSOM(train, xdim, ydim = xdim;
-                norm::Symbol = :none, toroidal = false)
+    initGigaSOM(train, xdim, ydim = xdim)
 
 Initializes a SOM by random selection from the training data.
 
 # Arguments:
 - `train`: codeBook vector as random input matrix from random workers
 - `xdim, ydim`: geometry of the SOM
-- `norm`: optional normalisation
-- `toroidal`: optional flag; if true, the SOM is toroidal.
 """
-function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim;
-                     norm::Symbol = :none, toroidal = false)
+function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim)
 
     if typeof(train) == DataFrame
         colNames = [String(x) for x in names(train)]
@@ -20,41 +16,25 @@ function initGigaSOM(train, xdim::Int64, ydim :: Int64 = xdim;
         @debug "assuming default colNames"
     end
 
-    train = convertTrainingData(train)
+    train = Matrix{Float64}(train)
 
     numCodes = xdim * ydim
-
-    # normalise training data:
-    # TODO: is this needed here?
-    train, normParams = normTrainData(train, norm)
 
     # initialise the codes with random samples
     codes = train[rand(1:size(train,1), numCodes),:]
     grid = gridRectangular(xdim, ydim)
 
-    normParams = convert(DataFrame, normParams)
-    rename!(normParams, Symbol.(colNames))
-
-    # create X,Y-indices for neurons:
-    #
-    x = y = collect(1:numCodes)
-    indices = DataFrame(X = x, Y = y)
-
     # make SOM object:
     som = Som(codes = codes, colNames = colNames,
-           normParams = normParams, norm = norm,
            xdim = xdim, ydim = ydim,
            numCodes = numCodes,
-           grid = grid, indices = indices,
-           toroidal = toroidal,
-           population = zeros(Int, numCodes))
+           grid = grid)
     return som
 end
 
 """
     initGigaSOM(trainInfo::LoadedDataInfo,
-                xdim::Int64, ydim :: Int64 = xdim;
-                norm::Symbol = :none, toroidal = false)
+                xdim::Int64, ydim :: Int64 = xdim)
 
 `initGigaSOM` overload for working with distributed-style `LoadedDataInfo`
 data. The rest of arguments is the same as in `initGigaSOM`.
@@ -64,24 +44,21 @@ initialization, and the init work is actually done on that worker to avoid
 unnecessary data copying.
 """
 function initGigaSOM(trainInfo::LoadedDataInfo,
-    xdim::Int64, ydim :: Int64 = xdim;
-    norm::Symbol = :none, toroidal = false)
+    xdim::Int64, ydim :: Int64 = xdim)
 
     # Snatch the init data from the first available worker (for he cares not).
     return get_val_from(trainInfo.workers[1],
-        Expr(:call, :initGigaSOM, trainInfo.val,
-             xdim, ydim,
-             Expr(:kw, :norm, QuoteNode(norm)),
-             Expr(:kw, :toroidal, toroidal)))
+        :(initGigaSOM($(trainInfo.val), $xdim, $ydim)))
 end
 
 """
     trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
                  kernelFun::Function = gaussianKernel,
                  metric = Euclidean(),
+                 somDistFun = distMatrix(Chebyshev()),
                  knnTreeFun = BruteTree,
-                 rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
-                 epochs = 10)
+                 rStart = 0.0, rFinal=0.1, radiusFun=expRadius(-5.0),
+                 epochs = 20)
 
 # Arguments:
 - `som`: object of type Som with an initialised som
@@ -89,6 +66,7 @@ end
 - `kernelFun::function`: optional distance kernel; one of (`bubbleKernel, gaussianKernel`)
             default is `gaussianKernel`
 - `metric`: Passed as metric argument to the KNN-tree constructor
+- `somDistFun`: Function for computing the distances in the SOM map
 - `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
 - `rStart`: optional training radius. If zero (default), it is computed from the SOM grid size.
 - `rFinal`: target radius at the last epoch, defaults to 0.1
@@ -98,18 +76,19 @@ end
 function trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
+                      somDistFun = distMatrix(Chebyshev()),
                       knnTreeFun = BruteTree,
-                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
-                      epochs = 10)
+                      rStart = 0.0, rFinal=0.1, radiusFun=expRadius(-5.0),
+                      epochs = 20)
 
     # set the default radius
     if rStart == 0.0
-        rStart = √(som.xdim^2 + som.ydim^2) / 2
+        rStart = (som.xdim + som.ydim) / 2
         @debug "The radius has been determined automatically." rStart rFinal
     end
 
     # get the SOM neighborhood distances
-    dm = distMatrix(som.grid, som.toroidal)
+    dm = somDistFun(som.grid)
 
     codes = som.codes
 
@@ -124,6 +103,7 @@ function trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
         @debug "radius: $r"
         if r <= 0
             @error "Sanity check failed: radius must be positive"
+            error("Radius check")
         end
 
         wEpoch = kernelFun(dm, r)
@@ -136,12 +116,13 @@ function trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
 end
 
 """
-function trainGigaSOM(som::Som, train::DataFrame;
-                      kernelFun::Function = gaussianKernel,
-                      metric = Euclidean(),
-                      knnTreeFun = BruteTree,
-                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
-                      epochs = 10)
+    trainGigaSOM(som::Som, train;
+                 kernelFun::Function = gaussianKernel,
+                 metric = Euclidean(),
+                 somDistFun = distMatrix(Chebyshev()),
+                 knnTreeFun = BruteTree,
+                 rStart = 0.0, rFinal=0.1, radiusFun=expRadius(-5.0),
+                 epochs = 20)
 
 Overload of `trainGigaSOM` for simple DataFrames and matrices. This slices the
 data using `DistributedArrays`, sends them the workers, and runs normal
@@ -150,22 +131,24 @@ data using `DistributedArrays`, sends them the workers, and runs normal
 function trainGigaSOM(som::Som, train;
                       kernelFun::Function = gaussianKernel,
                       metric = Euclidean(),
+                      somDistFun = distMatrix(Chebyshev()),
                       knnTreeFun = BruteTree,
-                      rStart = 0.0, rFinal=0.1, radiusFun=linearRadius,
-                      epochs = 10)
+                      rStart = 0.0, rFinal=0.1, radiusFun=expRadius(-5.0),
+                      epochs = 20)
 
-    train = convertTrainingData(train)
+    train = Matrix{Float64}(train)
 
-    #this slices the data using `distribute` and sends them to workers
-    dInfo = distribute_darray(:trainDataVar, distribute(train))
-    res = trainGigaSOM(som, dInfo,
-                       kernelFun=kernelFun,
-                       metric=metric,
-                       knnTreeFun=knnTreeFun,
-                       rStart=rStart, rFinal=rFinal, radiusFun=radiusFun,
-                       epochs=epochs)
+    #this slices the data into parts and and sends them to workers
+    dInfo = distribute_array(:GigaSOMtrainDataVar, train, workers())
+    som_res = trainGigaSOM(som, dInfo,
+                           kernelFun=kernelFun,
+                           metric=metric,
+                           somDistFun=somDistFun,
+                           knnTreeFun=knnTreeFun,
+                           rStart=rStart, rFinal=rFinal, radiusFun=radiusFun,
+                           epochs=epochs)
     undistribute(dInfo)
-    return res
+    return som_res
 end
 
 
@@ -253,13 +236,14 @@ function mapToGigaSOM(som::Som, data;
                       knnTreeFun = BruteTree,
                       metric = Euclidean())
 
-    data = convertTrainingData(data)
+    data = Matrix{Float64}(data)
 
     if size(data,2) != size(som.codes,2)
         @error "Data dimension ($(size(data,2))) does not match codebook dimension ($(size(som.codes,2)))."
+        error("Data dimensions do not match")
     end
 
-    dInfo= distribute_darray(:mappingDataVar, distribute(data))
+    dInfo= distribute_array(:GigaSOMmappingDataVar, data, workers())
     rInfo = mapToGigaSOM(som, dInfo, knnTreeFun=knnTreeFun, metric=metric)
     res = distributed_collect(rInfo)
     undistribute(dInfo)

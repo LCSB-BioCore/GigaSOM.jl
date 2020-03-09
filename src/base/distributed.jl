@@ -20,10 +20,17 @@ Examples:
     save_at(2,:x,123)       # saves 123
     save_at(2,:x,myid())    # saves 1
     save_at(2,:x,:(myid())) # saves 2
-    save_at(2,:x,:(:x))     # saves the symbol :x (just :x won't work because of unquoting)
+    save_at(2,:x,:(:x))     # saves the symbol :x
+                            # (just :x won't work because of unquoting)
+
+# Note: Symbol scope
+
+The symbols are saved in Main module on the corresponding worker. For example,
+`save_at(1, :x, nothing)` _will_ erase your local `x` variable. Beware of name
+collisions.
 """
 function save_at(worker, sym::Symbol, val)
-    remotecall(()->eval(:(begin; $sym = $val; nothing; end)), worker)
+    remotecall(()->Base.eval(Main, :(begin; $sym = $val; nothing; end)), worker)
 end
 
 """
@@ -33,7 +40,7 @@ Get a value `val` from a remote `worker`; quoting of `val` works just as with
 `save_at`. Returns a future with the requested value.
 """
 function get_from(worker, val)
-    remotecall(()->eval(:($val)), worker)
+    remotecall(()->Base.eval(Main, :($val)), worker)
 end
 
 """
@@ -55,17 +62,38 @@ function remove_from(worker, sym::Symbol)
 end
 
 """
-    distribute(sym, dd::DArray)::LoadedDataInfo
+    distribute_array(sym, x::Array, pids; dim=1)::LoadedDataInfo
+
+Distribute roughly equal parts of array `x` separated on dimension `dim` among
+`pids` into a worker-local variable `sym`.
+
+Returns the `LoadedDataInfo` structure for the distributed data.
+"""
+function distribute_array(sym::Symbol, x::Array, pids; dim=1)::LoadedDataInfo
+    n = length(pids)
+    dims = size(x)
+
+    for f in [begin
+            extent=[(1:s) for s in dims]
+            extent[dim]=(1+div((wid-1)*dims[dim],n)):div(wid*dims[dim],n)
+            save_at(pid, sym, x[extent...])
+        end for (wid,pid) in enumerate(pids)]
+        fetch(f)
+    end
+
+    return LoadedDataInfo(sym, pids)
+end
+
+"""
+    distribute_darray(sym, dd::DArray)::LoadedDataInfo
 
 Distribute the distributed array parts from `dd` into worker-local variable
 `sym`.
 
-Requires `@everywhere import DistributedArrays`.
-
 Returns the `LoadedDataInfo` structure for the distributed data.
 """
 function distribute_darray(sym::Symbol, dd::DArray)::LoadedDataInfo
-    for f in [save_at(pid, sym, :(DistributedArrays.localpart($dd)))
+    for f in [save_at(pid, sym, :($localpart($dd)))
             for pid in dd.pids]
         fetch(f)
     end
@@ -73,26 +101,7 @@ function distribute_darray(sym::Symbol, dd::DArray)::LoadedDataInfo
 end
 
 """
-Load filenames to each referenced worker.
-
-This is called transparently from `loadData`, but can be used to load and
-distribute any list of file slices.
-"""
-function distribute_jls_data(sym::Symbol, fns::Array{String}, workers;
-    panel=Nothing(), method="asinh", cofactor=5, reduce=false, sort=false, transform=false)::LoadedDataInfo
-    #Long-term TODO: reduce the arguments a bit (we have `distributed_transform` now!)
-    for f in [save_at(pid, sym, :(
-            loadDataFile($(fns[i]),
-                         $panel, $method, $cofactor,
-                         $reduce, $sort, $transform)))
-            for (i, pid) in enumerate(workers)]
-        fetch(f)
-    end
-    return LoadedDataInfo(sym, workers)
-end
-
-"""
-    undistribute_data(sym, workers)
+    undistribute(sym, workers)
 
 Remove the loaded data from workers.
 """
@@ -103,12 +112,34 @@ function undistribute(sym::Symbol, workers)
 end
 
 """
-    undistribute_data(dInfo::LoadedDataInfo)
+    undistribute(dInfo::LoadedDataInfo)
 
 Remove the loaded data described by `dInfo` from the corresponding workers.
 """
 function undistribute(dInfo::LoadedDataInfo)
     undistribute(dInfo.val, dInfo.workers)
+end
+
+"""
+    distributed_exec(val, fn, workers)
+
+Execute a function on workers, taking `val` as a parameter. Results are not
+collected. This is optimal for various side-effect-causing computations that
+are not expressible with `distributed_transform`.
+"""
+function distributed_exec(val, fn, workers)
+    for f in [get_from(pid, :(begin; $fn($val); nothing; end)) for pid in workers]
+        fetch(f)
+    end
+end
+
+"""
+    distributed_exec(dInfo::LoadedDataInfo, fn)
+
+Variant of `distributed_exec` that works with `LoadedDataInfo`.
+"""
+function distributed_exec(dInfo::LoadedDataInfo, fn)
+    distributed_exec(dInfo.val, fn, dInfo.workers)
 end
 
 """
@@ -122,10 +153,11 @@ in-place, by a function `fn`. Store the result as `tgt` (default `val`)
     # multiply all saved data by 2
     distributed_transform(:myData, (d)->(2*d), workers())
 """
-function distributed_transform(val, fn, workers, tgt::Symbol=val)
+function distributed_transform(val, fn, workers, tgt::Symbol=val)::LoadedDataInfo
     for f in [ save_at(pid, tgt, :($fn($val))) for pid in workers ]
         fetch(f)
     end
+    return LoadedDataInfo(tgt, workers)
 end
 
 """
@@ -133,9 +165,8 @@ end
 
 Same as `distributed_transform`, but specialized for `LoadedDataInfo`.
 """
-function distributed_transform(dInfo::LoadedDataInfo, fn, tgt::Symbol=dInfo.val)
+function distributed_transform(dInfo::LoadedDataInfo, fn, tgt::Symbol=dInfo.val)::LoadedDataInfo
     distributed_transform(dInfo.val, fn, dInfo.workers, tgt)
-    return LoadedDataInfo(tgt, dInfo.workers)
 end
 
 """
@@ -159,6 +190,17 @@ main process.
         ((s1, l1), (s2, l2)) -> (s1+s2, l1+l2),
         workers())
     println(sum/len)
+
+# Processing multiple arguments (a.k.a. "zipWith")
+
+The `val` here does not necessarily need to refer to a symbol, you can easily
+pass in a quoted tuple, which will be unquoted in the function parameter. For
+example, distributed values `:a` and `:b` can be joined as such:
+
+    distributed_mapreduce(:((a,b)),
+        ((a,b)::Tuple) -> [a b],
+        vcat,
+        workers())
 """
 function distributed_mapreduce(val, map, fold, workers)
     if isempty(workers)
@@ -184,7 +226,40 @@ function distributed_mapreduce(dInfo::LoadedDataInfo, map, fold)
 end
 
 """
-    distributed_collect(val::Symbol, workers, dim=1)
+    distributed_mapreduce(vals::Vector, map, fold, workers)
+
+Variant of `distributed_mapreduce` that works with more distributed variables
+at once.
+"""
+function distributed_mapreduce(vals::Vector, map, fold, workers)
+    return distributed_mapreduce(Expr(:vect, vals...),
+        vals -> map(vals...),
+        fold,
+        workers)
+end
+
+"""
+    distributed_mapreduce(dInfo1::LoadedDataInfo, dInfo2::LoadedDataInfo, map, fold)
+
+Variant of `distributed_mapreduce` that works with more `LoadedDataInfo`s at
+once.  The data must be distributed on the same set of workers, in the same
+order.
+"""
+function distributed_mapreduce(dInfos::Vector{LoadedDataInfo}, map, fold)
+    if(isempty(dInfos))
+        return nothing
+    end
+
+    if any([dInfos[1].workers] .!= [di.workers for di in dInfos])
+        @error "workers in LoadedDataInfo objects do not match" dInfos[1].workers
+        error("data distribution mismatch")
+    end
+
+    return distributed_mapreduce([di.val for di in dInfos], map, fold, dInfos[1].workers)
+end
+
+"""
+    distributed_collect(val::Symbol, workers, dim=1; free=false)
 
 Collect the arrays distributed on `workers` under value `val` into an array. The
 individual arrays are pasted in the dimension specified by `dim`, i.e. `dim=1`
@@ -218,13 +293,25 @@ function distributed_collect(val::Symbol, workers, dim=1; free=false)
 end
 
 """
-    distributed_collect(dInfo::LoadedDataInfo, dim=1)
+    distributed_collect(dInfo::LoadedDataInfo, dim=1; free=false)
 
 Distributed collect (just as the other overload) that works with
 `LoadedDataInfo`.
 """
 function distributed_collect(dInfo::LoadedDataInfo, dim=1; free=false)
     return distributed_collect(dInfo.val, dInfo.workers, dim, free=free)
+end
+
+"""
+    distributed_foreach(arr::Vector, fn, workers)
+
+Call a function `fn` on `workers`, with a single parameter arriving from the
+corresponding position in `arr`.
+"""
+function distributed_foreach(arr::Vector, fn, workers)
+    futures = [remotecall(() -> Base.eval(Main, :($fn($(arr[i])))), pid)
+            for (i, pid) in enumerate(workers)]
+    return [ fetch(f) for f in futures ]
 end
 
 """

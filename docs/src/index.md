@@ -20,5 +20,13 @@ See the [Functions](@ref) section for the complete list of documented functions 
 ## Contents
 
 ```@contents
-Pages = ["index.md", "background.md", "howToGetStarted.md", "functions.md", "howToContribute.md"]
+Pages = [
+  "index.md",
+  "background.md",
+  "basicUsage.md",
+  "processingFCSData.md",
+  "distributedProcessing.md",
+  "whereToGoNext.md",
+  "functions.md",
+  "howToContribute.md"]
 ```
