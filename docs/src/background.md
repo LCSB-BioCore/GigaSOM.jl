@@ -30,7 +30,7 @@ Flow cytometry is an immunophenotyping technique used to identify and quantify t
 cells of the immune system by analysing their physical and chemical characteristics
 in a fluid. These cells are stained with specific, fluorescently labelled antibodies
 and then analysed with a flow cytometer, where the fluorescence intensity is measured
-using lasers and photodetectors. [[2]](https://academic.oup.com/clinchem/article/46/8/1221/5641363)
+using lasers and photodetectors. [[2]](http://clinchem.aaccjnls.org/content/46/8/1221)
 More recently, a variation of flow cytometry called mass cytometry (CyTOF) was introduced,
 in which antibodies are labelled with heavy metal ion tags rather than fluorochromes,
 breaking the limit of multiplexing capability of FACS (fluorescence-activated cell sorting)
