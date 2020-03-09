@@ -26,22 +26,6 @@ end
 refDataPath = cwd*"/refData"
 cd(dataPath)
 
-# verify the data consistency using the stored checksums
-fileNames = readdir()
-csDict = Dict{String, Any}()
-for f in fileNames
-    if  f[end-3:end] == ".fcs" || f[end-4:end] == ".xlsx"
-        cs = bytes2hex(sha256(f))
-        csDict[f] = cs
-    end
-end
-csTest = JSON.parsefile(cwd*"/checkSums/csTest.json")
-if csDict == csTest
-    @error "Downloaded dataset does not match expectations, perhaps it is corrupted?"
-    error("dataset checksum error")
-end
-
-
 # fetch the required data for testing and download the zip archive and unzip it
 dataFiles = ["PBMC8_metadata.xlsx", "PBMC8_panel.xlsx", "PBMC8_fcs_files.zip"]
 for f in dataFiles
@@ -52,6 +36,21 @@ for f in dataFiles
         end
     else
     end
+end
+
+# verify the data consistency using the stored checksums
+fileNames = readdir()
+csDict = Dict{String, Any}()
+for f in fileNames
+    if  f[end-3:end] == ".fcs" || f[end-4:end] == ".xlsx"
+        cs = bytes2hex(sha256(f))
+        csDict[f] = cs
+    end
+end
+csTest = JSON.parsefile(cwd*"/checkSums/csTest.json")
+if csDict != csTest
+    @error "Downloaded dataset does not match expectations, perhaps it is corrupted?" csDict csTest
+    error("dataset checksum error")
 end
 
 md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
