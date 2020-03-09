@@ -209,8 +209,14 @@ function distributed_mapreduce(val, map, fold, workers)
 
     futures = [get_from(pid, :($map($val))) for pid in workers ]
     res = fetch(futures[1])
+
+    # replace the collected futures with new empty futures to allow them to be
+    # GC'd and free memory for more incoming results
+    futures[1] = Future()
+
     for i in 2:length(futures)
         res = fold(res, fetch(futures[i]))
+        futures[i] = Future()
     end
     res
 end
