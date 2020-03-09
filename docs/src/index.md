@@ -5,7 +5,7 @@
 
 GigaSOM.jl allows painless analysis of huge-scale clinical studies, scaling down the software limitations that usually prevent work with large datasets. It can be viewed as a work-alike of FlowSOM, suitable for loading billions of cells and running the analyses in parallel on distributed computer clusters, to gain speed. Most importantly, GigaSOM.jl scales horizontally -- data volume limitations and memory limitations can be solved just by adding more computers to the cluster. That makes it extremely easy to exploit HPC environments, which are becoming increasingly common in computational biology.
 
-## Features
+### Features
 
 - Horizontal scalability to literal giga-scale datasets (10^9 cells!)
 - HPC-ready, support for e.g. Slurm
@@ -13,20 +13,38 @@ GigaSOM.jl allows painless analysis of huge-scale clinical studies, scaling down
 - Batch-SOM based GigaSOM algorithm for clustering
 - EmbedSOM for visualizations
 
-Check the [Background](@ref) section for some insights on the theory behind the package
+### Background
 
-See the [Functions](@ref) section for the complete list of documented functions and types.
-
-## Contents
+You can learn more about the background of GigaSOM.jl in these sections:
 
 ```@contents
-Pages = [
-  "index.md",
-  "background.md",
-  "basicUsage.md",
-  "processingFCSData.md",
-  "distributedProcessing.md",
-  "whereToGoNext.md",
-  "functions.md",
-  "howToContribute.md"]
+Pages = ["background.md"]
+```
+
+### How to get started?
+
+You can follow our extensive tutorials here:
+
+```@contents
+Pages = ["tutorials/basicUsage.md",
+        "tutorials/processingFCSData.md",
+        "tutorials/distributedProcessing.md",
+        "tutorials/whereToGoNext.md"
+]
+```
+
+### Functions
+
+A full reference to all functions is given here:
+
+```@contents
+Pages = ["functions.md"]
+```
+
+### How to contribute?
+
+If you want to contribute, please read these guidelines first:
+
+```@contents
+Pages = ["howToContribute.md"]
 ```

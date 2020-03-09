@@ -3,9 +3,9 @@
 # GigaSOM.jl <br> Huge-scale, high-performance flow cytometry clustering
 
 
-| **Coverage** | **[ARTENOLIS](http://opencobra.github.io/artenolis)** |
-|:------------:|:--------------------------:|
-| [![coverage status](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl/coverage.svg?branch=master)](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl?branch=master) | [![linux](https://prince.lcsb.uni.lu/jenkins/job/GigaSOM.jl-branches-auto-linux/badge/icon)](https://prince.lcsb.uni.lu/jenkins/job/GigaSOM.jl-branches-auto-linux/) |
+| **Documentation** | **Coverage** | **[ARTENOLIS](http://opencobra.github.io/artenolis)** |
+|:-----------------:|:------------:|:--------------------------:|
+| [![doc](https://img.shields.io/badge/doc-GigaSOM-blue)](http://git.io/GigaSOM.jl) | [![coverage status](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl/coverage.svg?branch=master)](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl?branch=master) | [![linux](https://prince.lcsb.uni.lu/jenkins/job/GigaSOM.jl-branches-auto-linux/badge/icon)](https://prince.lcsb.uni.lu/jenkins/job/GigaSOM.jl-branches-auto-linux/) |
 
 # How to get started
 
