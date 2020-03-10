@@ -1,21 +1,35 @@
-using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed, SHA, JSON
-
+using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed
+using FileIO, DataFrames, Distances
+using JSON, SHA
 
 owd = pwd()
+
+"""
+Check if the `pwd()` is the `/test` directory, and if not it changes to it.
+"""
+function checkDir()
+    files = readdir()
+    if !in("runtests.jl", files)
+        cd(dirname(dirname(pathof(GigaSOM))))
+    end
+end
 
 checkDir()
 
 @testset "GigaSOM test suite" begin
-    #load and transform the .fcs data to be ready for computing
-    include("io.jl")
+    include("testDistributed.jl")
+    include("testDataOps.jl")
+    include("testTrainutils.jl")
+    include("testSplitting.jl")
+    include("testInput.jl")
 
-    #apply the batch GigaSOM algorithm to the data, train it and test it
-    include("batch.jl")
+    #this loads the PBMC dataset required for the following tests
+    include("testLoadPBMC8.jl")
 
-    #apply the parallel GigaSOM algorithm to the data, train it and test it
-    include("parallel.jl")
+    include("testBatch.jl")
+    include("testParallel.jl")
 
-    include("functionTest.jl")
+    include("testFileSplitting.jl")
 end
 
 cd(owd)

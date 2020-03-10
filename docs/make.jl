@@ -11,7 +11,12 @@ makedocs(modules = [GigaSOM],
         pages = [
                 "Home" => "index.md",
                 "Background" => "background.md",
-                "How to get started" => "howToGetStarted.md",
+                "Tutorial" => [
+                    "Introduction" => "tutorials/basicUsage.md",
+                    "Cytometry data" => "tutorials/processingFCSData.md",
+                    "Advanced distributed processing" => "tutorials/distributedProcessing.md",
+                    "Conclusion" => "tutorials/whereToGoNext.md",
+                ],
                 "Functions" => "functions.md",
                 "How to contribute" => "howToContribute.md",
                 ],
