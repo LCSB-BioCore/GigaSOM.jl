@@ -48,7 +48,7 @@ function getMetaData(meta::Dict{String,String})::DataFrame
 
     # determine the available channel properties
     for (key,) in meta
-        if key[1:2] == "\$P"
+        if length(key)>=2 && key[1:2] == "\$P"
             i=3
             while i<=length(key) && isdigit(key[i])
                 i+=1
