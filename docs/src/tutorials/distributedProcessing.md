@@ -65,6 +65,7 @@ use `catmapbuckets` that concatenates the result into a nice array.) The
 following code produces a matrix of tuples `(sum, count)`, for separate
 clusters (in rows) and data columns (in columns):
 
+```julia
 sumscounts = distributed_mapreduce([di, mapping],
     (d, mapping) -> catmapbuckets(
         (_,clData) -> (sum(clData), length(clData)),
