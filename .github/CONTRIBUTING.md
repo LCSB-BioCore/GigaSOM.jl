@@ -4,7 +4,9 @@
 
 ## How can I contribute?
 
-### Report a bug or suggest an enhancement
+A complete technical guide on how to get started contributing is given [here](https://lcsb-biocore.github.io/GigaSOM.jl/stable/howToContribute/).
+
+## How to report a bug or suggest an enhancement
 
 Please use the [GitHub issue tracker](https://github.com/LCSB-BioCore/GigaSOM.jl/issues) to report any problems with the software, and discuss any potential questions about GigaSOM use.
 
@@ -20,7 +22,7 @@ information it asks for helps us resolve issues faster.
 
 If reporting issues, please do not forget to include a description of conditions under which the issue occurs; preferably a code snippet that can be run separately (sometimes termed "minimal crashing example").
 
-### Pull Requests
+## How to submit a pull request (PR)?
 
 Please follow these steps to have your contribution considered by the maintainers:
 
