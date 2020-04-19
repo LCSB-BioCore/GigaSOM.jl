@@ -1,4 +1,4 @@
-# Contributin to GigaSOM
+# Contributing to GigaSOM
 
 :+1::tada: Thanks for taking the time to contribute to [GigaSOM.jl](https://github.com/LCSB-BioCore/GigaSOM.jl)! :tada::+1:
 
