@@ -6,7 +6,7 @@
 
 ### Report a bug or suggest an enhancement
 
-Please use the GitHub issue tracker at https://github.com/LCSB-BioCore/GigaSOM.jl/issues to report any problems with the software, and discuss any potential questions about GigaSOM use.
+Please use the [GitHub issue tracker](https://github.com/LCSB-BioCore/GigaSOM.jl/issues) to report any problems with the software, and discuss any potential questions about GigaSOM use.
 
 Before creating bug reports, please check [the open
 issues](https://github.com/LCSB-BioCore/GigaSOM.jl/issues) as you might find
