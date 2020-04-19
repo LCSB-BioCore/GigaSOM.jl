@@ -95,10 +95,6 @@ The output may look like this (blue is negative expresison, red is positive):
 
 ![Levine13 embedding with CD4 highlighted](docs/src/assets/Levine13-CD4.png "Levine13/CD4")
 
-
 ## Feedback, issues, questions
 
-Please use the GitHub issue tracker at https://github.com/LCSB-BioCore/GigaSOM.jl/issues to report any problems with the software, and discuss any potential questions about GigaSOM use.
-
-If reporting issues, please do not forget to include a description of conditions under which the issue occurs; preferably a code snippet that can be run separately (sometimes termed "minimal crashing example").
-
+Please follow the [contributing guide](.github/CONTRIBUTING.md) when you have questions, want to raise issues, or just want to leave us some feedback!
