@@ -32,6 +32,8 @@ Using the Julia package manager to install GigaSOM is easy -- after starting Jul
 import Pkg; Pkg.add("GigaSOM");
 ```
 
+> All these commands should be run from Julia at the `julia>` prompt.
+
 Then you can load the GigaSOM package and start using it:
 
 ```julia
