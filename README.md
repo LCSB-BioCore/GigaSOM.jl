@@ -32,15 +32,15 @@ Using the Julia package manager to install GigaSOM is easy -- after starting Jul
 import Pkg; Pkg.add("GigaSOM");
 ```
 
-Then you can import the GigaSOM package and start using it:
+Then you can load the GigaSOM package and start using it:
 
 ```julia
 using GigaSOM
 ```
 
-The first "import" of the GigaSOM package may take several minutes to complete due to precompilation of the sources, especially on a fresh Julia install.
+The first loading of the GigaSOM package may take several minutes to complete due to precompilation of the sources, especially on a fresh Julia install.
 
-### Testing the installation
+### Test the installation
 
 If you run a non-standard platform (e.g. a customized operating systems), or if you added any modifications to GigaSOM source code, you may want to run the test suite to ensure that everything works as expected:
 
@@ -56,7 +56,7 @@ global_logger(ConsoleLogger(stderr, Logging.Debug))
 
 ## How to use GigaSOM
 
-A comprehensive documentation is [available online](https://lcsb-biocore.github.io/GigaSOM.jl/latest/); several [introductory tutorials](https://lcsb-biocore.github.io/GigaSOM.jl/latest/tutorials/basicUsage/) of increasing complexity are also included.
+A comprehensive documentation is [available online](https://lcsb-biocore.github.io/GigaSOM.jl/); several [introductory tutorials](https://lcsb-biocore.github.io/GigaSOM.jl/latest/tutorials/basicUsage/) of increasing complexity are also included.
 
 A very basic dataset (Levine13 from [FR-FCM-ZZPH](https://flowrepository.org/id/FR-FCM-ZZPH)) can be loaded, clustered and visualized as such:
 
@@ -91,7 +91,7 @@ savePNG("Levine13-CD4.png",
 
 The output may look like this (blue is negative expresison, red is positive):
 
-![Levine13 embedding with CD4 highlighted](media/Levine13-CD4.png "Levine13/C4")
+![Levine13 embedding with CD4 highlighted](media/Levine13-CD4.png "Levine13/CD4")
 
 
 ## Feedback, issues, questions
