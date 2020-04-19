@@ -28,11 +28,12 @@ after_success:
 
     # deploy documentation
     - if [[ "$ARCH" == "Linux" && "$JENKINS_PULL_REQUEST" != "True" && "$JULIA_VER" = "v1.2.0" ]]; then
-        export TRAVIS_BRANCH=$GIT_BRANCH;
+        export TRAVIS_BRANCH="origin/develop"; # must fit devbranch in docs/make.jl
         export TRAVIS_PULL_REQUEST=false;
         var=$GIT_URL; export TRAVIS_REPO_SLUG=${var:8:${#var}};
         export TRAVIS_OS_NAME=$label;
         export TRAVIS_JULIA_VERSION=$JULIA_VER;
+        export TRAVIS_TAG=$GIT_TAG_NAME;
         cd $CURRENT_DIR;
         $ARTENOLIS_SOFT_PATH/julia/$JULIA_VER/bin/julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()';
         $ARTENOLIS_SOFT_PATH/julia/$JULIA_VER/bin/julia --project=docs/ docs/make.jl;
