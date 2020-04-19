@@ -91,7 +91,7 @@ savePNG("Levine13-CD4.png",
 
 The output may look like this (blue is negative expresison, red is positive):
 
-![Levine13 embedding with CD4 highlighted](media/Levine13-CD4.png "Levine13/CD4")
+![Levine13 embedding with CD4 highlighted](docs/src/assets/Levine13-CD4.png "Levine13/CD4")
 
 
 ## Feedback, issues, questions
