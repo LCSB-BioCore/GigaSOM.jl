@@ -1,5 +1,5 @@
 ---
-name: General issue template
+name: General issue (performance or bug)
 about: Describe your issue related to performance or a bug
 title: ''
 labels: ''
