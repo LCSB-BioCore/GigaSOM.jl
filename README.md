@@ -73,7 +73,7 @@ clusters = mapToGigaSOM(som, exprs) # extraction of per-cell cluster IDs
 e = embedGigaSOM(som, exprs)        # EmbedSOM projection to 2D
 ```
 
-The example loads the data, runs the SOM training (as in FlowSOM) and computes a 2D projection of the dataset (using EmbedSOM); the total computation time (excluding the possible precompiltion of the libraries) should be around 15 seconds.
+The example loads the data, runs the SOM training (as in FlowSOM) and computes a 2D projection of the dataset (using EmbedSOM); the total computation time (excluding the possible precompilation of the libraries) should be around 15 seconds.
 
 The results can be visualized e.g. with [GigaScatter](https://github.com/LCSB-BioCore/GigaScatter.jl#usage-with-gigasomjl) which we developed for this purpose, or by exporting the data and plotting them with any other programming language. For example, to save an embedding with highlighted expression of CD4, you can install and use GigaScatter as such:
 
