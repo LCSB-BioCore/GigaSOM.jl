@@ -16,7 +16,7 @@ GigaSOM.jl allows painless analysis of huge-scale clinical studies, scaling down
 }
 </style>
 <div align="center">
-    <img class="evo" src="assets/evolution.gif">
+    <img class="evo" src="https://prince.lcsb.uni.lu/GigaSOM.jl/img/evolution.gif">
     <br/>
     <b>Evolution of the GigaSOM.jl repository (2019-2020)</b>
 </div>
