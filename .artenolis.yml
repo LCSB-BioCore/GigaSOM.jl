@@ -27,8 +27,8 @@ after_success:
       fi
 
     # deploy documentation
+    # Note: TRAVIS_BRANCHmust fit devbranch in docs/make.jl
     - if [[ "$ARCH" == "Linux" && "$JENKINS_PULL_REQUEST" != "True" && "$JULIA_VER" = "v1.2.0" ]]; then
-        # TRAVIS_BRANCHmust fit devbranch in docs/make.jl
         export TRAVIS_BRANCH='origin/develop';
         export TRAVIS_PULL_REQUEST=false;
         var=$GIT_URL; export TRAVIS_REPO_SLUG=${var:8:${#var}};
