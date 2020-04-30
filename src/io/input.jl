@@ -115,3 +115,31 @@ function loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyComp
         )), pids)
     return LoadedDataInfo(name, pids)
 end
+
+"""
+    distributeFCSFileVector(name::Symbol, fns::Vector{String}, pids=workers())::LoadedDataInfo
+
+Distribute a vector of integers among the workers that describes which file
+from `fns` the cell comes from. Useful for producing per-file statistics. The
+vector is saved on workers specified by `pids` as a distributed variable
+`name`.
+"""
+function distributeFCSFileVector(name::Symbol, fns::Vector{String}, pids=workers())::LoadedDataInfo
+    sizes = loadFCSSizes(fns)
+    slices = slicesof(sizes, length(pids))
+    return distributeFileVector(name, sizes, slices, pids)
+end
+
+"""
+    distributeFileVector(name::Symbol, sizes::Vector{Int}, slices::Vector{Tuple{Int,Int,Int,Int}}, pids=workers())::LoadedDataInfo
+
+Generalized version of `distributeFCSFileVector` that produces the integer
+vector from any `sizes` and `slices`.
+"""
+function distributeFileVector(name::Symbol, sizes::Vector{Int}, slices::Vector{Tuple{Int,Int,Int,Int}}, pids=workers())::LoadedDataInfo
+    distributed_foreach(slices,
+        (slice) -> Base.eval(Main, :(
+            $name = collectSlice((i)->fill(i, $sizes[i]), $slice)
+        )), pids)
+    return LoadedDataInfo(name, pids)
+end
