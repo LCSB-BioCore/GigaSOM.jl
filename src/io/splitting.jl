@@ -15,27 +15,27 @@ slice. The i-th tuple field contains, in order:
 function slicesof(lengths::Vector{Int}, slices::Int)::Vector{Tuple{Int,Int,Int,Int}}
     nfiles = length(lengths)
     total = sum(lengths)
-    sliceLen = repeat([div(total,slices)],slices)
+    sliceLen = repeat([div(total, slices)], slices)
 
-    for i in 1:mod(total,slices)
-        sliceLen[i]+=1
+    for i = 1:mod(total, slices)
+        sliceLen[i] += 1
     end
 
-    result=repeat([(0,0,0,0)],slices)
+    result = repeat([(0, 0, 0, 0)], slices)
 
     ifile = 1 # file in the window
     off = 0 # cells already taken from that window
-    for i in 1:slices
+    for i = 1:slices
         startFile = ifile
         startOff = off + 1
-        avail = lengths[ifile]-off
+        avail = lengths[ifile] - off
         while avail < sliceLen[i]
             ifile += 1
             off = 0
             avail += lengths[ifile]
         end
         rest = avail - sliceLen[i]
-        off = lengths[ifile]-rest
+        off = lengths[ifile] - rest
         if startOff > lengths[startFile] && startFile < ifile
             startOff = 1
             startFile += 1
@@ -75,13 +75,18 @@ Example:
         slices[1])
     # (note: function loadFCS returns 4 items, the matrix is the last one)
 """
-function vcollectSlice(loadMtx, (startFile, startOff, finalFile, finalOff)::Tuple{Int,Int,Int,Int})::Matrix
-    vcat([begin
+function vcollectSlice(
+    loadMtx,
+    (startFile, startOff, finalFile, finalOff)::Tuple{Int,Int,Int,Int},
+)::Matrix
+    vcat([
+        begin
             m = loadMtx(i)
             beginIdx = i == startFile ? startOff : 1
             endIdx = i == finalFile ? finalOff : size(m, 1)
             m[beginIdx:endIdx, :]
-        end for i in startFile:finalFile ]...)
+        end for i = startFile:finalFile
+    ]...)
 end
 
 """
@@ -89,11 +94,16 @@ end
 
 Alternative of `vcollectSlice` for 1D vectors.
 """
-function collectSlice(loadVec, (startFile, startOff, finalFile, finalOff)::Tuple{Int,Int,Int,Int})::Vector
-    vcat([begin
+function collectSlice(
+    loadVec,
+    (startFile, startOff, finalFile, finalOff)::Tuple{Int,Int,Int,Int},
+)::Vector
+    vcat([
+        begin
             v = loadVec(i)
             beginIdx = i == startFile ? startOff : 1
             endIdx = i == finalFile ? finalOff : length(v)
             v[beginIdx:endIdx]
-        end for i in startFile:finalFile ]...)
+        end for i = startFile:finalFile
+    ]...)
 end

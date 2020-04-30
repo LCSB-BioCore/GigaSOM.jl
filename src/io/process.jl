@@ -11,19 +11,19 @@ function cleanNames!(mydata::Vector{String})
     # replace problematic characters,
     # put "_" in front of colname in case it starts with a number
     # avoid duplicate names (add suffixes _2, _3, ...)
-    usedNames=Set{String}()
+    usedNames = Set{String}()
     for j in eachindex(mydata)
-        mydata[j] = replace(mydata[j], "-"=>"_")
+        mydata[j] = replace(mydata[j], "-" => "_")
         if isnumeric(first(mydata[j]))
             mydata[j] = "_" * mydata[j]
         end
         # avoid duplicate names
         if mydata[j] in usedNames
-            idx=2
+            idx = 2
             while "$(mydata[j])_$idx" in usedNames
                 idx += 1
             end
-            mydata[j]*="_$idx"
+            mydata[j] *= "_$idx"
         end
         push!(usedNames, mydata[j])
     end
@@ -48,12 +48,12 @@ function getMetaData(meta::Dict{String,String})::DataFrame
 
     # determine the available channel properties
     for (key,) in meta
-        if length(key)>=2 && key[1:2] == "\$P"
-            i=3
-            while i<=length(key) && isdigit(key[i])
-                i+=1
+        if length(key) >= 2 && key[1:2] == "\$P"
+            i = 3
+            while i <= length(key) && isdigit(key[i])
+                i += 1
             end
-            if i<=length(key) && !in(key[i:end], channel_properties)
+            if i <= length(key) && !in(key[i:end], channel_properties)
                 push!(channel_properties, key[i:end])
             end
         end
@@ -66,7 +66,7 @@ function getMetaData(meta::Dict{String,String})::DataFrame
     rename!(df, Symbol.(channel_properties))
 
     # collect the data from params
-    for ch in 1:pars
+    for ch = 1:pars
         for p in channel_properties
             if "\$P$ch$p" in metaKeys
                 df[ch, Symbol(p)] = meta["\$P$ch$p"]
@@ -84,11 +84,11 @@ Extract suitable raw names (useful for selecting columns) and pretty readable
 names (useful for humans) from FCS file metadata.
 
 """
-function getMarkerNames(meta::DataFrame)::Tuple{Vector{String}, Vector{String}}
-    orig = Array{String}(meta[:,:N])
+function getMarkerNames(meta::DataFrame)::Tuple{Vector{String},Vector{String}}
+    orig = Array{String}(meta[:, :N])
     nice = copy(orig)
     if hasproperty(meta, :S)
-        for i in 1:size(meta,1)
+        for i = 1:size(meta, 1)
             if strip(meta[i, :S]) != ""
                 nice[i] = meta[i, :S]
             end
@@ -106,7 +106,7 @@ describe, in order, the spillover of `cols` in `data`) to the matrix `data`
 in-place.
 """
 function compensate!(data::Matrix{Float64}, spillover::Matrix{Float64}, cols::Vector{Int})
-    data[:,cols] = data[:,cols] * inv(spillover)
+    data[:, cols] = data[:, cols] * inv(spillover)
 end
 
 """
@@ -117,7 +117,7 @@ Parses the spillover matrix from the string from FCS parameter value.
 function parseSpillover(str::String)::Tuple{Vector{String},Matrix{Float64}}
     fields = split(str, ',')
     n = parse(Int, fields[1])
-    if length(fields) != 1 + n + n*n
+    if length(fields) != 1 + n + n * n
         @error "Spillover matrix of size $n expects $(1+n+n*n) fields, got $(length(fields)) instead."
         error("Invalid spillover matrix")
     end
@@ -135,7 +135,9 @@ Get a spillover matrix from FCS `params`. Returns a pair with description of
 columns to be applied, and with the actual spillover matrix. Returns `nothing`
 in case spillover is not present.
 """
-function getSpillover(params::Dict{String, String})::Union{Tuple{Vector{String},Matrix{Float64}}, Nothing}
+function getSpillover(
+    params::Dict{String,String},
+)::Union{Tuple{Vector{String},Matrix{Float64}},Nothing}
     spillNames = ["\$SPILL", "\$SPILLOVER", "SPILL", "SPILLOVER"]
     for i in spillNames
         if in(i, keys(params))

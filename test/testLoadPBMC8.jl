@@ -19,18 +19,18 @@ else
             mkdir(dir)
         end
     end
-    genDataPath = cwd*"/genData"
-    dataPath = cwd*"/data"
+    genDataPath = cwd * "/genData"
+    dataPath = cwd * "/data"
 end
 
-refDataPath = cwd*"/refData"
+refDataPath = cwd * "/refData"
 cd(dataPath)
 
 # fetch the required data for testing and download the zip archive and unzip it
 dataFiles = ["PBMC8_metadata.xlsx", "PBMC8_panel.xlsx", "PBMC8_fcs_files.zip"]
 for f in dataFiles
     if !isfile(f)
-        download("http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/"*f, f)
+        download("http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/" * f, f)
         if occursin(".zip", f)
             run(`unzip PBMC8_fcs_files.zip`)
         end
@@ -40,33 +40,33 @@ end
 
 # verify the data consistency using the stored checksums
 fileNames = readdir()
-csDict = Dict{String, Any}()
+csDict = Dict{String,Any}()
 for f in fileNames
-    if  f[end-3:end] == ".fcs" || f[end-4:end] == ".xlsx"
+    if f[end-3:end] == ".fcs" || f[end-4:end] == ".xlsx"
         cs = bytes2hex(sha256(f))
         csDict[f] = cs
     end
 end
-csTest = JSON.parsefile(cwd*"/checkSums/csTest.json")
+csTest = JSON.parsefile(cwd * "/checkSums/csTest.json")
 if csDict != csTest
     @error "Downloaded dataset does not match expectations, perhaps it is corrupted?" csDict csTest
     error("dataset checksum error")
 end
 
-md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
-panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
+md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes = true)...)
+panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes = true)...)
 
-antigens=panel[panel[:,:Lineage].==1, :Antigen]
-_,fcsParams = loadFCSHeader(md[1,:file_name])
-_,fcsAntigens = getMarkerNames(getMetaData(fcsParams))
+antigens = panel[panel[:, :Lineage].==1, :Antigen]
+_, fcsParams = loadFCSHeader(md[1, :file_name])
+_, fcsAntigens = getMarkerNames(getMetaData(fcsParams))
 cleanNames!(antigens)
 cleanNames!(fcsAntigens)
 
-di=loadFCSSet(:fcsData, md[:,:file_name], [myid()])
+di = loadFCSSet(:fcsData, md[:, :file_name], [myid()])
 
 #prepare the data a bit
 dselect(di, fcsAntigens, antigens)
-cols=Vector(1:length(antigens))
+cols = Vector(1:length(antigens))
 dtransform_asinh(di, cols, 5)
 dscale(di, cols)
 
@@ -74,7 +74,12 @@ pbmc8_data = distributed_collect(di)
 undistribute(di)
 
 @testset "load-time columns normalization" begin
-    di=loadFCSSet(:fcsData, md[:,:file_name], [myid()], postLoad=selectFCSColumns(antigens))
+    di = loadFCSSet(
+        :fcsData,
+        md[:, :file_name],
+        [myid()],
+        postLoad = selectFCSColumns(antigens),
+    )
     dtransform_asinh(di, cols, 5)
     dscale(di, cols)
     @test pbmc8_data == distributed_collect(di)
