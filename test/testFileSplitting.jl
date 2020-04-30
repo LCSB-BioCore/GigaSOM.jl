@@ -17,6 +17,12 @@ for splitSize in 1:8
     splits = distributed_mapreduce(di, d->size(d,1), vcat)
     @test sum(splits)==size(pbmc8_data, 1)
     @test minimum(splits)+1 >= maximum(splits)
+
+    sizes = loadFCSSizes(md[:,:file_name])
+    dis = distributeFCSFileVector(:testF, md[:,:file_name], W[1:splitSize])
+    @test dcount(length(sizes), dis) == sizes
+    @test dcount_buckets(length(sizes), dis, length(sizes),dis) ==
+            Matrix{Int}(LinearAlgebra.Diagonal(sizes))
 end
 
 rmprocs(W)

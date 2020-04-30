@@ -1,6 +1,7 @@
 using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed
 using FileIO, DataFrames, Distances
 using JSON, SHA
+import LinearAlgebra
 
 owd = pwd()
 

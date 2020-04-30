@@ -62,11 +62,14 @@ module GigaSOM
         loadFCSHeader,
         getFCSSize,
         loadFCSSizes,
-        loadFCSSet
+        loadFCSSet,
+        distributeFCSFileVector,
+        distributeFileVector
 
     export #io/splitting
         slicesof,
-        vcollectSlice
+        vcollectSlice,
+        collectSlice
 
     export #io/process
         cleanNames!,
@@ -84,6 +87,8 @@ module GigaSOM
         dapply_rows,
         dstat,
         dstat_buckets,
+        dcount,
+        dcount_buckets,
         dscale,
         dtransform_asinh,
         dmedian,

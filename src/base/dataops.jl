@@ -133,6 +133,45 @@ function dstat_buckets(dInfo::LoadedDataInfo, nbuckets::Int, buckets::LoadedData
 end
 
 """
+    dcount(ncats::Int, dInfo::LoadedDataInfo)::Vector{Int}
+
+Count the numbers of integer vector values stored in `dInfo`; assuming the
+values are in range 1--`ncats`.
+"""
+function dcount(ncats::Int, dInfo::LoadedDataInfo)::Vector{Int}
+    tabulate = (d) -> begin
+        counts = zeros(Int, ncats)
+        for i in d
+            counts[i] += 1
+        end
+        return counts
+    end
+
+    distributed_mapreduce(dInfo, tabulate, +)
+end
+
+"""
+    dcount_buckets(ncats::Int, dInfo::LoadedDataInfo, nbuckets::Int, buckets::LoadedDataInfo)::Matrix{Int}
+
+Same as `dcount`, but counts the items in `dInfo` bucketed by `buckets` to
+produce a matrix of counts, with `ncats` rows and `nbuckets` columns.
+
+Useful with `distributeFCSFileVector` to determine cluster distribution within
+files.
+"""
+function dcount_buckets(ncats::Int, dInfo::LoadedDataInfo, nbuckets::Int, buckets::LoadedDataInfo)::Matrix{Int}
+    tabulate2 = (d,b) -> begin
+        counts = zeros(Int, ncats, nbuckets)
+        for (i,j) in zip(d,b)
+            counts[i,j] += 1
+        end
+        return counts
+    end
+
+    distributed_mapreduce([dInfo, buckets], tabulate2, +)
+end
+
+"""
     dscale(dInfo::LoadedDataInfo, columns::Vector{Int})
 
 Scale the columns in the dataset to have mean 0 and sdev 1.
