@@ -63,6 +63,7 @@ module GigaSOM
         getFCSSize,
         loadFCSSizes,
         loadFCSSet,
+        selectFCSColumns,
         distributeFCSFileVector,
         distributeFileVector
 

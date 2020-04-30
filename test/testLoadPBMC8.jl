@@ -73,3 +73,10 @@ dscale(di, cols)
 pbmc8_data = distributed_collect(di)
 undistribute(di)
 
+@testset "load-time columns normalization" begin
+    di=loadFCSSet(:fcsData, md[:,:file_name], [myid()], postLoad=selectFCSColumns(antigens))
+    dtransform_asinh(di, cols, 5)
+    dscale(di, cols)
+    @test pbmc8_data == distributed_collect(di)
+    undistribute(di)
+end
