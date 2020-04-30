@@ -88,7 +88,7 @@ function loadFCS(fn::String; applyCompensation::Bool=true)::Tuple{Dict{String,St
 end
 
 """
-    loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyCompensation=true)::LoadedDataInfo
+    loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyCompensation=true, postLoad=(d,i)->d)::LoadedDataInfo
 
 This runs the FCS loading machinery in a distributed way, so that the files
 `fns` (with full path) are sliced into equal parts and saved as a distributed
@@ -98,22 +98,49 @@ variable `name` on workers specified by `pids`.
 
 See `slicesof` for description of the slicing.
 
+`postLoad` is applied to the loaded FCS file data (and the index) -- use this
+function to e.g. filter out certain columns right on loading, using `selectFCSColumns`.
+
 The loaded dataset can be manipulated by the distributed functions, e.g.
 - `dselect` for removing columns
 - `dscale` for normalization
 - `dtransform_asinh` (and others) for transformation
 - etc.
 """
-function loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyCompensation=true)::LoadedDataInfo
+function loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyCompensation=true, postLoad=(d,i)->d)::LoadedDataInfo
     slices = slicesof(loadFCSSizes(fns), length(pids))
     distributed_foreach(slices,
         (slice) -> Base.eval(Main, :(
             begin
-                $name = vcollectSlice((i)->last(loadFCS($fns[i]; applyCompensation=$applyCompensation)), $slice)
+                $name = vcollectSlice(
+                    (i)->last($postLoad(loadFCS(
+                            $fns[i]; applyCompensation=$applyCompensation),
+                         i)), $slice)
                 nothing
             end
         )), pids)
     return LoadedDataInfo(name, pids)
+end
+
+"""
+    selectFCSColumns(selectColnames::Vector{String})
+
+Return a function useful with `loadFCSSet`, which loads only the specified
+(prettified) column names from the FCS files. Use `getMetaData`,
+`getMarkerNames` and `cleanNames!` to retrieve the usable column names for a
+FCS.
+"""
+function selectFCSColumns(selectColnames::Vector{String})
+    ((metadata, data), idx) -> begin
+        _, names = getMarkerNames(getMetaData(metadata))
+        cleanNames!(names)
+        colIdxs = indexin(selectColnames, names)
+        if any(colIdxs.==nothing)
+            @error "Some columns were not found"
+            error("unknown column")
+        end
+        (metadata, data[:, colIdxs])
+    end
 end
 
 """
