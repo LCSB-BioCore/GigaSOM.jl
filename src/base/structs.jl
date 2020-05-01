@@ -21,17 +21,14 @@ mutable struct Som
     numCodes::Int
     grid::Array{Float64,2}
 
-    Som(;codes::Array{Float64} = Array{Float64}(0),
+    Som(;
+        codes::Array{Float64} = Array{Float64}(0),
         colNames::Array{String,1} = Array{String}(0),
         xdim::Int = 1,
         ydim::Int = 1,
         numCodes::Int = 1,
-        grid::Array{Float64,2} = zeros(1,1)) = new(codes,
-                                              colNames,
-                                              xdim,
-                                              ydim,
-                                              numCodes,
-                                              grid)
+        grid::Array{Float64,2} = zeros(1, 1),
+    ) = new(codes, colNames, xdim, ydim, numCodes, grid)
 end
 
 """
@@ -48,8 +45,5 @@ The basic structure for working with loaded data, distributed amongst workers. I
 struct LoadedDataInfo
     val::Symbol
     workers::Array{Int64}
-    LoadedDataInfo(
-        val,
-        workers
-        ) = new(val, workers)
+    LoadedDataInfo(val, workers) = new(val, workers)
 end

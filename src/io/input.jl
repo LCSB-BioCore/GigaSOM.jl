@@ -3,7 +3,7 @@
 
 Efficiently extract data offsets and keyword dictionary from an FCS file.
 """
-function loadFCSHeader(fn::String)::Tuple{Vector{Int}, Dict{String,String}}
+function loadFCSHeader(fn::String)::Tuple{Vector{Int},Dict{String,String}}
     open(fn) do io
         offsets = FCSFiles.parse_header(io)
         params = FCSFiles.parse_text(io, offsets[1], offsets[2])
@@ -22,7 +22,7 @@ function getFCSSize(offsets, params)::Tuple{Int,Int}
     nData = parse(Int, params["\$TOT"])
     nParams = parse(Int, params["\$PAR"])
 
-    if params["\$DATATYPE"]!="F"
+    if params["\$DATATYPE"] != "F"
         @error "Only float32 FCS files are currently supported"
         error("Unsupported FCS format")
     end
@@ -31,10 +31,14 @@ function getFCSSize(offsets, params)::Tuple{Int,Int}
     endData = parse(Int, params["\$ENDDATA"])
 
     #check that the $TOT and $PAR look okay
-    if !(offsets[3]==0 && offsets[4]==0) &&
-        ((1+offsets[4]-offsets[3] != nData*nParams*4 &&
-        offsets[4]-offsets[3] != nData*nParams*4) ||
-        offsets[3]!=beginData || offsets[4] != endData)
+    if !(offsets[3] == 0 && offsets[4] == 0) && (
+        (
+            1 + offsets[4] - offsets[3] != nData * nParams * 4 &&
+            offsets[4] - offsets[3] != nData * nParams * 4
+        ) ||
+        offsets[3] != beginData ||
+        offsets[4] != endData
+    )
         @warn "Data size mismatch, FCS is likely broken."
     end
 
@@ -47,11 +51,12 @@ end
 Load cell counts in many FCS files at once. Useful as input for `slicesof`.
 """
 function loadFCSSizes(fns::Vector{String})
-    [(begin
-        o,s = loadFCSHeader(fn)
-        getFCSSize(o,s)[1]
-      end
-     ) for fn in fns]
+    [(
+        begin
+            o, s = loadFCSHeader(fn)
+            getFCSSize(o, s)[1]
+        end
+    ) for fn in fns]
 end
 
 """
@@ -68,16 +73,19 @@ If `applyCompensation` is set, the function parses and retrieves a spillover
 matrix (if any valid keyword in the FCS is found that would contain it) and
 applies it to compensate the data.
 """
-function loadFCS(fn::String; applyCompensation::Bool=true)::Tuple{Dict{String,String}, Matrix{Float64}}
+function loadFCS(
+    fn::String;
+    applyCompensation::Bool = true,
+)::Tuple{Dict{String,String},Matrix{Float64}}
     fcs = FileIO.load(fn)
     meta = getMetaData(fcs.params)
-    data = hcat(map(x->Vector{Float64}(fcs.data[x]), meta[:,:N])...)
+    data = hcat(map(x -> Vector{Float64}(fcs.data[x]), meta[:, :N])...)
     if applyCompensation
         spill = getSpillover(fcs.params)
-        if spill!=nothing
+        if spill != nothing
             names, mtx = spill
-            cols = indexin(names, meta[:,:N])
-            if any(cols.==nothing)
+            cols = indexin(names, meta[:, :N])
+            if any(cols .== nothing)
                 @error "Unknown columns in compensation matrix" names cols
                 error("Invalid compensation matrix")
             end
@@ -107,18 +115,33 @@ The loaded dataset can be manipulated by the distributed functions, e.g.
 - `dtransform_asinh` (and others) for transformation
 - etc.
 """
-function loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyCompensation=true, postLoad=(d,i)->d)::LoadedDataInfo
+function loadFCSSet(
+    name::Symbol,
+    fns::Vector{String},
+    pids = workers();
+    applyCompensation = true,
+    postLoad = (d, i) -> d,
+)::LoadedDataInfo
     slices = slicesof(loadFCSSizes(fns), length(pids))
-    distributed_foreach(slices,
-        (slice) -> Base.eval(Main, :(
-            begin
-                $name = vcollectSlice(
-                    (i)->last($postLoad(loadFCS(
-                            $fns[i]; applyCompensation=$applyCompensation),
-                         i)), $slice)
-                nothing
-            end
-        )), pids)
+    distributed_foreach(
+        slices,
+        (slice) -> Base.eval(
+            Main,
+            :(
+                begin
+                    $name = vcollectSlice(
+                        (i) -> last($postLoad(
+                            loadFCS($fns[i]; applyCompensation = $applyCompensation),
+                            i,
+                        )),
+                        $slice,
+                    )
+                    nothing
+                end
+            ),
+        ),
+        pids,
+    )
     return LoadedDataInfo(name, pids)
 end
 
@@ -135,7 +158,7 @@ function selectFCSColumns(selectColnames::Vector{String})
         _, names = getMarkerNames(getMetaData(metadata))
         cleanNames!(names)
         colIdxs = indexin(selectColnames, names)
-        if any(colIdxs.==nothing)
+        if any(colIdxs .== nothing)
             @error "Some columns were not found"
             error("unknown column")
         end
@@ -151,7 +174,11 @@ from `fns` the cell comes from. Useful for producing per-file statistics. The
 vector is saved on workers specified by `pids` as a distributed variable
 `name`.
 """
-function distributeFCSFileVector(name::Symbol, fns::Vector{String}, pids=workers())::LoadedDataInfo
+function distributeFCSFileVector(
+    name::Symbol,
+    fns::Vector{String},
+    pids = workers(),
+)::LoadedDataInfo
     sizes = loadFCSSizes(fns)
     slices = slicesof(sizes, length(pids))
     return distributeFileVector(name, sizes, slices, pids)
@@ -163,10 +190,17 @@ end
 Generalized version of `distributeFCSFileVector` that produces the integer
 vector from any `sizes` and `slices`.
 """
-function distributeFileVector(name::Symbol, sizes::Vector{Int}, slices::Vector{Tuple{Int,Int,Int,Int}}, pids=workers())::LoadedDataInfo
-    distributed_foreach(slices,
-        (slice) -> Base.eval(Main, :(
-            $name = collectSlice((i)->fill(i, $sizes[i]), $slice)
-        )), pids)
+function distributeFileVector(
+    name::Symbol,
+    sizes::Vector{Int},
+    slices::Vector{Tuple{Int,Int,Int,Int}},
+    pids = workers(),
+)::LoadedDataInfo
+    distributed_foreach(
+        slices,
+        (slice) ->
+            Base.eval(Main, :($name = collectSlice((i) -> fill(i, $sizes[i]), $slice))),
+        pids,
+    )
     return LoadedDataInfo(name, pids)
 end
