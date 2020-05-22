@@ -1,123 +1,125 @@
 
 @testset "Distributed data handling" begin
 
-@testset "Distributed data transfers -- local" begin
-    data=rand(5)
-    save_at(1, :test, data)
+    @testset "Distributed data transfers -- local" begin
+        data = rand(5)
+        save_at(1, :test, data)
 
-    @test fetch(get_from(1,:test))==data
-    @test get_val_from(1, :test)==data
+        @test fetch(get_from(1, :test)) == data
+        @test get_val_from(1, :test) == data
 
-    remove_from(1, :test)
+        remove_from(1, :test)
 
-    @test sizeof(get_val_from(1, :test))==0 #should be "nothing" but this is more generic
-end
-
-addprocs(3)
-@everywhere using GigaSOM
-W = workers()
-
-@testset "Distributed data transfers -- with workers" begin
-    data=[rand(5) for i in W]
-    for (i,w) in enumerate(W)
-        save_at(w, :test, data[i])
+        @test sizeof(get_val_from(1, :test)) == 0 #should be "nothing" but this is more generic
     end
 
-    @test [fetch(get_from(w,:test)) for w in W]==data
-    @test [get_val_from(w, :test) for w in W]==data
+    addprocs(3)
+    @everywhere using GigaSOM
+    W = workers()
 
-    undistribute(:test, W)
+    @testset "Distributed data transfers -- with workers" begin
+        data = [rand(5) for i in W]
+        for (i, w) in enumerate(W)
+            save_at(w, :test, data[i])
+        end
 
-    @test sum([sizeof(get_val_from(w, :test)) for w in W])==0
-end
+        @test [fetch(get_from(w, :test)) for w in W] == data
+        @test [get_val_from(w, :test) for w in W] == data
 
-@testset "Data distribution" begin
-    d = rand(100,5)
-    @everywhere import DistributedArrays
-    dd = DistributedArrays.distribute(d, procs=W)
-    di = distribute_darray(:test, dd)
-    @test di.val == :test
-    @test Set(di.workers) == Set(W)
-    @test begin
-        d1 = get_val_from(di.workers[1], :test)
-        d1 == d[1:size(d1,1),:]
+        undistribute(:test, W)
+
+        @test sum([sizeof(get_val_from(w, :test)) for w in W]) == 0
     end
 
-    @test distributed_collect(di, free=true)==d
-    @test sum([sizeof(get_val_from(w, :test)) for w in W])==0
+    @testset "Data distribution" begin
+        d = rand(100, 5)
+        @everywhere import DistributedArrays
+        dd = DistributedArrays.distribute(d, procs = W)
+        di = distribute_darray(:test, dd)
+        @test di.val == :test
+        @test Set(di.workers) == Set(W)
+        @test begin
+            d1 = get_val_from(di.workers[1], :test)
+            d1 == d[1:size(d1, 1), :]
+        end
 
-    di = distribute_array(:test, d, W)
-    @test distributed_collect(di, free=false)==d
-    @test sum([sizeof(get_val_from(w, :test)) for w in W])>0
-    undistribute(di)
-    @test sum([sizeof(get_val_from(w, :test)) for w in W])==0
-end
+        @test distributed_collect(di, free = true) == d
+        @test sum([sizeof(get_val_from(w, :test)) for w in W]) == 0
 
-@testset "Distributed computation" begin
-    di = distributed_transform(:(), x -> rand(5), W, :test)
+        di = distribute_array(:test, d, W)
+        @test distributed_collect(di, free = false) == d
+        @test sum([sizeof(get_val_from(w, :test)) for w in W]) > 0
+        undistribute(di)
+        @test sum([sizeof(get_val_from(w, :test)) for w in W]) == 0
+    end
 
-    @test get_val_from(W[1], :test) == distributed_collect(di)[1:5]
+    @testset "Distributed computation" begin
+        di = distributed_transform(:(), x -> rand(5), W, :test)
 
-    orig = distributed_collect(di)
+        @test get_val_from(W[1], :test) == distributed_collect(di)[1:5]
 
-    @test isapprox(
-        distributed_mapreduce(:test, d->sum(d.^2), (a,b)->a+b , W),
-        sum(orig.^2))
-    
-    distributed_transform(di, d -> d.*2)
+        orig = distributed_collect(di)
 
-    @test orig.*2 == distributed_collect(:test, W)
+        @test isapprox(
+            distributed_mapreduce(:test, d -> sum(d .^ 2), (a, b) -> a + b, W),
+            sum(orig .^ 2),
+        )
 
-    @test isapprox(
-        distributed_mapreduce(di, d->sum(d.^2), (a,b)->a+b),
-        sum((orig.*2) .^ 2))
+        distributed_transform(di, d -> d .* 2)
 
-    t = zeros(length(W))
-    exp = zeros(length(W))
+        @test orig .* 2 == distributed_collect(:test, W)
 
-    t[1] = 2
-    exp[1] = sum(2 .* get_val_from(W[1], :test))
+        @test isapprox(
+            distributed_mapreduce(di, d -> sum(d .^ 2), (a, b) -> a + b),
+            sum((orig .* 2) .^ 2),
+        )
 
-    @test distributed_foreach(t, (i) -> eval(:(sum($i .* $(di.val)))), W) == exp
+        t = zeros(length(W))
+        exp = zeros(length(W))
 
-    undistribute(di)
+        t[1] = 2
+        exp[1] = sum(2 .* get_val_from(W[1], :test))
 
-    @test distributed_mapreduce(:noname, x->x, (a,b)->a+b, []) == nothing
-end
+        @test distributed_foreach(t, (i) -> eval(:(sum($i .* $(di.val)))), W) == exp
 
-@testset "Distributed utilities" begin
-    @test GigaSOM.tmpSym(:test) != :test
-    @test GigaSOM.tmpSym(:test, prefix="abc", suffix="def") == :abctestdef
-    @test GigaSOM.tmpSym(LoadedDataInfo(:test, W)) != :test
-end
+        undistribute(di)
 
-@testset "Persistent distributed data" begin
-    di = distributed_transform(:(), x -> rand(5), W, :test)
+        @test distributed_mapreduce(:noname, x -> x, (a, b) -> a + b, []) == nothing
+    end
 
-    files=GigaSOM.defaultFiles(di.val, di.workers)
-    @test allunique(files)
-    
-    orig=distributed_collect(di)
-    distributed_export(di, files)
-    distributed_transform(di, x->"erased")
-    distributed_import(di, files)
-    
-    @test orig==distributed_collect(di)
+    @testset "Distributed utilities" begin
+        @test GigaSOM.tmpSym(:test) != :test
+        @test GigaSOM.tmpSym(:test, prefix = "abc", suffix = "def") == :abctestdef
+        @test GigaSOM.tmpSym(LoadedDataInfo(:test, W)) != :test
+    end
 
-    distributed_export(di.val, di.workers, files)
-    di2=distributed_import(:test2, di.workers, files)
+    @testset "Persistent distributed data" begin
+        di = distributed_transform(:(), x -> rand(5), W, :test)
 
-    @test orig==distributed_collect(di2)
+        files = GigaSOM.defaultFiles(di.val, di.workers)
+        @test allunique(files)
 
-    undistribute(di)
-    undistribute(di2)
+        orig = distributed_collect(di)
+        distributed_export(di, files)
+        distributed_transform(di, x -> "erased")
+        distributed_import(di, files)
 
-    distributed_unlink(di)
+        @test orig == distributed_collect(di)
 
-    @test all([!isfile(f) for f in files])
-end
+        distributed_export(di.val, di.workers, files)
+        di2 = distributed_import(:test2, di.workers, files)
 
-rmprocs(W)
-W = nothing
+        @test orig == distributed_collect(di2)
+
+        undistribute(di)
+        undistribute(di2)
+
+        distributed_unlink(di)
+
+        @test all([!isfile(f) for f in files])
+    end
+
+    rmprocs(W)
+    W = nothing
 
 end
