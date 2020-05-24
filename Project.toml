@@ -30,7 +30,7 @@ FCSFiles = "^0.1.1"
 FileIO = "^1.0.7"
 JSON = "0.21"
 NearestNeighbors = "^0.4.3"
-XLSX = "^0.5.5, 0.6"
+XLSX = "^0.5.5, 0.6, 0.7"
 julia = "1"
 
 [extras]
