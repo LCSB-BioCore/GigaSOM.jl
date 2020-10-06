@@ -4,8 +4,7 @@
     W = addprocs(2)
     @everywhere using GigaSOM
 
-    Random.seed!(1)
-    som = initGigaSOM(pbmc8_data, 10, 10)
+    som = initGigaSOM(pbmc8_data, 10, 10, seed = 1234)
 
     @testset "Check SOM dimensions" begin
         @test size(som.codes) == (100, 10)

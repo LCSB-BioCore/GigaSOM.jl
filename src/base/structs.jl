@@ -5,7 +5,6 @@ Structure to hold all data of a trained SOM.
 
 # Fields:
 - `codes::Array{Float64,2}`: 2D-array of codebook vectors. One vector per row
-- `colNames::Array{String,1}`: names of the attribute with which the SOM is trained
 - `xdim::Int`: number of neurons in x-direction
 - `ydim::Int`: number of neurons in y-direction
 - `numCodes::Int`: total number of neurons
@@ -14,21 +13,19 @@ Structure to hold all data of a trained SOM.
            3 columns (x,y,z) for spherical maps)
 """
 mutable struct Som
-    codes::Array{Float64,2}
-    colNames::Array{String}
+    codes::Matrix{Float64}
     xdim::Int
     ydim::Int
     numCodes::Int
-    grid::Array{Float64,2}
+    grid::Matrix{Float64}
 
     Som(;
-        codes::Array{Float64} = Array{Float64}(0),
-        colNames::Array{String,1} = Array{String}(0),
-        xdim::Int = 1,
-        ydim::Int = 1,
-        numCodes::Int = 1,
-        grid::Array{Float64,2} = zeros(1, 1),
-    ) = new(codes, colNames, xdim, ydim, numCodes, grid)
+        codes::Matrix{Float64},
+        xdim::Int,
+        ydim::Int,
+        numCodes::Int = xdim * ydim,
+        grid::Matrix{Float64},
+    ) = new(codes, xdim, ydim, numCodes, grid)
 end
 
 """

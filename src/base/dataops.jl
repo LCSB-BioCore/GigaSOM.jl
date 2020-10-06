@@ -86,12 +86,15 @@ function combine_stats((s1, sqs1, n1), (s2, sqs2, n2))
 end
 
 """
-    dstat(dInfo::LoadedDataInfo, columns::Vector{Int})
+    dstat(dInfo::LoadedDataInfo, columns::Vector{Int})::Tuple{Vector{Float64}, Vector{Float64}}
 
 Compute mean and standard deviation of the columns in dataset. Returns a tuple
 with a vector of means in `columns`, and a vector of corresponding sdevs.
 """
-function dstat(dInfo::LoadedDataInfo, columns::Vector{Int})
+function dstat(
+    dInfo::LoadedDataInfo,
+    columns::Vector{Int},
+)::Tuple{Vector{Float64},Vector{Float64}}
 
     sum_squares = x -> sum(x .^ 2)
 
@@ -107,22 +110,23 @@ function dstat(dInfo::LoadedDataInfo, columns::Vector{Int})
     (sums, sqsums, ns) = distributed_mapreduce(dInfo, get_stats, combine_stats)
 
     return (
-        sums ./ ns, #means
-        sqrt.(sqsums ./ ns - (sums ./ ns) .^ 2), #sdevs
+        (sums./ns)[1, :], #means
+        (sqrt.(sqsums ./ ns - (sums ./ ns) .^ 2))[1, :], #sdevs
     )
 end
 
 """
-    dstat_buckets(dInfo::LoadedDataInfo, nbuckets::Int, buckets::LoadedDataInfo, columns::Vector{Int})
+    dstat_buckets(dInfo::LoadedDataInfo, nbuckets::Int, buckets::LoadedDataInfo, columns::Vector{Int})::Tuple{Matrix{Float64}, Matrix{Float64}}
 
-A version of `dstat` that works with bucketing information (e.g. clusters).
+A version of `dstat` that works with bucketing information (e.g. clusters);
+returns a tuple of matrices.
 """
 function dstat_buckets(
     dInfo::LoadedDataInfo,
     nbuckets::Int,
     buckets::LoadedDataInfo,
     columns::Vector{Int},
-)
+)::Tuple{Matrix{Float64},Matrix{Float64}}
     # this produces a triplet of matrices (1 row per each bucket)
     get_bucketed_stats =
         (d, b) -> (
