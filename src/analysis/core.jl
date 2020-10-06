@@ -1,60 +1,85 @@
 """
-    initGigaSOM(train, xdim, ydim = xdim)
+    initGigaSOM(data, args...)
 
-Initializes a SOM by random selection from the training data.
+Initializes a SOM by random selection from the training data. A generic
+overload that works for matrices and DataFrames that can be coerced to
+`Matrix{Float64}`. Other arguments are passed to the data-independent
+`initGigaSOM`.
 
-# Arguments:
-- `train`: codeBook vector as random input matrix from random workers
-- `xdim, ydim`: geometry of the SOM
+Arguments:
+- `data`: matrix of data for running the initialization
 """
-function initGigaSOM(train, xdim::Int64, ydim::Int64 = xdim)
+function initGigaSOM(data::Union{Matrix,DataFrame}, args...; kwargs...)
 
-    if typeof(train) == DataFrame
-        colNames = [String(x) for x in names(train)]
-    else
-        colNames = ["x$i" for i = 1:size(train, 2)]
-        @debug "assuming default colNames"
-    end
+    d = Matrix{Float64}(data)
 
-    train = Matrix{Float64}(train)
+    (n, ncol) = size(d)
+    means = [sum(d[:, i]) / n for i = 1:ncol]
+    sdevs = [sqrt(sum((d[:, i] .- means[i]) .^ 2.0) / n) for i = 1:ncol]
 
-    numCodes = xdim * ydim
-
-    # initialise the codes with random samples
-    codes = train[rand(1:size(train, 1), numCodes), :]
-    grid = gridRectangular(xdim, ydim)
-
-    # make SOM object:
-    som = Som(
-        codes = codes,
-        colNames = colNames,
-        xdim = xdim,
-        ydim = ydim,
-        numCodes = numCodes,
-        grid = grid,
-    )
-    return som
+    return initGigaSOM(ncol, means, sdevs, args...; kwargs...)
 end
 
 """
-    initGigaSOM(trainInfo::LoadedDataInfo,
-                xdim::Int64, ydim :: Int64 = xdim)
+    function initGigaSOM(data::LoadedDataInfo,
+                         xdim::Int64, ydim::Int64 = xdim;
+                         seed=rand(Int), rng=StableRNG(seed))
 
 `initGigaSOM` overload for working with distributed-style `LoadedDataInfo`
-data. The rest of arguments is the same as in `initGigaSOM`.
+data. The rest of the arguments is passed to the data-independent
+`initGigaSOM`.
 
-Note that this function only uses the data saved on the first worker for
-initialization, and the init work is actually done on that worker to avoid
-unnecessary data copying.
+Arguments:
+- `data`: a `LoadedDataInfo` object with the distributed dataset matrix
 """
-function initGigaSOM(trainInfo::LoadedDataInfo, xdim::Int64, ydim::Int64 = xdim)
+function initGigaSOM(data::LoadedDataInfo, args...; kwargs...)
+    ncol = get_val_from(data.workers[1], :(size($(data.val))[2]))
+    (means, sdevs) = dstat(data, Vector(1:ncol))
 
-    # Snatch the init data from the first available worker (for he cares not).
-    return get_val_from(
-        trainInfo.workers[1],
-        :(initGigaSOM($(trainInfo.val), $xdim, $ydim)),
-    )
+    initGigaSOM(ncol, means, sdevs, args...; kwargs...)
 end
+
+"""
+    function initGigaSOM(ncol::Int64,
+                         means::Vector{Float64}, sdevs::Vector{Float64},
+                         xdim::Int64, ydim::Int64 = xdim;
+                         seed = rand(Int), rng = StableRNG(seed))
+
+Generate a stable random initial SOM with the random distribution that matches the parameters.
+
+Arguments:
+- `ncol`: number of desired data columns
+- `means`, `sdevs`: vectors that describe the data distribution, both of size `ncol`
+- `xdim`, `ydim`: Size of the SOM
+- `seed`: a seed (defaults to random seed from the current default random generator
+- `rng`: a random number generator to be used (defaults to a `StableRNG` initialized with the `seed`)
+
+Returns: a new `Som` structure
+"""
+function initGigaSOM(
+    ncol::Int64,
+    means::Vector{Float64},
+    sdevs::Vector{Float64},
+    xdim::Int64,
+    ydim::Int64 = xdim;
+    seed = rand(UInt),
+    rng = StableRNG(seed),
+)
+
+    numCodes = xdim * ydim
+    grid = gridRectangular(xdim, ydim)
+
+    # Initialize with an unbiased random gaussian with same mean/sd as the data
+    # in each dimension
+    codes = randn(rng, (numCodes, ncol))
+    for col = 1:ncol
+        codes[:, col] .*= sdevs[col]
+        codes[:, col] .+= means[col]
+    end
+
+    return Som(codes = codes, xdim = xdim, ydim = ydim, grid = grid)
+end
+
 
 """
     trainGigaSOM(som::Som, dInfo::LoadedDataInfo;
