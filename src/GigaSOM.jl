@@ -6,7 +6,6 @@ The documentation is here: http://LCSB-BioCore.github.io/GigaSOM.jl
 
 module GigaSOM
 
-using CSV
 using DataFrames
 using Distances
 using Distributed
@@ -14,9 +13,9 @@ using Distributions
 using FCSFiles
 using FileIO
 using DistributedArrays
-using XLSX
 using NearestNeighbors
 using Serialization
+using StableRNGs
 
 include("base/structs.jl")
 
