@@ -39,9 +39,12 @@ getMetaData(params)
 
 `data` is a matrix with cell expressions, one cell per row, one marker per
 column. If you want to run SOM analysis on it, you can cluster and visualize it
-just as in the previous tutorial:
+just as in the previous tutorial, with one exception- we start with cutting off
+the `label` column that contains `NaN` values:
 
 ```
+
+data = data[:,1:13]
 som = initGigaSOM(data, 16, 16)
 som = trainGigaSOM(som, data)
 clusters = mapToGigaSOM(som, data)
@@ -160,8 +163,9 @@ extract information about FCS data columns from there. First, we read the
 actual content using the XLSX package:
 
 ```julia
-md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
-panel = GigaSOM.DataFrame(GigaSOM.XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
+using XLSX
+md = GigaSOM.DataFrame(readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
+panel = GigaSOM.DataFrame(readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
 ```
 
 After that, we can get the parameter structure from the first FCS files:
