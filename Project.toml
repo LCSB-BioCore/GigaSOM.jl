@@ -31,6 +31,7 @@ FCSFiles = "^0.1.1"
 FileIO = "^1.0.7"
 JSON = "0.21"
 NearestNeighbors = "^0.4.3"
+StableRNGs = "1.0"
 XLSX = "^0.5.5, 0.6, 0.7"
 julia = "1"
 
