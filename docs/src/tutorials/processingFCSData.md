@@ -160,8 +160,9 @@ extract information about FCS data columns from there. First, we read the
 actual content using the XLSX package:
 
 ```julia
-md = GigaSOM.DataFrame(GigaSOM.XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
-panel = GigaSOM.DataFrame(GigaSOM.XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
+import XLSX
+md = GigaSOM.DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
+panel = GigaSOM.DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
 ```
 
 After that, we can get the parameter structure from the first FCS files:
