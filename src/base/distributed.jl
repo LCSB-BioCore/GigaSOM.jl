@@ -15,7 +15,8 @@ more flexible by omitting/delaying the explicit fetches etc. In particular,
 A future with Nothing that can be fetched to see that the operation has
 finished.
 
-Examples:
+# Examples
+
     addprocs(1)
     save_at(2,:x,123)       # saves 123
     save_at(2,:x,myid())    # saves 1
