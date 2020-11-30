@@ -1,4 +1,4 @@
-![GigaSOM.jl](https://prince.lcsb.uni.lu/GigaSOM.jl/img/logo-GigaSOM.jl.png?maxAge=0)
+![GigaSOM.jl](https://webdav-r3lab.uni.lu/public/GigaSOM/img/logo-GigaSOM.jl.png?maxAge=0)
 
 # GigaSOM.jl <br> Huge-scale, high-performance flow cytometry clustering
 
