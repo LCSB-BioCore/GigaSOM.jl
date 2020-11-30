@@ -4,9 +4,9 @@
 
 GigaSOM is a Julia toolkit for clustering and visualisation of really large cytometry data. Most generally, it can load FCS files, perform transformation and cleaning operations in their contents, run FlowSOM-style clustering, and visualize and export the results. GigaSOM is distributed and parallel in nature, which makes processing huge datasets a breeze -- a hundred of millions of cells with a few dozen parameters can be clustered and visualized in a few minutes.
 
-| **Documentation** | **Test Coverage** | **[ARTENOLIS](http://opencobra.github.io/artenolis)** | **SciCrunch** |
+| **Documentation** | **Test Coverage** | **CI** | **SciCrunch** |
 |:-----------------:|:-----------------:|:-----------------------------------------------------:|:--------:|
-| [![doc](https://img.shields.io/badge/doc-GigaSOM-blue)](http://git.io/GigaSOM.jl) | [![coverage status](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl/coverage.svg?branch=master)](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl?branch=master) | [![linux](https://prince.lcsb.uni.lu/jenkins/job/GigaSOM.jl-branches-auto-linux/badge/icon)](https://prince.lcsb.uni.lu/jenkins/job/GigaSOM.jl-branches-auto-linux/) | [![rrid](https://img.shields.io/badge/RRID-SCR__019020-72c02c)](https://scicrunch.org/resolver/RRID:SCR_019020) |
+| [![doc](https://img.shields.io/badge/doc-GigaSOM-blue)](http://git.io/GigaSOM.jl) | [![coverage status](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl/coverage.svg?branch=master)](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl?branch=master) | [![linux](https://git-r3lab.uni.lu/lcsb-biocore/GigaSOM.jl/badges/master/pipeline.svg)](https://git-r3lab.uni.lu/lcsb-biocore/GigaSOM.jl/-/pipelines) | [![rrid](https://img.shields.io/badge/RRID-SCR__019020-72c02c)](https://scicrunch.org/resolver/RRID:SCR_019020) |
 
 # How to get started
 
