@@ -11,4 +11,4 @@ test:
     - julia --project=@. -e "import Pkg; Pkg.test(; coverage = true)"
 
   after_script:
-    - julia --color=yes -e 'using Coverage; Codecov.submit(process_folder())';
+    - julia -e 'using Pkg; using Coverage; Codecov.submit_local(process_folder())'
