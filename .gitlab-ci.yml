@@ -9,6 +9,3 @@ test:
 
   script:
     - julia --project=@. -e "import Pkg; Pkg.test(; coverage = true)"
-
-  after_script:
-    - julia -e 'using Pkg; using Coverage; Codecov.submit_local(process_folder())'
