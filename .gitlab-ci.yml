@@ -1,0 +1,14 @@
+image: $CI_REGISTRY/r3/docker/julia-custom
+
+stages:
+  - test
+  - deploy-doc
+
+test:
+  stage: test
+
+  script:
+    - julia --project=@. -e "import Pkg; Pkg.test(; coverage = true)"
+
+  after_script:
+    - julia --color=yes -e 'using Coverage; Codecov.submit(process_folder())';
