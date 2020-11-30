@@ -6,7 +6,7 @@ GigaSOM is a Julia toolkit for clustering and visualisation of really large cyto
 
 | **Documentation** | **Test Coverage** | **CI** | **SciCrunch** |
 |:-----------------:|:-----------------:|:-----------------------------------------------------:|:--------:|
-| [![doc](https://img.shields.io/badge/doc-GigaSOM-blue)](http://git.io/GigaSOM.jl) | [![coverage status](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl/coverage.svg?branch=master)](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl?branch=master) | [![linux](https://git-r3lab.uni.lu/lcsb-biocore/GigaSOM.jl/badges/master/pipeline.svg)](https://git-r3lab.uni.lu/lcsb-biocore/GigaSOM.jl/-/pipelines) | [![rrid](https://img.shields.io/badge/RRID-SCR__019020-72c02c)](https://scicrunch.org/resolver/RRID:SCR_019020) |
+| [![doc](https://img.shields.io/badge/doc-GigaSOM-blue)](http://git.io/GigaSOM.jl) | [![coverage status](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl/coverage.svg?branch=master)](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl?branch=master) | [![linux](https://github.com/LCSB-BioCore/GigaSOM.jl/workflows/CI/badge.svg)](https://github.com/LCSB-BioCore/GigaSOM.jl/actions) | [![rrid](https://img.shields.io/badge/RRID-SCR__019020-72c02c)](https://scicrunch.org/resolver/RRID:SCR_019020) |
 
 # How to get started
 
