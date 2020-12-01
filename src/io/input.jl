@@ -245,7 +245,7 @@ CSV equivalent of `loadFCS`. The metadata (header, column names) are not
 extracted. `args` are passed to `CSV.read`.
 """
 function loadCSV(fn::String; args...)::Matrix{Float64}
-    CSV.read(fn, type = Float64; args...) |> Matrix{Float64}
+    CSV.read(fn, DataFrame, type = Float64; args...) |> Matrix{Float64}
 end
 
 """

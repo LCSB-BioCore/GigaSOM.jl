@@ -1,10 +1,16 @@
 language: julia
 
+branches:
+  only:
+    - develop
+    - master
+
 os:
     - linux
 
 julia:
     - 1.0
+    - 1.5
     - nightly
 
 matrix:
