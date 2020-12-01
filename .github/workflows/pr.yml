@@ -1,11 +1,6 @@
-name: CI
-
+name: PR
 on:
-  push:
-    branches:
-      - master
-      - develop
-
+  - pull_request
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
@@ -15,11 +10,9 @@ jobs:
       matrix:
         version:
           - '1.5'
-          - 'nightly'
         os:
           - ubuntu-latest
           - macOS-latest
-          - windows-latest
         arch:
           - x64
     steps:

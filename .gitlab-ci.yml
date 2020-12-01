@@ -9,3 +9,4 @@ test:
 
   script:
     - julia --project=@. -e "import Pkg; Pkg.test(; coverage = true)"
+
