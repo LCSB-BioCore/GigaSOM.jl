@@ -1,4 +1,4 @@
-![GigaSOM.jl](https://prince.lcsb.uni.lu/GigaSOM.jl/img/logo-GigaSOM.jl.png?maxAge=0)
+![GigaSOM.jl](https://webdav-r3lab.uni.lu/public/GigaSOM/img/logo-GigaSOM.jl.png?maxAge=0)
 
 # GigaSOM.jl - Huge-scale, high-performance flow cytometry clustering in Julia
 
@@ -16,7 +16,7 @@ GigaSOM.jl allows painless analysis of huge-scale clinical studies, scaling down
 }
 </style>
 <div align="center">
-    <img class="evo" src="https://prince.lcsb.uni.lu/GigaSOM.jl/img/evolution.gif">
+    <img class="evo" src="https://webdav-r3lab.uni.lu/public/GigaSOM/img/evolution.gif">
     <br/>
     <b>Evolution of the GigaSOM.jl repository (2019-2020)</b>
 </div>

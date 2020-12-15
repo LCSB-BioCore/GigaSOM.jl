@@ -50,7 +50,7 @@ end
 
 Load cell counts in many FCS files at once. Useful as input for `slicesof`.
 """
-function loadFCSSizes(fns::Vector{String})
+function loadFCSSizes(fns::Vector{String})::Vector{Int}
     [(
         begin
             o, s = loadFCSHeader(fn)
@@ -200,6 +200,88 @@ function distributeFileVector(
         slices,
         (slice) ->
             Base.eval(Main, :($name = collectSlice((i) -> fill(i, $sizes[i]), $slice))),
+        pids,
+    )
+    return LoadedDataInfo(name, pids)
+end
+
+"""
+    function getCSVSize(fn::String; args...)::Tuple{Int,Int}
+
+Read the dimensions (number of rows and columns, respectively) from a CSV file
+`fn`. `args` are passed to function `CSV.file`.
+
+# Example
+
+    getCSVSize("test.csv", header=false)
+"""
+function getCSVSize(fn::String; args...)::Tuple{Int,Int}
+    n = 0
+    k = 0
+    # ideally, this will not try to load the whole CSV in the memory
+    for row in CSV.File(fn, type = Float64; args...)
+        n += 1
+        if length(row) > k
+            k = length(row)
+        end
+    end
+    return (n, k)
+end
+
+"""
+    function loadCSVSizes(fns::Vector{String}; args...)::Vector{Int}
+
+Determine number of rows in a list of CSV files (passed as `fns`). Equivalent
+to `loadFCSSizes`.
+"""
+function loadCSVSizes(fns::Vector{String}; args...)::Vector{Int}
+    [getCSVSize(fn, type = Float64; args...)[1] for fn in fns]
+end
+
+"""
+    function loadCSV(fn::String; args...)::Matrix{Float64}
+
+CSV equivalent of `loadFCS`. The metadata (header, column names) are not
+extracted. `args` are passed to `CSV.read`.
+"""
+function loadCSV(fn::String; args...)::Matrix{Float64}
+    CSV.read(fn, DataFrame, type = Float64; args...) |> Matrix{Float64}
+end
+
+"""
+    function loadCSVSet(
+        name::Symbol,
+        fns::Vector{String},
+        pids = workers();
+        postLoad = (d, i) -> d,
+        csvargs...,
+    )::LoadedDataInfo
+
+CSV equivalent of `loadFCSSet`. `csvargs` are passed as keyword arguments to
+CSV-loading functions.
+"""
+function loadCSVSet(
+    name::Symbol,
+    fns::Vector{String},
+    pids = workers();
+    postLoad = (d, i) -> d,
+    csvargs...,
+)::LoadedDataInfo
+    slices = slicesof(loadCSVSizes(fns; csvargs...), length(pids))
+    distributed_foreach(
+        slices,
+        (slice) -> Base.eval(
+            Main,
+            :(
+                begin
+                    $name = vcollectSlice(
+                        (i) -> $postLoad(loadCSV($fns[i]; $csvargs...), i),
+                        $slice,
+                    )
+                    nothing
+                end
+            ),
+        ),
         pids,
     )
     return LoadedDataInfo(name, pids)

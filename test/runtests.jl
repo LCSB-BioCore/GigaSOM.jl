@@ -24,12 +24,13 @@ checkDir()
     include("testSplitting.jl")
     include("testInput.jl")
 
-    #this loads the PBMC dataset required for the following tests
+    #this loads the PBMC dataset required for the batch/parallel tests
     include("testLoadPBMC8.jl")
-
     include("testBatch.jl")
     include("testParallel.jl")
 
+    #misc tests that require some of the above data too
+    include("testInputCSV.jl")
     include("testFileSplitting.jl")
 end
 
