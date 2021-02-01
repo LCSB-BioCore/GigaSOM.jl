@@ -3,7 +3,6 @@ name: CI
 on:
   push:
     branches:
-      - master
       - develop
 
 jobs:
@@ -18,7 +17,7 @@ jobs:
         os:
           - ubuntu-latest
           - macOS-latest
-          - windows-latest
+          #- windows-latest
         arch:
           - x64
     steps:
