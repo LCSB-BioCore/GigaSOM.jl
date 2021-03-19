@@ -23,9 +23,9 @@
         codes = som.codes
         @test size(codes) == (100, 10)
 
-        dfCodes = DataFrame(codes)
+        dfCodes = DataFrame(codes, :auto)
         rename!(dfCodes, Symbol.(antigens))
-        dfEmbed = DataFrame(embed)
+        dfEmbed = DataFrame(embed, :auto)
         CSV.write(genDataPath * "/parallelDfCodes.csv", dfCodes)
         CSV.write(genDataPath * "/parallelWinners.csv", winners)
         CSV.write(genDataPath * "/parallelEmbedded.csv", dfEmbed)
