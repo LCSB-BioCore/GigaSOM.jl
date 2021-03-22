@@ -77,7 +77,7 @@ RUN set -eux; \
 	julia --version; \
     mkdir -p ~/.julia/environments/v${folder}; \
     cd ~/.julia/environments/v${folder}; \
-    cp /Project.toml .; \
+    #cp /Project.toml .; \
     julia -e "import Pkg; Pkg.resolve(); Pkg.status(); Pkg.instantiate();"
 
 CMD ["julia"]
