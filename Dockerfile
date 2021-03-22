@@ -77,6 +77,6 @@ RUN set -eux; \
 	julia --version; \
     mkdir -p ~/.julia/environments/v${folder}; \
     cd ~/.julia/environments/v${folder}; \
-    julia -e "import Pkg; Pkg.add('GigaSOM'); Pkg.resolve(); Pkg.status(); Pkg.instantiate();"
+    julia -e \"import Pkg; Pkg.add("GigaSOM"); Pkg.resolve(); Pkg.status(); Pkg.instantiate();\"
 
 CMD ["julia"]
