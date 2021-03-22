@@ -13,11 +13,10 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: docker.pkg.github.com
-          username: ${{ github.actor }}
+          username: cylon-x
           password: ${{ secrets.DOCKER_TOKEN }}
       - uses: docker/build-push-action@v2
         with:
          push: true
-         # tags: <org-name>/<repo-name>/<app-name>:${{ env.IMAGE_TAG }}
-         tags: laurentheirendt/gigasom.jl/gigasom.jl:latest
+         tags: laurentheirendt/gigasom.jl/gigasom:latest
 
