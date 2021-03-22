@@ -18,5 +18,5 @@ jobs:
       - uses: docker/build-push-action@v2
         with:
          push: true
-         tags: laurentheirendt/gigasom.jl/gigasom:latest
+         tags: laurentheirendt/gigasom.jl/latest
 
