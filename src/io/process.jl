@@ -62,7 +62,7 @@ function getMetaData(meta::Dict{String,String})::DataFrame
     # create a data frame for the results
     df = Matrix{String}(undef, pars, length(channel_properties))
     df .= defaultValue
-    df = DataFrame(df)
+    df = DataFrame(df, :auto)
     rename!(df, Symbol.(channel_properties))
 
     # collect the data from params
