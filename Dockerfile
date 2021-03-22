@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 
-COPY Project.toml /Project.toml
+#COPY Project.toml /Project.toml
 
 RUN set -eux; \
 	apt-get update; \
