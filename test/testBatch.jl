@@ -26,9 +26,9 @@
         codes = som.codes
         @test size(codes) == (100, 10)
 
-        dfCodes = DataFrame(codes)
+        dfCodes = DataFrame(codes, :auto)
         rename!(dfCodes, Symbol.(antigens))
-        dfEmbed = DataFrame(embed)
+        dfEmbed = DataFrame(embed, :auto)
         CSV.write(genDataPath * "/batchDfCodes.csv", dfCodes)
         CSV.write(genDataPath * "/batchWinners.csv", winners)
         CSV.write(genDataPath * "/batchEmbedded.csv", dfEmbed)
