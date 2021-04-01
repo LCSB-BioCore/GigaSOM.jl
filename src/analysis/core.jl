@@ -93,7 +93,7 @@ end
         rFinal = 0.1,
         radiusFun = expRadius(-5.0),
         epochs = 20,
-        eachEpoch = (e, r, codes) -> nothing,
+        eachEpoch = (e, r, som) -> nothing,
     )
 
 # Arguments:
@@ -109,7 +109,7 @@ end
 - `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
 - `epochs`: number of SOM training iterations (default 10)
 - `eachEpoch`: a function to call back after each epoch, accepting arguments
-  `(epochNumber, radius, codes)`. For simplicity, this gets additionally called
+  `(epochNumber, radius, som)`. For simplicity, this gets additionally called
   once before the first epoch, with `epochNumber` set to zero.
 """
 function trainGigaSOM(
@@ -123,7 +123,7 @@ function trainGigaSOM(
     rFinal = 0.1,
     radiusFun = expRadius(-5.0),
     epochs = 20,
-    eachEpoch = (e, r, codes) -> nothing,
+    eachEpoch = (e, r, som) -> nothing,
 )
 
     # set the default radius
@@ -135,20 +135,21 @@ function trainGigaSOM(
     # get the SOM neighborhood distances
     dm = somDistFun(som.grid)
 
-    codes = som.codes
+    result_som = copy(som)
+    result_som.codes = copy(som.codes) # prevent rewriting by reference
 
-    eachEpoch(0, rStart, codes)
+    eachEpoch(0, rStart, result_som)
 
-    for j = 1:epochs
-        @debug "Epoch $j..."
+    for epoch = 1:epochs
+        @debug "Epoch $epoch..."
 
         numerator, denominator = distributedEpoch(
             dInfo,
-            codes,
-            knnTreeFun(Array{Float64,2}(transpose(codes)), metric),
+            result_som.codes,
+            knnTreeFun(Array{Float64,2}(transpose(result_som.codes)), metric),
         )
 
-        r = radiusFun(rStart, rFinal, j, epochs)
+        r = radiusFun(rStart, rFinal, epoch, epochs)
         @debug "radius: $r"
         if r <= 0
             @error "Sanity check failed: radius must be positive"
@@ -156,14 +157,12 @@ function trainGigaSOM(
         end
 
         wEpoch = kernelFun(dm, r)
-        codes = (wEpoch * numerator) ./ (wEpoch * denominator)
+        result_som.codes = (wEpoch * numerator) ./ (wEpoch * denominator)
 
-        eachEpoch(epoch, r, codes)
+        eachEpoch(epoch, r, result_som)
     end
 
-    som.codes = copy(codes)
-
-    return som
+    return result_som
 end
 
 """
