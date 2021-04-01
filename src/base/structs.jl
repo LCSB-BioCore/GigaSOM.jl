@@ -28,6 +28,8 @@ mutable struct Som
     ) = new(codes, xdim, ydim, numCodes, grid)
 end
 
+Base.copy(som::Som) = Som(som.codes, som.xdim, som.ydim, som.numCodes, som.grid)
+
 """
     LoadedDataInfo
 
