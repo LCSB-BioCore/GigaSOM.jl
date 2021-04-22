@@ -23,7 +23,7 @@ XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [compat]
 CSV = "^0.5.12, 0.6, 0.7, 0.8"
-DataFrames = "0.20, 0.21, 0.22"
+DataFrames = "0.20, 0.21, 0.22, 1.0"
 Distances = "^0.8.2, 0.9, 0.10"
 DistributedArrays = "^0.6.4"
 Distributions = "^0.21.1, 0.22, 0.23, 0.24"
