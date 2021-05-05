@@ -24,7 +24,7 @@ jobs:
       - name: Push to GitHub Registry
         uses: mr-smithers-excellent/docker-build-push@v5
         with:
-          image: lcsb-biocore/gigasom
+          image: gigasom
           tags: latest
           registry: ghcr.io
           username: cylon-x
