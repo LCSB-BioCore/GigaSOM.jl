@@ -20,7 +20,7 @@ jobs:
         with:
           registry: docker.pkg.github.com
           username: cylon-x
-          password: ${{ secrets.DOCKER_TOKEN }}
+          password: ${{ secrets.docker_token }}
       - uses: docker/build-push-action@v2
         with:
          push: true
