@@ -1,6 +1,9 @@
 name: Publish Docker image
 
 on:
+  push:
+    tags:
+      - "v*"
   release:
     types: [published, created]
 
@@ -11,12 +14,6 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Login to Registry
-        uses: docker/login-action@v1
-        with:
-          registry: docker.pkg.github.com
-          username: cylon-x
-          password: ${{ secrets.docker_token }}
       - name: Push to GitHub Registry
         uses: mr-smithers-excellent/docker-build-push@v5
         with:
