@@ -6,7 +6,6 @@ on:
     branches:
       - develop
     tags: '*'
-  pull_request:
   release:
     types: [published, created]
 
