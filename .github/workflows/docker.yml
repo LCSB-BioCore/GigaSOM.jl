@@ -27,5 +27,4 @@ jobs:
           username: cylon-x
           password: ${{ secrets.docker_token }}
           registry: ghcr.io
-          repository: lcsb-biocore/gigasom.jl/gigasom
-          tag_with_ref: true
+          repository: lcsb-biocore/gigasom
