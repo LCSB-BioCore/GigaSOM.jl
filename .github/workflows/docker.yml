@@ -21,10 +21,11 @@ jobs:
           registry: docker.pkg.github.com
           username: cylon-x
           password: ${{ secrets.docker_token }}
-      - name: Push to GitHub Packages
-        uses: docker/build-push-action@v2
+      - name: Push to GitHub Registry
+        uses: mr-smithers-excellent/docker-build-push@v5
         with:
+          image: lcsb-biocore/gigasom
+          tags: latest
+          registry: ghcr.io
           username: cylon-x
           password: ${{ secrets.docker_token }}
-          registry: ghcr.io
-          repository: lcsb-biocore/gigasom
