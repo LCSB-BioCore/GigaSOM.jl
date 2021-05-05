@@ -24,5 +24,5 @@ jobs:
       - uses: docker/build-push-action@v2
         with:
          push: true
-         tags: lcsb-biocore/gigasom.jl:latest
+         tags: lcsb-biocore/gigasom.jl/gigasom:latest
 
