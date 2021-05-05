@@ -1,7 +1,9 @@
 name: Publish Docker image
+
 on:
   release:
-    types: [published]
+    types: [published, created]
+
 jobs:
   push_to_registry:
     name: Push Docker image to GitHub Packages
@@ -14,9 +16,12 @@ jobs:
         with:
           registry: docker.pkg.github.com
           username: cylon-x
-          password: ${{ secrets.DOCKER_TOKEN }}
-      - uses: docker/build-push-action@v2
+          password: ${{ secrets.docker_token }}
+      - name: Push to GitHub Registry
+        uses: mr-smithers-excellent/docker-build-push@v5
         with:
-         push: true
-         tags: lcsb-biocore/gigasom:latest
-
+          image: gigasom.jl
+          tags: latest
+          registry: ghcr.io
+          username: cylon-x
+          password: ${{ secrets.docker_token }}
