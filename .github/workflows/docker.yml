@@ -23,7 +23,7 @@ jobs:
           password: ${{ secrets.docker_token }}
       - uses: mr-smithers-excellent/docker-build-push@v5
         with:
-          image: lcsb-biocore/gigasom.jl/gigasom
+          image: gigasom.jl/gigasom
           tags: latest
           registry: docker.pkg.github.com
           username: cylon-x
