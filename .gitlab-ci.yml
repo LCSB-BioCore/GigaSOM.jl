@@ -8,7 +8,6 @@ variables:
 
 .global_settings: &global_settings
   tags:
-   - artenolis
    - slave01
 
 .global_testing: &global_testing
