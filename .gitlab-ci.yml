@@ -33,12 +33,3 @@ windows10:
   variables:
     JULIA_VER: "v1.5.3"
   <<: *global_testing_win
-
-windows8:
-  stage: build
-  tags:
-    - artenolis
-    - windows8
-  variables:
-    JULIA_VER: "v1.5.3"
-  <<: *global_testing_win
