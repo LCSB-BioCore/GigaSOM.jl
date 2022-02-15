@@ -1,0 +1,22 @@
+Bootstrap: library
+From: cylon-x/lcsb-biocore/julia-base:latest
+
+%setup
+    export GIT_WORK_TREE="${SINGULARITY_ROOTFS}/project/"
+    export GIT_DIR="`pwd`/.git"
+    mkdir -p "${GIT_WORK_TREE}"
+    git checkout -f
+
+%post
+    export JULIA_DEPOT_PATH=/user/.julia
+    export PATH=/opt/julia/bin:$PATH
+
+    cd project
+    julia --project -e 'import Pkg; Pkg.add("Tulip"); Pkg.instantiate(); Pkg.build(); Pkg.precompile();'
+
+    echo 'using GigaSOM' > /project/.startup.jl
+
+    chmod -R a+rX $JULIA_DEPOT_PATH
+
+%runscript
+  julia --banner=no --project=/project --compile=min -i /project/.startup.jl
