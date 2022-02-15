@@ -120,13 +120,13 @@ linux:julia1.7:
 #
 
 windows10:julia1.7:
-  stage: test-compat
+  stage: test
   <<: *global_trigger_full_tests
   <<: *global_julia17
   <<: *global_env_win10
 
 mac:julia1.7:
-  stage: test-compat
+  stage: test
   <<: *global_trigger_full_tests
   <<: *global_julia17
   <<: *global_env_mac
