@@ -8,6 +8,10 @@ GigaSOM is a Julia toolkit for clustering and visualisation of really large cyto
 |:-----------------:|:-----------------:|:-----------------------------------------------------:|:--------:|
 | [![doc](https://img.shields.io/badge/doc-GigaSOM-blue)](http://git.io/GigaSOM.jl) | [![coverage status](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl/coverage.svg?branch=master)](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl?branch=master) | [![linux](https://github.com/LCSB-BioCore/GigaSOM.jl/workflows/CI/badge.svg?branch=master)](https://github.com/LCSB-BioCore/GigaSOM.jl/actions) | [![rrid](https://img.shields.io/badge/RRID-SCR__019020-72c02c)](https://scicrunch.org/resolver/RRID:SCR_019020) |
 
+If you use GigaSOM.jl and want to refer to it in your work, use the following citation format (also available as BibTeX in [gigasom.bib](gigasom.bib)):
+
+> Miroslav Kratochvíl, Oliver Hunewald, Laurent Heirendt, Vasco Verissimo, Jiří Vondrášek, Venkata P Satagopam, Reinhard Schneider, Christophe Trefois, Markus Ollert. *GigaSOM.jl: High-performance clustering and visualization of huge cytometry datasets.* GigaScience, Volume 9, Issue 11, November 2020, giaa127, https://doi.org/10.1093/gigascience/giaa127
+
 # How to get started
 
 ## Prerequisites and requirements
