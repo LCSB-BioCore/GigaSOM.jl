@@ -1,0 +1,78 @@
+
+cff-version: 1.2.0
+title: GigaSOM.jl
+message: >-
+  If you use GigaSOM.jl and want to refer to it in
+  your work, use this citation.
+type: software
+authors:
+  - given-names: Miroslav
+    family-names: Kratochvíl
+    orcid: https://orcid.org/0000-0001-7356-4075
+  - given-names: Oliver
+    family-names: Hunewald
+    orcid: https://orcid.org/0000-0001-5402-5084
+  - given-names: Laurent
+    family-names: Heirendt
+    orcid: https://orcid.org/0000-0003-1861-0037
+  - given-names: Vasco
+    family-names: Verissimo
+    orcid: https://orcid.org/0000-0003-3884-9125
+  - given-names: Jiří
+    family-names: Vondrášek
+    orcid: https://orcid.org/0000-0002-6066-973X
+  - given-names: Venkata P
+    family-names: Satagopam
+    orcid: https://orcid.org/0000-0002-6532-5880
+  - given-names: Reinhard
+    family-names: Schneider
+    orcid: https://orcid.org/0000-0002-8278-1618
+  - given-names: Christophe
+    family-names: Trefois
+    orcid: https://orcid.org/0000-0002-8991-6810
+  - given-names: Markus
+    family-names: Ollert
+    orcid: https://orcid.org/0000-0002-8055-0103
+repository-code: 'https://github.com/LCSB-BioCore/GigaSOM.jl'
+date-released: 2019-07-23
+
+preferred-citation:
+  type: article
+  title: "GigaSOM.jl: High-performance clustering and visualization of huge cytometry datasets"
+  authors:
+    - given-names: Miroslav
+      family-names: Kratochvíl
+      orcid: https://orcid.org/0000-0001-7356-4075
+    - given-names: Oliver
+      family-names: Hunewald
+      orcid: https://orcid.org/0000-0001-5402-5084
+    - given-names: Laurent
+      family-names: Heirendt
+      orcid: https://orcid.org/0000-0003-1861-0037
+    - given-names: Vasco
+      family-names: Verissimo
+      orcid: https://orcid.org/0000-0003-3884-9125
+    - given-names: Jiří
+      family-names: Vondrášek
+      orcid: https://orcid.org/0000-0002-6066-973X
+    - given-names: Venkata P
+      family-names: Satagopam
+      orcid: https://orcid.org/0000-0002-6532-5880
+    - given-names: Reinhard
+      family-names: Schneider
+      orcid: https://orcid.org/0000-0002-8278-1618
+    - given-names: Christophe
+      family-names: Trefois
+      orcid: https://orcid.org/0000-0002-8991-6810
+    - given-names: Markus
+      family-names: Ollert
+      orcid: https://orcid.org/0000-0002-8055-0103
+  doi: "10.1093/gigascience/giaa127"
+  journal: GigaScience
+  volume: 9
+  issue: 11
+  year: 2020
+  month: November
+  issn: 2047-217X
+  url: "https://academic.oup.com/gigascience/article/9/11/giaa127/5987271"
+  abstract: "The amount of data generated in large clinical and phenotyping studies that use single-cell cytometry is constantly growing. Recent technological advances allow the easy generation of data with hundreds of millions of single-cell data points with >40 parameters, originating from thousands of individual samples. The analysis of that amount of high-dimensional data becomes demanding in both hardware and software of high-performance computational resources. Current software tools often do not scale to the datasets of such size; users are thus forced to downsample the data to bearable sizes, in turn losing accuracy and ability to detect many underlying complex phenomena.We present GigaSOM.jl, a fast and scalable implementation of clustering and dimensionality reduction for flow and mass cytometry data. The implementation of GigaSOM.jl in the high-level and high-performance programming language Julia makes it accessible to the scientific community and allows for efficient handling and processing of datasets with billions of data points using distributed computing infrastructures. We describe the design of GigaSOM.jl, measure its performance and horizontal scaling capability, and showcase the functionality on a large dataset from a recent study.GigaSOM.jl facilitates the use of commonly available high-performance computing resources to process the largest available datasets within minutes, while producing results of the same quality as the current state-of-art software. Measurements indicate that the performance scales to much larger datasets. The example use on the data from a massive mouse phenotyping effort confirms the applicability of GigaSOM.jl to huge-scale studies."
