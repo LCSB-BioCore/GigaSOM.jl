@@ -12,7 +12,7 @@ From: cylon-x/lcsb-biocore/julia-base:latest
     export PATH=/opt/julia/bin:$PATH
 
     cd project
-    julia --project -e 'import Pkg; Pkg.add("Tulip"); Pkg.instantiate(); Pkg.build(); Pkg.precompile();'
+    julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.build(); Pkg.precompile();'
 
     echo 'using GigaSOM' > /project/.startup.jl
 
