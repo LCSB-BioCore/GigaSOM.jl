@@ -96,7 +96,7 @@ function loadFCS(
 end
 
 """
-    loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyCompensation=true, postLoad=(d,i)->d)::LoadedDataInfo
+    loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyCompensation=true, postLoad=(d,i)->d)::Dinfo
 
 This runs the FCS loading machinery in a distributed way, so that the files
 `fns` (with full path) are sliced into equal parts and saved as a distributed
@@ -121,9 +121,9 @@ function loadFCSSet(
     pids = workers();
     applyCompensation = true,
     postLoad = (d, i) -> d,
-)::LoadedDataInfo
+)::Dinfo
     slices = slicesof(loadFCSSizes(fns), length(pids))
-    distributed_foreach(
+    dmap(
         slices,
         (slice) -> Base.eval(
             Main,
@@ -142,7 +142,7 @@ function loadFCSSet(
         ),
         pids,
     )
-    return LoadedDataInfo(name, pids)
+    return Dinfo(name, pids)
 end
 
 """
@@ -167,7 +167,7 @@ function selectFCSColumns(selectColnames::Vector{String})
 end
 
 """
-    distributeFCSFileVector(name::Symbol, fns::Vector{String}, pids=workers())::LoadedDataInfo
+    distributeFCSFileVector(name::Symbol, fns::Vector{String}, pids=workers())::Dinfo
 
 Distribute a vector of integers among the workers that describes which file
 from `fns` the cell comes from. Useful for producing per-file statistics. The
@@ -178,14 +178,14 @@ function distributeFCSFileVector(
     name::Symbol,
     fns::Vector{String},
     pids = workers(),
-)::LoadedDataInfo
+)::Dinfo
     sizes = loadFCSSizes(fns)
     slices = slicesof(sizes, length(pids))
     return distributeFileVector(name, sizes, slices, pids)
 end
 
 """
-    distributeFileVector(name::Symbol, sizes::Vector{Int}, slices::Vector{Tuple{Int,Int,Int,Int}}, pids=workers())::LoadedDataInfo
+    distributeFileVector(name::Symbol, sizes::Vector{Int}, slices::Vector{Tuple{Int,Int,Int,Int}}, pids=workers())::Dinfo
 
 Generalized version of `distributeFCSFileVector` that produces the integer
 vector from any `sizes` and `slices`.
@@ -195,14 +195,14 @@ function distributeFileVector(
     sizes::Vector{Int},
     slices::Vector{Tuple{Int,Int,Int,Int}},
     pids = workers(),
-)::LoadedDataInfo
-    distributed_foreach(
+)::Dinfo
+    dmap(
         slices,
         (slice) ->
             Base.eval(Main, :($name = collectSlice((i) -> fill(i, $sizes[i]), $slice))),
         pids,
     )
-    return LoadedDataInfo(name, pids)
+    return Dinfo(name, pids)
 end
 
 """
@@ -255,7 +255,7 @@ end
         pids = workers();
         postLoad = (d, i) -> d,
         csvargs...,
-    )::LoadedDataInfo
+    )::Dinfo
 
 CSV equivalent of `loadFCSSet`. `csvargs` are passed as keyword arguments to
 CSV-loading functions.
@@ -266,9 +266,9 @@ function loadCSVSet(
     pids = workers();
     postLoad = (d, i) -> d,
     csvargs...,
-)::LoadedDataInfo
+)::Dinfo
     slices = slicesof(loadCSVSizes(fns; csvargs...), length(pids))
-    distributed_foreach(
+    dmap(
         slices,
         (slice) -> Base.eval(
             Main,
@@ -284,5 +284,5 @@ function loadCSVSet(
         ),
         pids,
     )
-    return LoadedDataInfo(name, pids)
+    return Dinfo(name, pids)
 end

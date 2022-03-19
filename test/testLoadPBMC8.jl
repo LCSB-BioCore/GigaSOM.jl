@@ -70,8 +70,8 @@ cols = Vector(1:length(antigens))
 dtransform_asinh(di, cols, 5)
 dscale(di, cols)
 
-pbmc8_data = distributed_collect(di)
-undistribute(di)
+pbmc8_data = gather_array(di)
+unscatter(di)
 
 @testset "load-time columns normalization" begin
     di = loadFCSSet(
@@ -82,6 +82,6 @@ undistribute(di)
     )
     dtransform_asinh(di, cols, 5)
     dscale(di, cols)
-    @test pbmc8_data == distributed_collect(di)
-    undistribute(di)
+    @test pbmc8_data == gather_array(di)
+    unscatter(di)
 end

@@ -17,8 +17,8 @@
     W = addprocs(3)
     @everywhere using GigaSOM
     di = loadCSVSet(:csvTest, files, W, header = true)
-    @test distributed_collect(di) == vcat(data1, data2)
-    sizes = distributed_mapreduce(di, size, vcat)
+    @test gather_array(di) == vcat(data1, data2)
+    sizes = dmapreduce(di, size, vcat)
     dims = map(last, sizes)
     counts = map(first, sizes)
     @test all(dims .== 10)

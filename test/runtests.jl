@@ -1,4 +1,4 @@
-using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed
+using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed, DistributedData
 using FileIO, DataFrames, Distances
 using JSON, SHA
 import LinearAlgebra
@@ -18,7 +18,6 @@ end
 checkDir()
 
 @testset "GigaSOM test suite" begin
-    include("testDistributed.jl")
     include("testDataOps.jl")
     include("testTrainutils.jl")
     include("testSplitting.jl")
