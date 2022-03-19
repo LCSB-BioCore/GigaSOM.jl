@@ -31,9 +31,6 @@ include("io/input.jl")
 include("io/process.jl")
 include("io/splitting.jl")
 
-# include visualization files
-# include("visualization/plotting.jl")
-
 #core
 export initGigaSOM, trainGigaSOM, mapToGigaSOM
 
@@ -67,9 +64,6 @@ export slicesof, vcollectSlice, collectSlice
 
 #io/process
 export cleanNames!, getMetaData, getMarkerNames
-
-# plotting
-export plotCounts, plotPCA
 
 #dataops (higher-level operations on data)
 export dtransform_asinh
