@@ -27,10 +27,3 @@ Pages = ["core.jl", "trainutils.jl"]
 Modules = [GigaSOM]
 Pages = ["embedding.jl"]
 ```
-
-## Distributed processing tools
-
-```@autodocs
-Modules = [GigaSOM]
-Pages = ["distributed.jl", "dio.jl"]
-```
