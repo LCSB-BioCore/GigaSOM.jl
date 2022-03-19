@@ -130,10 +130,12 @@ function loadFCSSet(
             :(
                 begin
                     $name = vcollectSlice(
-                        (i) -> last($postLoad(
-                            loadFCS($fns[i]; applyCompensation = $applyCompensation),
-                            i,
-                        )),
+                        (i) -> last(
+                            $postLoad(
+                                loadFCS($fns[i]; applyCompensation = $applyCompensation),
+                                i,
+                            ),
+                        ),
                         $slice,
                     )
                     nothing
@@ -174,11 +176,7 @@ from `fns` the cell comes from. Useful for producing per-file statistics. The
 vector is saved on workers specified by `pids` as a distributed variable
 `name`.
 """
-function distributeFCSFileVector(
-    name::Symbol,
-    fns::Vector{String},
-    pids = workers(),
-)::Dinfo
+function distributeFCSFileVector(name::Symbol, fns::Vector{String}, pids = workers())::Dinfo
     sizes = loadFCSSizes(fns)
     slices = slicesof(sizes, length(pids))
     return distributeFileVector(name, sizes, slices, pids)

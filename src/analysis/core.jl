@@ -256,11 +256,7 @@ function mapToGigaSOM(
 
     tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
 
-    return dtransform(
-        dInfo,
-        (d) -> (vcat(knn(tree, transpose(d), 1)[1]...)),
-        output,
-    )
+    return dtransform(dInfo, (d) -> (vcat(knn(tree, transpose(d), 1)[1]...)), output)
 end
 
 """
