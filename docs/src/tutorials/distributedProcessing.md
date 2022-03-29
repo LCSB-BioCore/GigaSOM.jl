@@ -13,21 +13,23 @@ aforementioned `dselect` and `dtransform_asinh`. The following code extracts
 means and standard deviations from the first 3 columns of a dataset distributed
 as `di`:
 ```julia
+using DistributedData
+
 dstat(di, [1,2,3])
 ```
 
-## Manual work with the distributed data
+## Manual work with the DistributedData.jl package
 
 We will first show how to use the general framework to compute per-cluster
-statistics. GigaSOM exports the [`distributed_mapreduce`](@ref) function that
+statistics. DistributedData.jl exports the [`dmapreduce`](@ref) function that
 can be used as a very effective basic building block for running such
 computations. For example, you can efficiently compute a distributed mean of
 all your data as such:
 ```julia
-distributed_mapreduce(di, sum, +) / distributed_mapreduce(di, length, +)
+dmapreduce(di, sum, +) / dmapreduce(di, length, +)
 ```
 
-The parameters of `distributed_mapreduce` are, in order:
+The parameters of `dmapreduce` are, in order:
 
 - `di`, the dataset
 - `sum` or `length`, an unary "map" function -- during the computation, each
@@ -35,7 +37,7 @@ The parameters of `distributed_mapreduce` are, in order:
 - `+`, a binary "reduction" or "folding" function -- the pieces of information
   processed by the map function are successively joined in pairs using this
   function, until there is only a single result left. This final result is also
-  what `distributed_mapreduce` returns.
+  what `dmapreduce` returns.
 
 Above example thus reads: Sum all data on all workers, add up the intermediate
 results, and divide the final number to the sum of all lengths of data on the
@@ -45,7 +47,7 @@ Column-wise mean (as produced by `dstat`) is slightly more useful; we only need
 to split the computation on columns:
 
 ```julia
-distributed_mapreduce(di, d -> mapslices(sum, d, dims=1), +) ./ distributed_mapreduce(di, x->size(x,1), +)
+dmapreduce(di, d -> mapslices(sum, d, dims=1), +) ./ dmapreduce(di, x->size(x,1), +)
 ```
 
 Finally, for distributed computation of per-cluster mean, the clustering
@@ -55,7 +57,7 @@ the distributed `mapToGigaSOM` does exactly that).
 First, compute the clustering:
 ```julia
 mapping = mapToGigaSOM(som, di)
-distributed_transform(mapping, m -> metaClusters[m])
+dtransform(mapping, m -> metaClusters[m])
 ```
 
 Now, the distributed computation is run on 2 scattered datasets. We employ a
@@ -66,7 +68,7 @@ following code produces a matrix of tuples `(sum, count)`, for separate
 clusters (in rows) and data columns (in columns):
 
 ```julia
-sumscounts = distributed_mapreduce([di, mapping],
+sumscounts = dmapreduce([di, mapping],
     (d, mapping) -> catmapbuckets(
         (_,clData) -> (sum(clData), length(clData)),
 	d, 10, mapping),
@@ -113,13 +115,13 @@ capture all of the actual 16 existing clusters)
 
 Finally, we can remove the temporary data from workers to create free memory for other analyses:
 ```julia
-undistribute(mapping)
+unscatter(mapping)
 ```
 
 ## Convenience statistical functions
 
 Notably, several of the most used statistical functions are available in
-GigaSOM.jl in a form that can cope with distributed data.
+DistributedData.jl in a form that can cope with distributed data.
 
 For example, you can run a distributed median computation as such:
 ```julia

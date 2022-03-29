@@ -5,7 +5,7 @@
 
     #check whether the distributed version works the same
     save_at(1, :test, pbmc8_data)
-    som2 = initGigaSOM(LoadedDataInfo(:test, [1]), 10, 10, seed = 1234)
+    som2 = initGigaSOM(Dinfo(:test, [1]), 10, 10, seed = 1234)
     @test som.codes == som2.codes
     remove_from(1, :test)
 

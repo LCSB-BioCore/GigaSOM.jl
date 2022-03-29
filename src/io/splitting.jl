@@ -79,14 +79,16 @@ function vcollectSlice(
     loadMtx,
     (startFile, startOff, finalFile, finalOff)::Tuple{Int,Int,Int,Int},
 )::Matrix
-    vcat([
-        begin
-            m = loadMtx(i)
-            beginIdx = i == startFile ? startOff : 1
-            endIdx = i == finalFile ? finalOff : size(m, 1)
-            m[beginIdx:endIdx, :]
-        end for i = startFile:finalFile
-    ]...)
+    vcat(
+        [
+            begin
+                m = loadMtx(i)
+                beginIdx = i == startFile ? startOff : 1
+                endIdx = i == finalFile ? finalOff : size(m, 1)
+                m[beginIdx:endIdx, :]
+            end for i = startFile:finalFile
+        ]...,
+    )
 end
 
 """
@@ -98,12 +100,14 @@ function collectSlice(
     loadVec,
     (startFile, startOff, finalFile, finalOff)::Tuple{Int,Int,Int,Int},
 )::Vector
-    vcat([
-        begin
-            v = loadVec(i)
-            beginIdx = i == startFile ? startOff : 1
-            endIdx = i == finalFile ? finalOff : length(v)
-            v[beginIdx:endIdx]
-        end for i = startFile:finalFile
-    ]...)
+    vcat(
+        [
+            begin
+                v = loadVec(i)
+                beginIdx = i == startFile ? startOff : 1
+                endIdx = i == finalFile ? finalOff : length(v)
+                v[beginIdx:endIdx]
+            end for i = startFile:finalFile
+        ]...,
+    )
 end

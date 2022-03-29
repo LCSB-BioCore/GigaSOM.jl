@@ -12,9 +12,9 @@
         cols = Vector(1:length(antigens))
         dtransform_asinh(di, cols, 5)
         dscale(di, cols)
-        @test isapprox(pbmc8_data, distributed_collect(di), atol = 1e-4)
+        @test isapprox(pbmc8_data, gather_array(di), atol = 1e-4)
 
-        splits = distributed_mapreduce(di, d -> size(d, 1), vcat)
+        splits = dmapreduce(di, d -> size(d, 1), vcat)
         @test sum(splits) == size(pbmc8_data, 1)
         @test minimum(splits) + 1 >= maximum(splits)
 

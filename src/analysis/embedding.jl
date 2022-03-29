@@ -1,19 +1,19 @@
 """
     embedGigaSOM(som::GigaSOM.Som,
-                 dInfo::LoadedDataInfo;
+                 dInfo::Dinfo;
                  knnTreeFun = BruteTree,
                  metric = Euclidean(),
                  k::Int64=0,
                  adjust::Float64=1.0,
                  smooth::Float64=0.0,
                  m::Float64=10.0,
-                 output::Symbol=tmpSym(dInfo))::LoadedDataInfo
+                 output::Symbol=tmp_symbol(dInfo))::Dinfo
 
 Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 
 # Arguments:
 - `som`: a trained SOM
-- `dInfo`: `LoadedDataInfo` that describes the loaded dataset
+- `dInfo`: `Dinfo` that describes the loaded dataset
 - `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
 - `metric`: Passed as metric argument to the KNN-tree constructor
 - `k`: number of nearest neighbors to consider (high values get quadratically
@@ -30,15 +30,15 @@ and must be normalized using the same parameters.
 """
 function embedGigaSOM(
     som::GigaSOM.Som,
-    dInfo::LoadedDataInfo;
+    dInfo::Dinfo;
     knnTreeFun = BruteTree,
     metric = Euclidean(),
     k::Int64 = 0,
     adjust::Float64 = 1.0,
     smooth::Float64 = 0.0,
     m::Float64 = 10.0,
-    output::Symbol = tmpSym(dInfo),
-)::LoadedDataInfo
+    output::Symbol = tmp_symbol(dInfo),
+)::Dinfo
 
     # convert `smooth` to `boost`
     boost = exp(-smooth - 1)
@@ -58,7 +58,7 @@ function embedGigaSOM(
     tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
 
     # run the distributed computation
-    return distributed_transform(
+    return dtransform(
         dInfo,
         (d) -> (embedGigaSOM_internal(som, d, tree, k, adjust, boost, m)),
         output,
@@ -77,7 +77,7 @@ end
 
 Overload of `embedGigaSOM` for simple DataFrames and matrices. This slices the
 data using `DistributedArrays`, sends them the workers, and runs normal
-`embedGigaSOM`. All data is properly `undistribute`d after the computation.
+`embedGigaSOM`. All data is properly `unscatter`d after the computation.
 
 # Examples:
 
@@ -107,7 +107,7 @@ function embedGigaSOM(
 
     data = Matrix{Float64}(data)
 
-    dInfo = distribute_array(:GigaSOMembeddingDataVar, data, workers())
+    dInfo = scatter_array(:GigaSOMembeddingDataVar, data, workers())
     rInfo = embedGigaSOM(
         som,
         dInfo,
@@ -118,9 +118,9 @@ function embedGigaSOM(
         smooth = smooth,
         m = m,
     )
-    res = distributed_collect(rInfo)
-    undistribute(dInfo)
-    undistribute(rInfo)
+    res = gather_array(rInfo)
+    unscatter(dInfo)
+    unscatter(rInfo)
     return res
 end
 

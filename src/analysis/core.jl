@@ -21,18 +21,18 @@ function initGigaSOM(data::Union{Matrix,DataFrame}, args...; kwargs...)
 end
 
 """
-    function initGigaSOM(data::LoadedDataInfo,
+    function initGigaSOM(data::Dinfo,
                          xdim::Int64, ydim::Int64 = xdim;
                          seed=rand(Int), rng=StableRNG(seed))
 
-`initGigaSOM` overload for working with distributed-style `LoadedDataInfo`
+`initGigaSOM` overload for working with distributed-style `Dinfo`
 data. The rest of the arguments is passed to the data-independent
 `initGigaSOM`.
 
 Arguments:
-- `data`: a `LoadedDataInfo` object with the distributed dataset matrix
+- `data`: a `Dinfo` object with the distributed dataset matrix
 """
-function initGigaSOM(data::LoadedDataInfo, args...; kwargs...)
+function initGigaSOM(data::Dinfo, args...; kwargs...)
     ncol = get_val_from(data.workers[1], :(size($(data.val))[2]))
     (means, sdevs) = dstat(data, Vector(1:ncol))
 
@@ -84,7 +84,7 @@ end
 """
     trainGigaSOM(
         som::Som,
-        dInfo::LoadedDataInfo;
+        dInfo::Dinfo;
         kernelFun::Function = gaussianKernel,
         metric = Euclidean(),
         somDistFun = distMatrix(Chebyshev()),
@@ -98,7 +98,7 @@ end
 
 # Arguments:
 - `som`: object of type Som with an initialised som
-- `dInfo`: `LoadedDataInfo` object that describes a loaded dataset
+- `dInfo`: `Dinfo` object that describes a loaded dataset
 - `kernelFun::function`: optional distance kernel; one of (`bubbleKernel, gaussianKernel`)
             default is `gaussianKernel`
 - `metric`: Passed as metric argument to the KNN-tree constructor
@@ -114,7 +114,7 @@ end
 """
 function trainGigaSOM(
     som::Som,
-    dInfo::LoadedDataInfo;
+    dInfo::Dinfo;
     kernelFun::Function = gaussianKernel,
     metric = Euclidean(),
     somDistFun = distMatrix(Chebyshev()),
@@ -171,16 +171,16 @@ end
 
 Overload of `trainGigaSOM` for simple DataFrames and matrices. This slices the
 data, distributes them to the workers, and runs normal `trainGigaSOM`. Data is
-`undistribute`d after the computation.
+`unscatter`d after the computation.
 """
 function trainGigaSOM(som::Som, train; kwargs...)
 
     train = Matrix{Float64}(train)
 
     #this slices the data into parts and and sends them to workers
-    dInfo = distribute_array(:GigaSOMtrainDataVar, train, workers())
+    dInfo = scatter_array(:GigaSOMtrainDataVar, train, workers())
     som_res = trainGigaSOM(som, dInfo; kwargs...)
-    undistribute(dInfo)
+    unscatter(dInfo)
     return som_res
 end
 
@@ -215,13 +215,13 @@ function doEpoch(x::Array{Float64,2}, codes::Array{Float64,2}, tree)
 end
 
 """
-    distributedEpoch(dInfo::LoadedDataInfo, codes::Matrix{Float64}, tree)
+    distributedEpoch(dInfo::Dinfo, codes::Matrix{Float64}, tree)
 
 Execute the `doEpoch` in parallel on workers described by `dInfo` and collect
 the results. Returns pair of numerator and denominator matrices.
 """
-function distributedEpoch(dInfo::LoadedDataInfo, codes::Matrix{Float64}, tree)
-    return distributed_mapreduce(
+function distributedEpoch(dInfo::Dinfo, codes::Matrix{Float64}, tree)
+    return dmapreduce(
         dInfo,
         (data) -> doEpoch(data, codes, tree),
         ((n1, d1), (n2, d2)) -> (n1 + n2, d1 + d2),
@@ -230,37 +230,33 @@ end
 
 
 """
-    mapToGigaSOM(som::Som, dInfo::LoadedDataInfo;
+    mapToGigaSOM(som::Som, dInfo::Dinfo;
         knnTreeFun = BruteTree, metric = Euclidean(),
-        output::Symbol=tmpSym(dInfo)::LoadedDataInfo
+        output::Symbol=tmp_symbol(dInfo)::Dinfo
 
 Compute the index of the BMU for each row of the input data.
 
 # Arguments
 - `som`: a trained SOM
-- `dInfo`: `LoadedDataInfo` that describes the loaded and distributed data
+- `dInfo`: `Dinfo` that describes the loaded and distributed data
 - `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
 - `metric`: Passed as metric argument to the KNN-tree constructor
-- `output`: Symbol to save the result, defaults to `tmpSym(dInfo)`
+- `output`: Symbol to save the result, defaults to `tmp_symbol(dInfo)`
 
 Data must have the same number of dimensions as the training dataset
 and will be normalised with the same parameters.
 """
 function mapToGigaSOM(
     som::Som,
-    dInfo::LoadedDataInfo;
+    dInfo::Dinfo;
     knnTreeFun = BruteTree,
     metric = Euclidean(),
-    output::Symbol = tmpSym(dInfo),
-)::LoadedDataInfo
+    output::Symbol = tmp_symbol(dInfo),
+)::Dinfo
 
     tree = knnTreeFun(Array{Float64,2}(transpose(som.codes)), metric)
 
-    return distributed_transform(
-        dInfo,
-        (d) -> (vcat(knn(tree, transpose(d), 1)[1]...)),
-        output,
-    )
+    return dtransform(dInfo, (d) -> (vcat(knn(tree, transpose(d), 1)[1]...)), output)
 end
 
 """
@@ -269,7 +265,7 @@ end
                  metric = Euclidean())
 Overload of `mapToGigaSOM` for simple DataFrames and matrices. This slices the
 data using `DistributedArrays`, sends them the workers, and runs normal
-`mapToGigaSOM`. Data is `undistribute`d after the computation.
+`mapToGigaSOM`. Data is `unscatter`d after the computation.
 """
 function mapToGigaSOM(som::Som, data; knnTreeFun = BruteTree, metric = Euclidean())
 
@@ -280,11 +276,11 @@ function mapToGigaSOM(som::Som, data; knnTreeFun = BruteTree, metric = Euclidean
         error("Data dimensions do not match")
     end
 
-    dInfo = distribute_array(:GigaSOMmappingDataVar, data, workers())
+    dInfo = scatter_array(:GigaSOMmappingDataVar, data, workers())
     rInfo = mapToGigaSOM(som, dInfo, knnTreeFun = knnTreeFun, metric = metric)
-    res = distributed_collect(rInfo)
-    undistribute(dInfo)
-    undistribute(rInfo)
+    res = gather_array(rInfo)
+    unscatter(dInfo)
+    unscatter(rInfo)
     return DataFrame(index = res)
 end
 
