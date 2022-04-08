@@ -108,7 +108,7 @@ If you are sure you have enough RAM, you can collect the data to the master
 node. (In case of the relatively small Levine13 dataset, you very probably have
 the required 2.5MB of RAM, but there are many larger datasets.)
 ```julia
-e = distributed_collect(e)
+e = gather_array(e)
 ```
 
 ```
@@ -260,13 +260,13 @@ The `metaClusters` represent membership of the SOM codes in cluster; these can
 be expanded to membership of all cells using [`mapToGigaSOM`](@ref):
 
 ```julia
-mapping = distributed_collect(mapToGigaSOM(som, di), free=true)
+mapping = gather_array(mapToGigaSOM(som, di), free=true)
 clusters = metaClusters[mapping]
 ```
 
 `clusters` now contain an integer from `1` to `10` with a classification of
 each cell in the dataset.
 
-(The argument `free=true` of `distributed_collect` automatically removes the
+(The argument `free=true` of `gather_array` automatically removes the
 distributed data from workers after collecting, which saves their memory for
 other datasets.)

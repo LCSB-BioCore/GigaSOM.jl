@@ -50,7 +50,9 @@ function expRadius(steepness::Float64 = 0.0)
             adjust = finalRadius * (1 - 1.1^(-steepness))
 
             if initRadius <= 0 || (initRadius - adjust) <= 0 || finalRadius <= 0
-                error("Radii must be positive. (Possible alternative cause: steepness is too high.)")
+                error(
+                    "Radii must be positive. (Possible alternative cause: steepness is too high.)",
+                )
             end
 
             initRadius -= adjust

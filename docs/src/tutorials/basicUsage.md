@@ -33,18 +33,17 @@ While all functions work well on simple data matrices, the main aim of GigaSOM
 is to let the users enjoy the cluster-computing resources. All functions also
 work on data that are "scattered" among workers (i.e. each worker only holds a
 portion of the data loaded in the memory). This dataset description is stored
-in [`LoadedDataInfo`](@ref) structure. Most of the functions above in fact
-accept the `LoadedDataInfo` as argument, and often return another
-`LoadedDataInfo` that describes the scattered result.
+in [`Dinfo`](@ref) structure. Most of the functions above in fact
+accept the `Dinfo` as argument, and often return another
+`Dinfo` that describes the scattered result.
 
-Most importantly, using `LoadedDataInfo` **prevents memory exhaustion at the
+Most importantly, using `Dinfo` **prevents memory exhaustion at the
 master node**, which is a critical feature required to handle huge datasets.
 
 You can always collect the scattered data back into a matrix (if it fits to
-your RAM) with [`distributed_collect`](@ref), and utilize many other functions
-to manipulate it, including e.g. [`distributed_mapreduce`](@ref) for easily
-running parallel computations, or [`distributed_export`](@ref) for saving and
-restoring the dataset paralelly.
+your RAM) with `gather_array`, and utilize many other functions to manipulate
+it, including e.g. `dmapreduce` for easily running parallel computations, or
+`dstore` for saving and restoring the dataset paralelly.
 
 ## Minimal working example
 
