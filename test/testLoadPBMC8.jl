@@ -53,8 +53,8 @@ if csDict != csTest
     error("dataset checksum error")
 end
 
-md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes = true)...)
-panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes = true)...)
+md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes = true))
+panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes = true))
 
 antigens = panel[panel[:, :Lineage].==1, :Antigen]
 _, fcsParams = loadFCSHeader(md[1, :file_name])
