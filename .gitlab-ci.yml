@@ -53,9 +53,9 @@ variables:
   before_script:
     - docker login -u $CI_USER_NAME -p $GITLAB_ACCESS_TOKEN $CI_REGISTRY
 
-.global_julia17: &global_julia17
+.global_julia18: &global_julia18
   variables:
-    JULIA_VER: "v1.7.0"
+    JULIA_VER: "v1.8.2"
 
 .global_env_linux: &global_env_linux
   script:
@@ -93,7 +93,7 @@ variables:
 # any available docker and current julia
 #
 
-docker:julia1.7:
+docker:julia1.8:
   stage: test
   image: $CI_REGISTRY/r3/docker/julia-custom
   script:
@@ -107,28 +107,28 @@ docker:julia1.7:
 # built & deployed
 #
 
-linux:julia1.7:
+linux:julia1.8:
   stage: test
   tags:
     - slave01
   <<: *global_trigger_full_tests
-  <<: *global_julia17
+  <<: *global_julia18
   <<: *global_env_linux
 
 #
 # Additional platform&environment compatibility tests
 #
 
-windows10:julia1.7:
+windows10:julia1.8:
   stage: test
   <<: *global_trigger_full_tests
-  <<: *global_julia17
+  <<: *global_julia18
   <<: *global_env_win10
 
-mac:julia1.7:
+mac:julia1.8:
   stage: test
   <<: *global_trigger_full_tests
-  <<: *global_julia17
+  <<: *global_julia18
   <<: *global_env_mac
 
 #
