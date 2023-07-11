@@ -1,6 +1,6 @@
 name = "GigaSOM"
 uuid = "a03a9c34-069e-5582-a11c-5c984cab887c"
-version = "0.7.0"
+version = "0.7.1"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -24,12 +24,12 @@ Distances = "^0.8.2, 0.9, 0.10"
 DistributedArrays = "^0.6.4"
 DistributedData = "0.1.4, 0.2"
 Distributions = "^0.21.1, 0.22, 0.23, 0.24, 0.25"
-FCSFiles = "^0.1.1"
+FCSFiles = "^0.1.1, 0.2"
 FileIO = "^1.0.7"
 JSON = "0.21"
 NearestNeighbors = "^0.4.3"
 StableRNGs = "1.0"
-XLSX = "^0.5.5, 0.6, 0.7"
+XLSX = "0.8"
 julia = "1"
 
 [extras]

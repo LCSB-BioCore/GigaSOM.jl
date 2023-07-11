@@ -217,7 +217,7 @@ function getCSVSize(fn::String; args...)::Tuple{Int,Int}
     n = 0
     k = 0
     # ideally, this will not try to load the whole CSV in the memory
-    for row in CSV.File(fn, type = Float64; args...)
+    for row in CSV.File(fn, types = Float64; args...)
         n += 1
         if length(row) > k
             k = length(row)
@@ -233,7 +233,7 @@ Determine number of rows in a list of CSV files (passed as `fns`). Equivalent
 to `loadFCSSizes`.
 """
 function loadCSVSizes(fns::Vector{String}; args...)::Vector{Int}
-    [getCSVSize(fn, type = Float64; args...)[1] for fn in fns]
+    [getCSVSize(fn, types = Float64; args...)[1] for fn in fns]
 end
 
 """
@@ -243,7 +243,7 @@ CSV equivalent of `loadFCS`. The metadata (header, column names) are not
 extracted. `args` are passed to `CSV.read`.
 """
 function loadCSV(fn::String; args...)::Matrix{Float64}
-    CSV.read(fn, DataFrame, type = Float64; args...) |> Matrix{Float64}
+    CSV.read(fn, DataFrame, types = Float64; args...) |> Matrix{Float64}
 end
 
 """
