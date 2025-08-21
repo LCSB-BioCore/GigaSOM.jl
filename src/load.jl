@@ -81,7 +81,7 @@ function load_fcs(
     meta = fcs_column_metadata(fcs.params)
     data = hcat(map(x -> Vector{Float64}(fcs.data[x]), meta[:, :N])...)
     if applyCompensation
-        spill = getSpillover(fcs.params)
+        spill = fcs_spillover(fcs.params)
         if spill != nothing
             names, mtx = spill
             cols = indexin(names, meta[:, :N])
@@ -94,6 +94,8 @@ function load_fcs(
     end
     return (fcs.params, data)
 end
+
+export load_fcs
 
 """
 $(TYPEDSIGNATURES)
@@ -147,6 +149,8 @@ function load_fcs_distributed(
     return Dinfo(name, pids)
 end
 
+export load_fcs_distributed
+
 """
 $(TYPEDSIGNATURES)
 
@@ -167,6 +171,8 @@ function select_fcs_columns(selectColnames::Vector{String})
         (metadata, data[:, colIdxs])
     end
 end
+
+export select_fcs_columns
 
 """
 $(TYPEDSIGNATURES)
@@ -246,6 +252,8 @@ function load_csv(fn::String; args...)::Matrix{Float64}
     CSV.read(fn, DataFrame, types = Float64; args...) |> Matrix{Float64}
 end
 
+export load_csv
+
 """
 $(TYPEDSIGNATURES)
 
@@ -278,3 +286,5 @@ function load_csv_distributed(
     )
     return Dinfo(name, pids)
 end
+
+export load_csv_distributed

@@ -22,6 +22,8 @@ mutable struct SOM
     ) = new(codes, xdim, ydim, numCodes, grid)
 end
 
+export SOM
+
 Base.copy(som::SOM) = SOM(
     codes = som.codes,
     xdim = som.xdim,

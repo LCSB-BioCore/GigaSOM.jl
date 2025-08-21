@@ -17,10 +17,11 @@ function radius_linear(
     epochs::Int64,
 )
 
-    scaledTime = scaleEpochTime(iteration, epochs)
+    scaledTime = scaled_epoch_time(iteration, epochs)
     return initRadius * (1 - scaledTime) + finalRadius * scaledTime
 end
 
+export radius_linear
 
 """
 $(TYPEDSIGNATURES)
@@ -39,7 +40,7 @@ function radius_exp(steepness::Float64 = 0.0)
     return (initRadius::Float64, finalRadius::Float64, iteration::Int64, epochs::Int64) ->
         begin
 
-            scaledTime = scaleEpochTime(iteration, epochs)
+            scaledTime = scaled_epoch_time(iteration, epochs)
 
             if steepness < -100.0
                 # prevent floating point underflows
@@ -62,6 +63,7 @@ function radius_exp(steepness::Float64 = 0.0)
         end
 end
 
+export radius_exp
 
 """
 $(TYPEDSIGNATURES)
@@ -79,7 +81,7 @@ The first neuron sits at (0,0).
 - `xdim`: number of neurons in x-direction
 - `ydim`: number of neurons in y-direction
 """
-function gridRectangular(xdim, ydim)
+function grid_rectangular(xdim, ydim)
 
     grid = zeros(Float64, (xdim * ydim, 2))
     for ix = 1:xdim
@@ -91,24 +93,19 @@ function gridRectangular(xdim, ydim)
     return grid
 end
 
+export grid_rectangular
 
 """
 $(TYPEDSIGNATURES)
 
 Return the value of normal distribution PDF (σ=`r`, μ=0) at `x`
 """
-function kernel_gaussian(x, r::Float64)
+kernel_gaussian(x, r::Float64) =
+    Distributions.pdf.(Distributions.Normal(0.0, r), x)
 
-    return Distributions.pdf.(Distributions.Normal(0.0, r), x)
-end
+export kernel_gaussian
 
-function bubbleKernelSqScalar(x::Float64, r::Float64)
-    if x >= r
-        return 0
-    else
-        return sqrt(1 - x / r)
-    end
-end
+bubble_kernel_squared_scalar(x::Float64, r::Float64) = x >= r ? 0 : sqrt(1 - x / r)
 
 
 """
@@ -117,9 +114,9 @@ $(TYPEDSIGNATURES)
 Return a "bubble" (spherical) distribution kernel.
 
 """
-function kernel_bubble(x, r::Float64)
-    return bubbleKernelSqScalar.(x .^ 2, r^2)
-end
+kernel_bubble(x, r::Float64) = bubbleKernelSqScalar.(x .^ 2, r^2)
+
+export kernel_bubble
 
 """
 $(TYPEDSIGNATURES)
@@ -134,6 +131,8 @@ function kernel_threshold(x, r::Float64, maxRatio = 4 / 5, zero = 1e-6)
     return zero .+ (x .<= r)
 end
 
+export kernel_threshold
+
 """
 $(TYPEDSIGNATURES)
 
@@ -141,8 +140,7 @@ Return a function that uses the `metric` (compatible with metrics from package `
 
 Use as a parameter of `train`.
 """
-function distance_matrix(metric = Chebyshev())
-    return (grid::Matrix{Float64}) -> begin
+distance_matrix(metric = Chebyshev()) = (grid::Matrix{Float64}) -> begin
         n = size(grid, 1)
         dm = zeros(Float64, n, n)
 
@@ -154,4 +152,5 @@ function distance_matrix(metric = Chebyshev())
 
         return dm::Matrix{Float64}
     end
-end
+
+export distance_matrix

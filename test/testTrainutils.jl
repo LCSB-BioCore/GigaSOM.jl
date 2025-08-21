@@ -1,7 +1,7 @@
 @testset "SOM training helper functions" begin
 
-    @testset "gridRectangular" begin
-        grid = GigaSOM.gridRectangular(5, 5)
+    @testset "grid_rectangular" begin
+        grid = GigaSOM.grid_rectangular(5, 5)
         @test size(grid) == (25, 2)
     end
 
@@ -44,7 +44,7 @@
     end
 
     @testset "distance_matrix" begin
-        g = GigaSOM.gridRectangular(2, 2)
+        g = GigaSOM.grid_rectangular(2, 2)
         dm = GigaSOM.distance_matrix(Euclidean())(g)
         @test size(dm) == (4, 4)
         @test all([dm[i, i] == 0 for i = 1:4])

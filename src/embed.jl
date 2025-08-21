@@ -264,3 +264,5 @@ function embedGigaSOM_internal(
 
     return e
 end
+
+export embed

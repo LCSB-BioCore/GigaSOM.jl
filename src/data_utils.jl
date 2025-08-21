@@ -29,6 +29,8 @@ function clean_names!(mydata::Vector{String})
     end
 end
 
+export clean_names!
+
 """
 $(TYPEDSIGNATURES)
 
@@ -78,6 +80,8 @@ function fcs_column_metadata(meta::Dict{String,String})::DataFrame
     return df
 end
 
+export fcs_column_metadata
+
 """
 $(TYPEDSIGNATURES)
 
@@ -98,6 +102,7 @@ function fcs_metadata_marker_names(meta::DataFrame)::Tuple{Vector{String},Vector
     return (orig, nice)
 end
 
+export fcs_metadata_marker_names
 
 """
 $(TYPEDSIGNATURES)
@@ -110,12 +115,14 @@ function compensate!(data::Matrix{Float64}, spillover::Matrix{Float64}, cols::Ve
     data[:, cols] = data[:, cols] * inv(spillover)
 end
 
+export compensate!
+
 """
 $(TYPEDSIGNATURES)
 
 Parses the spillover matrix from the string from FCS parameter value.
 """
-function parseSpillover(str::String)::Tuple{Vector{String},Matrix{Float64}}
+function parse_fcs_spillover(str::String)::Tuple{Vector{String},Matrix{Float64}}
     fields = split(str, ',')
     n = parse(Int, fields[1])
     if length(fields) != 1 + n + n * n
@@ -136,17 +143,19 @@ Get a spillover matrix from FCS `params`. Returns a pair with description of
 columns to be applied, and with the actual spillover matrix. Returns `nothing`
 in case spillover is not present.
 """
-function getSpillover(
+function fcs_spillover(
     params::Dict{String,String},
 )::Union{Tuple{Vector{String},Matrix{Float64}},Nothing}
     spillNames = ["\$SPILL", "\$SPILLOVER", "SPILL", "SPILLOVER"]
     for i in spillNames
         if in(i, keys(params))
-            return parseSpillover(params[i])
+            return parse_fcs_spillover(params[i])
         end
     end
     return nothing
 end
+
+export fcs_spillover
 
 """
 $(TYPEDSIGNATURES)
@@ -156,3 +165,5 @@ Transform columns of the dataset by asinh transformation with `cofactor`.
 function dtransform_asinh(dInfo::Dinfo, columns::Vector{Int}, cofactor = 5)
     dapply_cols(dInfo, (v, _) -> asinh.(v ./ cofactor), columns)
 end
+
+export dtransform_asinh

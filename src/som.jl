@@ -62,7 +62,7 @@ function init(
 )
 
     numCodes = xdim * ydim
-    grid = gridRectangular(xdim, ydim)
+    grid = grid_rectangular(xdim, ydim)
 
     # Initialize with an unbiased random gaussian with same mean/sd as the data
     # in each dimension
@@ -75,6 +75,7 @@ function init(
     return SOM(codes = codes, xdim = xdim, ydim = ydim, grid = grid)
 end
 
+export init
 
 """
 $(TYPEDSIGNATURES)
@@ -126,7 +127,7 @@ function train(
     for epoch = 1:epochs
         @debug "Epoch $epoch..."
 
-        numerator, denominator = distributedEpoch(
+        numerator, denominator = run_epoch_distributed(
             dInfo,
             result_som.codes,
             knnTreeFun(Array{Float64,2}(transpose(result_som.codes)), metric),
@@ -166,6 +167,7 @@ function train(som::SOM, train; kwargs...)
     return som_res
 end
 
+export train
 
 """
 $(TYPEDSIGNATURES)
@@ -177,7 +179,7 @@ vectors and the adjustment in radius after each epoch.
 - `codes`: Codebook
 - `tree`: knn-compatible tree built upon the codes
 """
-function doEpoch(x::Array{Float64,2}, codes::Array{Float64,2}, tree)
+function run_epoch(x::Array{Float64,2}, codes::Array{Float64,2}, tree)
 
     # initialise numerator and denominator with 0's
     sumNumerator = zeros(Float64, size(codes))
@@ -199,17 +201,16 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Execute the `doEpoch` in parallel on workers described by `dInfo` and collect
+Execute the `run_epoch` in parallel on workers described by `dInfo` and collect
 the results. Returns pair of numerator and denominator matrices.
 """
-function distributedEpoch(dInfo::Dinfo, codes::Matrix{Float64}, tree)
+function run_epoch_distributed(dInfo::Dinfo, codes::Matrix{Float64}, tree)
     return dmapreduce(
         dInfo,
-        (data) -> doEpoch(data, codes, tree),
+        (data) -> run_epoch(data, codes, tree),
         ((n1, d1), (n2, d2)) -> (n1 + n2, d1 + d2),
     )
 end
-
 
 """
 $(TYPEDSIGNATURES)
@@ -263,16 +264,12 @@ function assign(som::SOM, data; knnTreeFun = BruteTree, metric = Euclidean())
     return DataFrame(index = res)
 end
 
+export assign
+
 """
 $(TYPEDSIGNATURES)
 
 Convert iteration ID and epoch number to relative time in training.
 """
-function scaleEpochTime(iteration::Int64, epochs::Int64)
-    # prevent division by zero on 1-epoch training
-    if epochs > 1
-        epochs -= 1
-    end
-
-    return Float64(iteration - 1) / Float64(epochs)
-end
+scaled_epoch_time(iteration::Int64, epochs::Int64) =
+    Float64(iteration - 1) / Float64(max(epochs, 1))
