@@ -46,40 +46,4 @@ include("load.jl")
 include("split.jl")
 include("data_utils.jl")
 
-
-#core
-export init, train, assign
-
-#trainutils
-export radius_linear, radius_exp, kernel_gaussian, kernel_bubble, kernel_threshold, distance_matrix
-
-#embedding
-export embed
-
-# structs
-export SOM
-
-#io/input
-export load_fcs,
-    load_fcs_header,
-    read_fcs_size,
-    read_fcs_sizes,
-    load_fcs_distributed,
-    select_fcs_columns,
-    fcs_filevector_distribute,
-    filevector_distribute,
-    read_csv_size,
-    load_csv,
-    read_csv_sizes,
-    load_csv_distributed
-
-#io/splitting
-export slicesof, vcollect_slice, collect_slice
-
-#io/process
-export clean_names!, fcs_column_metadata, fcs_metadata_marker_names
-
-#dataops (higher-level operations on data)
-export dtransform_asinh
-
 end # module
