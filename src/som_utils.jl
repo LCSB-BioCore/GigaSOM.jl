@@ -1,6 +1,6 @@
 
 """
-    linearRadius(initRadius::Float64, iteration::Int64, decay::String, epochs::Int64)
+$(TYPEDSIGNATURES)
 
 Return a neighbourhood radius. Use as the `radiusFun` parameter for `trainGigaSOM`.
 
@@ -23,7 +23,7 @@ end
 
 
 """
-    expRadius(steepness::Float64)
+$(TYPEDSIGNATURES)
 
 Return a function to be used as a `radiusFun` of `trainGigaSOM`, which causes
 exponencial decay with the selected steepness.
@@ -64,7 +64,7 @@ end
 
 
 """
-    gridRectangular(xdim, ydim)
+$(TYPEDSIGNATURES)
 
 Create coordinates of all neurons on a rectangular SOM.
 
@@ -93,7 +93,7 @@ end
 
 
 """
-    gaussianKernel(x, r::Float64)
+$(TYPEDSIGNATURES)
 
 Return the value of normal distribution PDF (σ=`r`, μ=0) at `x`
 """
@@ -112,7 +112,7 @@ end
 
 
 """
-    bubbleKernel(x, r::Float64)
+$(TYPEDSIGNATURES)
 
 Return a "bubble" (spherical) distribution kernel.
 
@@ -122,6 +122,7 @@ function bubbleKernel(x, r::Float64)
 end
 
 """
+$(TYPEDSIGNATURES)
     thresholdKernel(x, r::Float64)
 
 Simple FlowSOM-like hard-threshold kernel
@@ -134,7 +135,7 @@ function thresholdKernel(x, r::Float64, maxRatio = 4 / 5, zero = 1e-6)
 end
 
 """
-    distMatrix(metric=Chebyshev())
+$(TYPEDSIGNATURES)
 
 Return a function that uses the `metric` (compatible with metrics from package `Distances`) calculates distance matrixes from normal row-wise data matrices, using the `metric`.
 

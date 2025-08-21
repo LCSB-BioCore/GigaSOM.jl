@@ -1,5 +1,5 @@
 """
-    loadFCSHeader(fn::String)::Tuple{Vector{Int}, Dict{String,String}}
+$(TYPEDSIGNATURES)
 
 Efficiently extract data offsets and keyword dictionary from an FCS file.
 """
@@ -13,7 +13,7 @@ function loadFCSHeader(fn::String)::Tuple{Vector{Int},Dict{String,String}}
 end
 
 """
-    getFCSSize(offsets, params)::Tuple{Int,Int}
+$(TYPEDSIGNATURES)
 
 Convert the offsets and keywords from an FCS file to cell and parameter count,
 respectively.
@@ -46,7 +46,7 @@ function getFCSSize(offsets, params)::Tuple{Int,Int}
 end
 
 """
-    loadFCSSizes(fns::Vector{String})
+$(TYPEDSIGNATURES)
 
 Load cell counts in many FCS files at once. Useful as input for `slicesof`.
 """
@@ -60,7 +60,7 @@ function loadFCSSizes(fns::Vector{String})::Vector{Int}
 end
 
 """
-    loadFCS(fn::String; applyCompensation::Bool=true)::Tuple{Dict{String,String}, Matrix{Float64}}
+$(TYPEDSIGNATURES)
 
 Read a FCS file. Return a tuple that contains in order:
 
@@ -96,7 +96,7 @@ function loadFCS(
 end
 
 """
-    loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyCompensation=true, postLoad=(d,i)->d)::Dinfo
+$(TYPEDSIGNATURES)
 
 This runs the FCS loading machinery in a distributed way, so that the files
 `fns` (with full path) are sliced into equal parts and saved as a distributed
@@ -148,7 +148,7 @@ function loadFCSSet(
 end
 
 """
-    selectFCSColumns(selectColnames::Vector{String})
+$(TYPEDSIGNATURES)
 
 Return a function useful with `loadFCSSet`, which loads only the specified
 (prettified) column names from the FCS files. Use `getMetaData`,
@@ -169,7 +169,7 @@ function selectFCSColumns(selectColnames::Vector{String})
 end
 
 """
-    distributeFCSFileVector(name::Symbol, fns::Vector{String}, pids=workers())::Dinfo
+$(TYPEDSIGNATURES)
 
 Distribute a vector of integers among the workers that describes which file
 from `fns` the cell comes from. Useful for producing per-file statistics. The
@@ -183,7 +183,7 @@ function distributeFCSFileVector(name::Symbol, fns::Vector{String}, pids = worke
 end
 
 """
-    distributeFileVector(name::Symbol, sizes::Vector{Int}, slices::Vector{Tuple{Int,Int,Int,Int}}, pids=workers())::Dinfo
+$(TYPEDSIGNATURES)
 
 Generalized version of `distributeFCSFileVector` that produces the integer
 vector from any `sizes` and `slices`.
@@ -204,7 +204,7 @@ function distributeFileVector(
 end
 
 """
-    function getCSVSize(fn::String; args...)::Tuple{Int,Int}
+$(TYPEDSIGNATURES)
 
 Read the dimensions (number of rows and columns, respectively) from a CSV file
 `fn`. `args` are passed to function `CSV.file`.
@@ -227,7 +227,7 @@ function getCSVSize(fn::String; args...)::Tuple{Int,Int}
 end
 
 """
-    function loadCSVSizes(fns::Vector{String}; args...)::Vector{Int}
+$(TYPEDSIGNATURES)
 
 Determine number of rows in a list of CSV files (passed as `fns`). Equivalent
 to `loadFCSSizes`.
@@ -237,7 +237,7 @@ function loadCSVSizes(fns::Vector{String}; args...)::Vector{Int}
 end
 
 """
-    function loadCSV(fn::String; args...)::Matrix{Float64}
+$(TYPEDSIGNATURES)
 
 CSV equivalent of `loadFCS`. The metadata (header, column names) are not
 extracted. `args` are passed to `CSV.read`.
@@ -247,13 +247,7 @@ function loadCSV(fn::String; args...)::Matrix{Float64}
 end
 
 """
-    function loadCSVSet(
-        name::Symbol,
-        fns::Vector{String},
-        pids = workers();
-        postLoad = (d, i) -> d,
-        csvargs...,
-    )::Dinfo
+$(TYPEDSIGNATURES)
 
 CSV equivalent of `loadFCSSet`. `csvargs` are passed as keyword arguments to
 CSV-loading functions.

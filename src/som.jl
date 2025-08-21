@@ -1,5 +1,5 @@
 """
-    initGigaSOM(data, args...)
+$(TYPEDSIGNATURES)
 
 Initializes a SOM by random selection from the training data. A generic
 overload that works for matrices and DataFrames that can be coerced to
@@ -21,9 +21,7 @@ function initGigaSOM(data::Union{Matrix,DataFrame}, args...; kwargs...)
 end
 
 """
-    function initGigaSOM(data::Dinfo,
-                         xdim::Int64, ydim::Int64 = xdim;
-                         seed=rand(Int), rng=StableRNG(seed))
+$(TYPEDSIGNATURES)
 
 `initGigaSOM` overload for working with distributed-style `Dinfo`
 data. The rest of the arguments is passed to the data-independent
@@ -40,10 +38,7 @@ function initGigaSOM(data::Dinfo, args...; kwargs...)
 end
 
 """
-    function initGigaSOM(ncol::Int64,
-                         means::Vector{Float64}, sdevs::Vector{Float64},
-                         xdim::Int64, ydim::Int64 = xdim;
-                         seed = rand(Int), rng = StableRNG(seed))
+$(TYPEDSIGNATURES)
 
 Generate a stable random initial SOM with the random distribution that matches the parameters.
 
@@ -82,19 +77,7 @@ end
 
 
 """
-    trainGigaSOM(
-        som::Som,
-        dInfo::Dinfo;
-        kernelFun::Function = gaussianKernel,
-        metric = Euclidean(),
-        somDistFun = distMatrix(Chebyshev()),
-        knnTreeFun = BruteTree,
-        rStart = 0.0,
-        rFinal = 0.1,
-        radiusFun = expRadius(-5.0),
-        epochs = 20,
-        eachEpoch = (e, r, som) -> nothing,
-    )
+$(TYPEDSIGNATURES)
 
 # Arguments:
 - `som`: object of type Som with an initialised som
@@ -166,8 +149,7 @@ function trainGigaSOM(
 end
 
 """
-    trainGigaSOM(som::Som, train;
-                 kwargs...)
+$(TYPEDSIGNATURES)
 
 Overload of `trainGigaSOM` for simple DataFrames and matrices. This slices the
 data, distributes them to the workers, and runs normal `trainGigaSOM`. Data is
@@ -186,7 +168,7 @@ end
 
 
 """
-    doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, tree)
+$(TYPEDSIGNATURES)
 
 vectors and the adjustment in radius after each epoch.
 
@@ -215,7 +197,7 @@ function doEpoch(x::Array{Float64,2}, codes::Array{Float64,2}, tree)
 end
 
 """
-    distributedEpoch(dInfo::Dinfo, codes::Matrix{Float64}, tree)
+$(TYPEDSIGNATURES)
 
 Execute the `doEpoch` in parallel on workers described by `dInfo` and collect
 the results. Returns pair of numerator and denominator matrices.
@@ -230,9 +212,7 @@ end
 
 
 """
-    mapToGigaSOM(som::Som, dInfo::Dinfo;
-        knnTreeFun = BruteTree, metric = Euclidean(),
-        output::Symbol=tmp_symbol(dInfo)::Dinfo
+$(TYPEDSIGNATURES)
 
 Compute the index of the BMU for each row of the input data.
 
@@ -260,9 +240,8 @@ function mapToGigaSOM(
 end
 
 """
-    mapToGigaSOM(som::Som, data;
-                 knnTreeFun = BruteTree,
-                 metric = Euclidean())
+$(TYPEDSIGNATURES)
+
 Overload of `mapToGigaSOM` for simple DataFrames and matrices. This slices the
 data using `DistributedArrays`, sends them the workers, and runs normal
 `mapToGigaSOM`. Data is `unscatter`d after the computation.
@@ -285,7 +264,7 @@ function mapToGigaSOM(som::Som, data; knnTreeFun = BruteTree, metric = Euclidean
 end
 
 """
-    scaleEpochTime(iteration::Int64, epochs::Int64)
+$(TYPEDSIGNATURES)
 
 Convert iteration ID and epoch number to relative time in training.
 """

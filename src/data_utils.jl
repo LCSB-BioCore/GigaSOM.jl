@@ -1,5 +1,5 @@
 """
-    cleanNames!(mydata::Vector{String})
+$(TYPEDSIGNATURES)
 
 Replaces problematic characters in column names, avoids duplicate names, and
 prefixes an '_' if the name starts with a number.
@@ -30,7 +30,8 @@ function cleanNames!(mydata::Vector{String})
 end
 
 """
-    getMetaData(f)
+$(TYPEDSIGNATURES)
+
 Collect the meta data information in a more user friendly format.
 
 # Arguments:
@@ -78,7 +79,7 @@ function getMetaData(meta::Dict{String,String})::DataFrame
 end
 
 """
-    getMarkerNames(meta::DataFrame)::Tuple{Vector{String}, Vector{String}}
+$(TYPEDSIGNATURES)
 
 Extract suitable raw names (useful for selecting columns) and pretty readable
 names (useful for humans) from FCS file metadata.
@@ -99,7 +100,7 @@ end
 
 
 """
-    compensate!(data::Matrix{Float64}, spillover::Matrix{Float64}, cols::Vector{Int})
+$(TYPEDSIGNATURES)
 
 Apply a compensation matrix in `spillover` (the individual columns of which
 describe, in order, the spillover of `cols` in `data`) to the matrix `data`
@@ -110,7 +111,7 @@ function compensate!(data::Matrix{Float64}, spillover::Matrix{Float64}, cols::Ve
 end
 
 """
-    parseSpillover(str::String)::Union{Tuple{Vector{String},Matrix{Float64}}, Nothing}
+$(TYPEDSIGNATURES)
 
 Parses the spillover matrix from the string from FCS parameter value.
 """
@@ -129,7 +130,7 @@ function parseSpillover(str::String)::Tuple{Vector{String},Matrix{Float64}}
 end
 
 """
-    getSpillover(params::Dict{String, String})::Union{Tuple{Vector{String},Matrix{Float64}}, Nothing}
+$(TYPEDSIGNATURES)
 
 Get a spillover matrix from FCS `params`. Returns a pair with description of
 columns to be applied, and with the actual spillover matrix. Returns `nothing`
@@ -148,7 +149,7 @@ function getSpillover(
 end
 
 """
-    dtransform_asinh(dInfo::Dinfo, columns::Vector{Int}, cofactor=5)
+$(TYPEDSIGNATURES)
 
 Transform columns of the dataset by asinh transformation with `cofactor`.
 """

@@ -1,13 +1,5 @@
 """
-    embedGigaSOM(som::GigaSOM.Som,
-                 dInfo::Dinfo;
-                 knnTreeFun = BruteTree,
-                 metric = Euclidean(),
-                 k::Int64=0,
-                 adjust::Float64=1.0,
-                 smooth::Float64=0.0,
-                 m::Float64=10.0,
-                 output::Symbol=tmp_symbol(dInfo))::Dinfo
+$(TYPEDSIGNATURES)
 
 Return a data frame with X,Y coordinates of EmbedSOM projection of the data.
 
@@ -66,14 +58,7 @@ function embedGigaSOM(
 end
 
 """
-    embedGigaSOM(som::GigaSOM.Som,
-                 data;
-                 knnTreeFun = BruteTree,
-                 metric = Euclidean(),
-                 k::Int64=0,
-                 adjust::Float64=1.0,
-                 smooth::Float64=0.0,
-                 m::Float64=10.0)
+$(TYPEDSIGNATURES)
 
 Overload of `embedGigaSOM` for simple DataFrames and matrices. This slices the
 data using `DistributedArrays`, sends them the workers, and runs normal
@@ -125,13 +110,7 @@ function embedGigaSOM(
 end
 
 """
-    embedGigaSOM_internal(som::GigaSOM.Som,
-                          data::Matrix{Float64},
-                          tree,
-                          k::Int64,
-                          adjust::Float64,
-                          boost::Float64,
-                          m::Float64)
+$(TYPEDSIGNATURES)
 
 Internal function to compute parts of the embedding on a prepared kNN-tree
 structure (`tree`) and `smooth` converted to `boost`.
