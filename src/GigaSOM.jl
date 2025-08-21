@@ -7,6 +7,8 @@ See documentation at: <http://LCSB-BioCore.github.io/GigaSOM.jl>
 """
 module GigaSOM
 
+using DocStringExtensions
+
 using CSV
 using DataFrames
 using Distances
