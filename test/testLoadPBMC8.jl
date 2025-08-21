@@ -42,7 +42,7 @@ end
 fileNames = readdir()
 csDict = Dict{String,Any}()
 for f in fileNames
-    if f[end-3:end] == ".fcs" || f[end-4:end] == ".xlsx"
+    if f[(end-3):end] == ".fcs" || f[(end-4):end] == ".xlsx"
         cs = bytes2hex(sha256(f))
         csDict[f] = cs
     end
@@ -56,7 +56,7 @@ end
 md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes = true))
 panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes = true))
 
-antigens = panel[panel[:, :Lineage].==1, :Antigen]
+antigens = panel[panel[:, :Lineage] .== 1, :Antigen]
 _, fcsParams = loadFCSHeader(md[1, :file_name])
 _, fcsAntigens = getMarkerNames(getMetaData(fcsParams))
 cleanNames!(antigens)
