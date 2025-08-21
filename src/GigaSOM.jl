@@ -29,8 +29,6 @@ include("embedding.jl")
 
 include("load.jl")
 include("split.jl")
-
-include("utils.jl")
 include("data_utils.jl")
 
 
