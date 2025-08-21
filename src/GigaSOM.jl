@@ -1,9 +1,10 @@
 """
-Main module for `GigaSOM.jl` - Huge-scale, high-performance flow cytometry clustering
+    module GigaSOM
 
-The documentation is here: http://LCSB-BioCore.github.io/GigaSOM.jl
+Huge-scale, high-performance flow cytometry data clustering.
+
+See documentation at: <http://LCSB-BioCore.github.io/GigaSOM.jl>
 """
-
 module GigaSOM
 
 using CSV
@@ -14,22 +15,22 @@ using DistributedData
 using Distributions
 using FCSFiles
 using FileIO
-using DistributedArrays
 using NearestNeighbors
 using Serialization
 using StableRNGs
 
-include("base/structs.jl")
+include("structs.jl")
 
-include("base/dataops.jl")
-include("base/trainutils.jl")
+include("som.jl")
+include("som_utils.jl")
+include("embedding.jl")
 
-include("analysis/core.jl")
-include("analysis/embedding.jl")
+include("load.jl")
+include("split.jl")
 
-include("io/input.jl")
-include("io/process.jl")
-include("io/splitting.jl")
+include("utils.jl")
+include("data_utils.jl")
+
 
 #core
 export initGigaSOM, trainGigaSOM, mapToGigaSOM
