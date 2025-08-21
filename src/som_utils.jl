@@ -100,8 +100,7 @@ $(TYPEDSIGNATURES)
 
 Return the value of normal distribution PDF (σ=`r`, μ=0) at `x`
 """
-kernel_gaussian(x, r::Float64) =
-    Distributions.pdf.(Distributions.Normal(0.0, r), x)
+kernel_gaussian(x, r::Float64) = Distributions.pdf.(Distributions.Normal(0.0, r), x)
 
 export kernel_gaussian
 
@@ -140,7 +139,8 @@ Return a function that uses the `metric` (compatible with metrics from package `
 
 Use as a parameter of `train`.
 """
-distance_matrix(metric = Chebyshev()) = (grid::Matrix{Float64}) -> begin
+distance_matrix(metric = Chebyshev()) =
+    (grid::Matrix{Float64}) -> begin
         n = size(grid, 1)
         dm = zeros(Float64, n, n)
 

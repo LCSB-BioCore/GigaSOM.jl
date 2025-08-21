@@ -182,7 +182,11 @@ from `fns` the cell comes from. Useful for producing per-file statistics. The
 vector is saved on workers specified by `pids` as a distributed variable
 `name`.
 """
-function fcs_filevector_distribute(name::Symbol, fns::Vector{String}, pids = workers())::Dinfo
+function fcs_filevector_distribute(
+    name::Symbol,
+    fns::Vector{String},
+    pids = workers(),
+)::Dinfo
     sizes = read_fcs_sizes(fns)
     slices = slicesof(sizes, length(pids))
     return filevector_distribute(name, sizes, slices, pids)
