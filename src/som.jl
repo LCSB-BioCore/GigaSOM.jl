@@ -4,12 +4,12 @@ $(TYPEDSIGNATURES)
 Initializes a SOM by random selection from the training data. A generic
 overload that works for matrices and DataFrames that can be coerced to
 `Matrix{Float64}`. Other arguments are passed to the data-independent
-`initGigaSOM`.
+`init`.
 
 Arguments:
 - `data`: matrix of data for running the initialization
 """
-function initGigaSOM(data::Union{Matrix,DataFrame}, args...; kwargs...)
+function init(data::Union{Matrix,DataFrame}, args...; kwargs...)
 
     d = Matrix{Float64}(data)
 
@@ -17,24 +17,24 @@ function initGigaSOM(data::Union{Matrix,DataFrame}, args...; kwargs...)
     means = [sum(d[:, i]) / n for i = 1:ncol]
     sdevs = [sqrt(sum((d[:, i] .- means[i]) .^ 2.0) / n) for i = 1:ncol]
 
-    return initGigaSOM(ncol, means, sdevs, args...; kwargs...)
+    return init(ncol, means, sdevs, args...; kwargs...)
 end
 
 """
 $(TYPEDSIGNATURES)
 
-`initGigaSOM` overload for working with distributed-style `Dinfo`
+`init` overload for working with distributed-style `Dinfo`
 data. The rest of the arguments is passed to the data-independent
-`initGigaSOM`.
+`init`.
 
 Arguments:
 - `data`: a `Dinfo` object with the distributed dataset matrix
 """
-function initGigaSOM(data::Dinfo, args...; kwargs...)
+function init(data::Dinfo, args...; kwargs...)
     ncol = get_val_from(data.workers[1], :(size($(data.val))[2]))
     (means, sdevs) = dstat(data, Vector(1:ncol))
 
-    initGigaSOM(ncol, means, sdevs, args...; kwargs...)
+    init(ncol, means, sdevs, args...; kwargs...)
 end
 
 """
@@ -49,9 +49,9 @@ Arguments:
 - `seed`: a seed (defaults to random seed from the current default random generator
 - `rng`: a random number generator to be used (defaults to a `StableRNG` initialized with the `seed`)
 
-Returns: a new `Som` structure
+Returns: a new `SOM` structure
 """
-function initGigaSOM(
+function init(
     ncol::Int64,
     means::Vector{Float64},
     sdevs::Vector{Float64},
@@ -72,7 +72,7 @@ function initGigaSOM(
         codes[:, col] .+= means[col]
     end
 
-    return Som(codes = codes, xdim = xdim, ydim = ydim, grid = grid)
+    return SOM(codes = codes, xdim = xdim, ydim = ydim, grid = grid)
 end
 
 
@@ -80,31 +80,31 @@ end
 $(TYPEDSIGNATURES)
 
 # Arguments:
-- `som`: object of type Som with an initialised som
+- `som`: object of type SOM with an initialised som
 - `dInfo`: `Dinfo` object that describes a loaded dataset
-- `kernelFun::function`: optional distance kernel; one of (`bubbleKernel, gaussianKernel`)
-            default is `gaussianKernel`
+- `kernelFun::function`: optional distance kernel; one of (`kernel_bubble, kernel_gaussian`)
+            default is `kernel_gaussian`
 - `metric`: Passed as metric argument to the KNN-tree constructor
 - `somDistFun`: Function for computing the distances in the SOM map
 - `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
 - `rStart`: optional training radius. If zero (default), it is computed from the SOM grid size.
 - `rFinal`: target radius at the last epoch, defaults to 0.1
-- `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
+- `radiusFun`: Function that generates radius decay, e.g. `radius_linear` or `radius_exp(10.0)`
 - `epochs`: number of SOM training iterations (default 10)
 - `eachEpoch`: a function to call back after each epoch, accepting arguments
   `(epochNumber, radius, som)`. For simplicity, this gets additionally called
   once before the first epoch, with `epochNumber` set to zero.
 """
-function trainGigaSOM(
-    som::Som,
+function train(
+    som::SOM,
     dInfo::Dinfo;
-    kernelFun::Function = gaussianKernel,
+    kernelFun::Function = kernel_gaussian,
     metric = Euclidean(),
-    somDistFun = distMatrix(Chebyshev()),
+    somDistFun = distance_matrix(Chebyshev()),
     knnTreeFun = BruteTree,
     rStart = 0.0,
     rFinal = 0.1,
-    radiusFun = expRadius(-5.0),
+    radiusFun = radius_exp(-5.0),
     epochs = 20,
     eachEpoch = (e, r, som) -> nothing,
 )
@@ -151,17 +151,17 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Overload of `trainGigaSOM` for simple DataFrames and matrices. This slices the
-data, distributes them to the workers, and runs normal `trainGigaSOM`. Data is
+Overload of `train` for simple DataFrames and matrices. This slices the
+data, distributes them to the workers, and runs normal `train`. Data is
 `unscatter`d after the computation.
 """
-function trainGigaSOM(som::Som, train; kwargs...)
+function train(som::SOM, train; kwargs...)
 
     train = Matrix{Float64}(train)
 
     #this slices the data into parts and and sends them to workers
     dInfo = scatter_array(:GigaSOMtrainDataVar, train, workers())
-    som_res = trainGigaSOM(som, dInfo; kwargs...)
+    som_res = train(som, dInfo; kwargs...)
     unscatter(dInfo)
     return som_res
 end
@@ -226,8 +226,8 @@ Compute the index of the BMU for each row of the input data.
 Data must have the same number of dimensions as the training dataset
 and will be normalised with the same parameters.
 """
-function mapToGigaSOM(
-    som::Som,
+function assign(
+    som::SOM,
     dInfo::Dinfo;
     knnTreeFun = BruteTree,
     metric = Euclidean(),
@@ -242,11 +242,11 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Overload of `mapToGigaSOM` for simple DataFrames and matrices. This slices the
+Overload of `assign` for simple DataFrames and matrices. This slices the
 data using `DistributedArrays`, sends them the workers, and runs normal
-`mapToGigaSOM`. Data is `unscatter`d after the computation.
+`assign`. Data is `unscatter`d after the computation.
 """
-function mapToGigaSOM(som::Som, data; knnTreeFun = BruteTree, metric = Euclidean())
+function assign(som::SOM, data; knnTreeFun = BruteTree, metric = Euclidean())
 
     data = Matrix{Float64}(data)
 
@@ -256,7 +256,7 @@ function mapToGigaSOM(som::Som, data; knnTreeFun = BruteTree, metric = Euclidean
     end
 
     dInfo = scatter_array(:GigaSOMmappingDataVar, data, workers())
-    rInfo = mapToGigaSOM(som, dInfo, knnTreeFun = knnTreeFun, metric = metric)
+    rInfo = assign(som, dInfo, knnTreeFun = knnTreeFun, metric = metric)
     res = gather_array(rInfo)
     unscatter(dInfo)
     unscatter(rInfo)

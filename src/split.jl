@@ -58,11 +58,11 @@ therefore named _v_collect (the slicing and concatenation is _v_ertical).
 The actual data content and loading method is abstracted out -- function
 `loadMtx` gets the index of the input part that it is required to fetch (e.g.
 index of one FCS file), and is expected to return that input part as a whole
-matrix. `vcollectSlice` correctly calls this function as required and extracts
+matrix. `vcollect_slice` correctly calls this function as required and extracts
 relevant portions of the matrices, so that at the end the whole slice can be
 pasted together.
 """
-function vcollectSlice(
+function vcollect_slice(
     loadMtx,
     (startFile, startOff, finalFile, finalOff)::Tuple{Int,Int,Int,Int},
 )::Matrix
@@ -81,9 +81,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Alternative of `vcollectSlice` for 1D vectors.
+Alternative of `vcollect_slice` for 1D vectors.
 """
-function collectSlice(
+function collect_slice(
     loadVec,
     (startFile, startOff, finalFile, finalOff)::Tuple{Int,Int,Int,Int},
 )::Vector

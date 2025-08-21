@@ -6,14 +6,14 @@ Structure to hold all data of a trained SOM.
 # Fields:
 $(TYPEDFIELDS)
 """
-mutable struct Som
+mutable struct SOM
     codes::Matrix{Float64}
     xdim::Int
     ydim::Int
     numCodes::Int
     grid::Matrix{Float64}
 
-    Som(;
+    SOM(;
         codes::Matrix{Float64},
         xdim::Int,
         ydim::Int,
@@ -22,7 +22,7 @@ mutable struct Som
     ) = new(codes, xdim, ydim, numCodes, grid)
 end
 
-Base.copy(som::Som) = Som(
+Base.copy(som::SOM) = SOM(
     codes = som.codes,
     xdim = som.xdim,
     ydim = som.ydim,

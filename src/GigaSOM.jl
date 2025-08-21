@@ -48,38 +48,36 @@ include("data_utils.jl")
 
 
 #core
-export initGigaSOM, trainGigaSOM, mapToGigaSOM
+export init, train, assign
 
 #trainutils
-export linearRadius, expRadius, gaussianKernel, bubbleKernel, thresholdKernel, distMatrix
+export radius_linear, radius_exp, kernel_gaussian, kernel_bubble, kernel_threshold, distance_matrix
 
 #embedding
-export embedGigaSOM
+export embed
 
 # structs
-export Som
+export SOM
 
 #io/input
-export readFlowset,
-    readFlowFrame,
-    loadFCS,
-    loadFCSHeader,
-    getFCSSize,
-    loadFCSSizes,
-    loadFCSSet,
-    selectFCSColumns,
-    distributeFCSFileVector,
-    distributeFileVector,
-    getCSVSize,
-    loadCSV,
-    loadCSVSizes,
-    loadCSVSet
+export load_fcs,
+    load_fcs_header,
+    read_fcs_size,
+    read_fcs_sizes,
+    load_fcs_distributed,
+    select_fcs_columns,
+    fcs_filevector_distribute,
+    filevector_distribute,
+    read_csv_size,
+    load_csv,
+    read_csv_sizes,
+    load_csv_distributed
 
 #io/splitting
-export slicesof, vcollectSlice, collectSlice
+export slicesof, vcollect_slice, collect_slice
 
 #io/process
-export cleanNames!, getMetaData, getMarkerNames
+export clean_names!, fcs_column_metadata, fcs_metadata_marker_names
 
 #dataops (higher-level operations on data)
 export dtransform_asinh

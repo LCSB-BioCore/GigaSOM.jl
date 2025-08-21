@@ -2,7 +2,7 @@
 """
 $(TYPEDSIGNATURES)
 
-Return a neighbourhood radius. Use as the `radiusFun` parameter for `trainGigaSOM`.
+Return a neighbourhood radius. Use as the `radiusFun` parameter for `train`.
 
 # Arguments
 - `initRadius`: Initial Radius
@@ -10,7 +10,7 @@ Return a neighbourhood radius. Use as the `radiusFun` parameter for `trainGigaSO
 - `iteration`: Training iteration
 - `epochs`: Total number of epochs
 """
-function linearRadius(
+function radius_linear(
     initRadius::Float64,
     finalRadius::Float64,
     iteration::Int64,
@@ -25,17 +25,17 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return a function to be used as a `radiusFun` of `trainGigaSOM`, which causes
+Return a function to be used as a `radiusFun` of `train`, which causes
 exponencial decay with the selected steepness.
 
-Use: `trainGigaSOM(..., radiusFun = expRadius(0.5))`
+Use: `train(..., radiusFun = radius_exp(0.5))`
 
 # Arguments
 - `steepness`: Steepness of exponential descent. Good values range
   from -100.0 (almost linear) to 100.0 (really quick decay).
 
 """
-function expRadius(steepness::Float64 = 0.0)
+function radius_exp(steepness::Float64 = 0.0)
     return (initRadius::Float64, finalRadius::Float64, iteration::Int64, epochs::Int64) ->
         begin
 
@@ -43,7 +43,7 @@ function expRadius(steepness::Float64 = 0.0)
 
             if steepness < -100.0
                 # prevent floating point underflows
-                error("Sanity check: steepness too low, use linearRadius instead.")
+                error("Sanity check: steepness too low, use radius_linear instead.")
             end
 
             # steepness is simulated by moving both points closer to zero
@@ -97,7 +97,7 @@ $(TYPEDSIGNATURES)
 
 Return the value of normal distribution PDF (σ=`r`, μ=0) at `x`
 """
-function gaussianKernel(x, r::Float64)
+function kernel_gaussian(x, r::Float64)
 
     return Distributions.pdf.(Distributions.Normal(0.0, r), x)
 end
@@ -117,17 +117,17 @@ $(TYPEDSIGNATURES)
 Return a "bubble" (spherical) distribution kernel.
 
 """
-function bubbleKernel(x, r::Float64)
+function kernel_bubble(x, r::Float64)
     return bubbleKernelSqScalar.(x .^ 2, r^2)
 end
 
 """
 $(TYPEDSIGNATURES)
-    thresholdKernel(x, r::Float64)
+    kernel_threshold(x, r::Float64)
 
 Simple FlowSOM-like hard-threshold kernel
 """
-function thresholdKernel(x, r::Float64, maxRatio = 4 / 5, zero = 1e-6)
+function kernel_threshold(x, r::Float64, maxRatio = 4 / 5, zero = 1e-6)
     if r >= maxRatio * maximum(x) #prevent smoothing everything to a single point
         r = maxRatio * maximum(x)
     end
@@ -139,9 +139,9 @@ $(TYPEDSIGNATURES)
 
 Return a function that uses the `metric` (compatible with metrics from package `Distances`) calculates distance matrixes from normal row-wise data matrices, using the `metric`.
 
-Use as a parameter of `trainGigaSOM`.
+Use as a parameter of `train`.
 """
-function distMatrix(metric = Chebyshev())
+function distance_matrix(metric = Chebyshev())
     return (grid::Matrix{Float64}) -> begin
         n = size(grid, 1)
         dm = zeros(Float64, n, n)

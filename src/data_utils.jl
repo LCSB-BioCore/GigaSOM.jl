@@ -7,7 +7,7 @@ prefixes an '_' if the name starts with a number.
 # Arguments:
 - `mydata`: vector of names (gets modified)
 """
-function cleanNames!(mydata::Vector{String})
+function clean_names!(mydata::Vector{String})
     # replace problematic characters,
     # put "_" in front of colname in case it starts with a number
     # avoid duplicate names (add suffixes _2, _3, ...)
@@ -37,7 +37,7 @@ Collect the meta data information in a more user friendly format.
 # Arguments:
 - `f`: input structure with `.params` and `.data` fields
 """
-function getMetaData(meta::Dict{String,String})::DataFrame
+function fcs_column_metadata(meta::Dict{String,String})::DataFrame
 
     # declarations and initializations
     metaKeys = keys(meta)
@@ -85,7 +85,7 @@ Extract suitable raw names (useful for selecting columns) and pretty readable
 names (useful for humans) from FCS file metadata.
 
 """
-function getMarkerNames(meta::DataFrame)::Tuple{Vector{String},Vector{String}}
+function fcs_metadata_marker_names(meta::DataFrame)::Tuple{Vector{String},Vector{String}}
     orig = Array{String}(meta[:, :N])
     nice = copy(orig)
     if hasproperty(meta, :S)
