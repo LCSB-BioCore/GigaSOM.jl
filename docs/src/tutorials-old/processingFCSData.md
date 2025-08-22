@@ -58,7 +58,7 @@ e = embed(som, data)
 Usual experiments produce multiple FCS files, and distributed or parallel
 processing is very helpful in crunching through all the data.
 
-To load multiple FCS files, use [`loadFCSSet`](@ref). This function works well
+To load multiple FCS files, use [`load_fcs_distributed`](@ref). This function works well
 in the "usual" single-process environment, but additionally it is designed to
 handle situations when the data is too big to fit into memory, and attempts to
 split them into available distributed workers workers.
@@ -71,7 +71,7 @@ a variable name that is prefixed with a `:` colon.
 For example, we can load the Levine13 dataset as such:
 
 ```julia
-datainfo = loadFCSSet(:levine, ["Levine_13dim.fcs"])
+datainfo = load_fcs_distributed(:levine, ["Levine_13dim.fcs"])
 ```
 
 Expectably, if you have more files, just write their names into the array and
@@ -89,7 +89,7 @@ using Distributed
 addprocs(2)                 # add any number of CPUs/tasks/workers you have available
 @everywhere using GigaSOM   # load GigaSOM also on the workers
 
-datainfo = loadFCSSet(:levine, ["Levine_13dim.fcs"]) # add more files as needed
+datainfo = load_fcs_distributed(:levine, ["Levine_13dim.fcs"]) # add more files as needed
 
 dselect(datainfo, Vector(1:13))   # select columns that contain expressions (column 14 contains labels)
 som = init(datainfo, 20, 20)
@@ -170,7 +170,7 @@ panel = GigaSOM.DataFrame(readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=
 
 After that, we can get the parameter structure from the first FCS files:
 ```julia
-_, fcsParams = loadFCSHeader(md[1, :file_name])
+_, fcsParams = read_fcs_header(md[1, :file_name])
 ```
 
 Continue with extracting marker names using the prepared functions:
@@ -196,7 +196,7 @@ Now we have the vector of `fcsAntigens` that the FCS files store, and list of
 it to the desired antigens and transforming it a bit:
 
 ```julia
-di = loadFCSSet(:pbmc8, md[:,:file_name])
+di = load_fcs_distributed(:pbmc8, md[:,:file_name])
 ```
 
 (If data distribution and parallelization is required, you must add parallel
