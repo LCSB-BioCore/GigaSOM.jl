@@ -1,7 +1,11 @@
 using Documenter, Literate, GigaSOM
 
-examples =
-    sort(filter(x -> endswith(x, ".jl"), readdir(joinpath(@__DIR__, "src", "tutorials"), join = true)))
+examples = sort(
+    filter(
+        x -> endswith(x, ".jl"),
+        readdir(joinpath(@__DIR__, "src", "tutorials"), join = true),
+    ),
+)
 
 for example in examples
     Literate.markdown(
