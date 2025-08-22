@@ -52,11 +52,11 @@ dmapreduce(di, d -> mapslices(sum, d, dims=1), +) ./ dmapreduce(di, x->size(x,1)
 
 Finally, for distributed computation of per-cluster mean, the clustering
 information needs to be distributed as well (Fortunately, that is easy, because
-the distributed `mapToGigaSOM` does exactly that).
+the distributed `assign` does exactly that).
 
 First, compute the clustering:
 ```julia
-mapping = mapToGigaSOM(som, di)
+mapping = assign(som, di)
 dtransform(mapping, m -> metaClusters[m])
 ```
 

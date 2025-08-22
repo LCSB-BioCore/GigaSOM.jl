@@ -1,19 +1,19 @@
 
 # Tutorial 2: Working with cytometry data
 
-You can load any FCS file using [`loadFCS`](@ref) function. For example, the
+You can load any FCS file using [`load_fcs`](@ref) function. For example, the
 Levine dataset ([obtainable here](https://flowrepository.org/id/FR-FCM-ZZPH))
 may be loaded as such:
 
 ```
-params, data = loadFCS("Levine_13dim.fcs")
+params, data = load_fcs("Levine_13dim.fcs")
 ```
 
 `params` will now contain the list of FCS parameters; you can parse a lot of
-interesting information from it using the [`getMetaData`](@ref) function:
+interesting information from it using the [`fcs_column_metadata`](@ref) function:
 
 ```julia
-getMetaData(params)
+fcs_column_metadata(params)
 ```
 
 ```
@@ -45,10 +45,10 @@ the `label` column that contains `NaN` values:
 ```
 
 data = data[:,1:13]
-som = initGigaSOM(data, 16, 16)
-som = trainGigaSOM(som, data)
-clusters = mapToGigaSOM(som, data)
-e = embedGigaSOM(som, data)
+som = init(data, 16, 16)
+som = train(som, data)
+clusters = assign(som, data)
+e = embed(som, data)
 
 # ... save/plot results, etc...
 ```
@@ -79,7 +79,7 @@ the function will handle the rest.
 
 The result `datainfo` carries informaton about your selected dataset name and
 its distribution among the cluster. It can be used just as the "data" parameter
-in all SOM-related functions again; e.g. as `trainGigaSOM(som, datainfo)`.
+in all SOM-related functions again; e.g. as `train(som, datainfo)`.
 
 The following example exploits the possibility to actually split the data, and
 processes the Levine dataset parallelly on 2 workers:
@@ -92,8 +92,8 @@ addprocs(2)                 # add any number of CPUs/tasks/workers you have avai
 datainfo = loadFCSSet(:levine, ["Levine_13dim.fcs"]) # add more files as needed
 
 dselect(datainfo, Vector(1:13))   # select columns that contain expressions (column 14 contains labels)
-som = initGigaSOM(datainfo, 20, 20)
-som = trainGigaSOM(som, datainfo)
+som = init(datainfo, 20, 20)
+som = train(som, datainfo)
 ```
 
 To prevent memory overload of the "master" computation node, the results of all
@@ -101,7 +101,7 @@ per-cell operations are also stored in distributed datainfo objects. In this
 case, the following code does the embedding, but leaves the resulting data
 safely scattered among the cluster:
 ```julia
-e = embedGigaSOM(som, datainfo)
+e = embed(som, datainfo)
 ```
 
 If you are sure you have enough RAM, you can collect the data to the master
@@ -175,7 +175,7 @@ _, fcsParams = loadFCSHeader(md[1, :file_name])
 
 Continue with extracting marker names using the prepared functions:
 ```julia
-_, fcsAntigens = getMarkerNames(getMetaData(fcsParams))
+_, fcsAntigens = getMarkerNames(fcs_column_metadata(fcsParams))
 ```
 
 Now, see which antigens we want to use (assume we want only the lineage markers):
@@ -224,17 +224,17 @@ With the data prepared, running the SOM algorithm is straightforward:
 
 ```julia
 # randomly initialize the SOM
-som = initGigaSOM(di, 16, 16)
+som = init(di, 16, 16)
 
 # train the SOM for 20 epochs (10 is default, but nothing will happen if the
 # epochs are slightly overdone)
-som = trainGigaSOM(som, di, epochs = 20)
+som = train(som, di, epochs = 20)
 ```
 
 Finally, calculate the clustering:
 
 ```julia
-somClusters = mapToGigaSOM(som, di)
+somClusters = assign(som, di)
 ```
 
 ### FlowSOM-style metaclustering
@@ -257,10 +257,10 @@ metaClusters =
 ```
 
 The `metaClusters` represent membership of the SOM codes in cluster; these can
-be expanded to membership of all cells using [`mapToGigaSOM`](@ref):
+be expanded to membership of all cells using [`assign`](@ref):
 
 ```julia
-mapping = gather_array(mapToGigaSOM(som, di), free=true)
+mapping = gather_array(assign(som, di), free=true)
 clusters = metaClusters[mapping]
 ```
 

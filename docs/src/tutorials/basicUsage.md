@@ -12,14 +12,14 @@ function on the data.
 
 The main functions, listed by category:
 
-- [`loadFCS`](@ref) and [`loadFCSSet`](@ref) for loading the data
-- [`getMetaData`](@ref) and [`getMarkerNames`](@ref) for accessing the
+- [`load_fcs`](@ref) and [`load_fcs_distributed`](@ref) for loading the data
+- [`fcs_column_metadata`](@ref) and [`getMarkerNames`](@ref) for accessing the
   information about data columns stored in FCS files
 - [`dselect`](@ref), [`dtransform_asinh`](@ref), [`dscale`](@ref) and similar
   functions for transforming, scaling and preparing the data
-- [`initGigaSOM`](@ref) for initializing the self-organizing map,
-  [`trainGigaSOM`](@ref) for running the SOM training, [`mapToGigaSOM`](@ref)
-  for classification using the trained SOM, and [`embedGigaSOM`](@ref) for
+- [`init`](@ref) for initializing the self-organizing map,
+  [`train`](@ref) for running the SOM training, [`assign`](@ref)
+  for classification using the trained SOM, and [`embed`](@ref) for
   dimensionality reduction to 2D
 
 Multiprocessing is done using the `Distributed` package -- if you add
@@ -63,8 +63,8 @@ d = randn(10000,4) .+ rand(0:1, 10000, 4).*10
 The SOM (of size 20x20) is created and trained as such:
 
 ```julia
-som = initGigaSOM(d, 20, 20)
-som = trainGigaSOM(som, d)
+som = init(d, 20, 20)
+som = train(som, d)
 ```
 
 (Note that SOM initialization is randomized; if you want to get the same
@@ -94,7 +94,7 @@ som.codes
 This information can be used to categorize the dataset into clusters:
 
 ```julia
-mapToGigaSOM(som, d)
+assign(som, d)
 ```
 
 In the result, `index` is a cluster ID for the original datapoint from `d` at
@@ -120,7 +120,7 @@ Finally, you can use EmbedSOM dimensionality reduction to convert all
 multidimensional points to 2D; which can eventually be used to create a
 good-looking 2D scatterplot.
 ```julia
-e = embedGigaSOM(som,d)
+e = embed(som,d)
 ```
 
 ```
