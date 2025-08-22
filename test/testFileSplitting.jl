@@ -1,4 +1,4 @@
-import GigaSOM: read_fcs_sizes
+import GigaSOM: read_fcs_sizes, fcs_filevector_distribute
 
 @testset "File splitting" begin
 
