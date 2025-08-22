@@ -206,8 +206,10 @@ function filevector_distribute(
 )::Dinfo
     dmap(
         slices,
-        (slice) ->
-            Base.eval(Main, :($name = collect_slice((i) -> fill(i, $sizes[i]), $slice))),
+        (slice) -> Base.eval(
+            Main,
+            :($name = GigaSOM.collect_slice((i) -> fill(i, $sizes[i]), $slice)),
+        ),
         pids,
     )
     return Dinfo(name, pids)

@@ -35,9 +35,6 @@ export clean_names!
 $(TYPEDSIGNATURES)
 
 Collect the meta data information in a more user friendly format.
-
-# Arguments:
-- `f`: input structure with `.params` and `.data` fields
 """
 function fcs_column_metadata(meta::Dict{String,String})::DataFrame
 
