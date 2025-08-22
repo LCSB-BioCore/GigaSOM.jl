@@ -1,3 +1,5 @@
+import GigaSOM: read_fcs_sizes
+
 @testset "File splitting" begin
 
     W = addprocs(8)

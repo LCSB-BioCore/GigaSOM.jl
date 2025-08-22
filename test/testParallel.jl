@@ -17,7 +17,7 @@
 
     winners = assign(som, pbmc8_data)
 
-    embed = embed(som, pbmc8_data)
+    e = embed(som, pbmc8_data)
 
     @testset "Check results" begin
         codes = som.codes
@@ -25,7 +25,7 @@
 
         dfCodes = DataFrame(codes, :auto)
         rename!(dfCodes, Symbol.(antigens))
-        dfEmbed = DataFrame(embed, :auto)
+        dfEmbed = DataFrame(e, :auto)
         CSV.write(genDataPath * "/parallelDfCodes.csv", dfCodes)
         CSV.write(genDataPath * "/parallelWinners.csv", winners)
         CSV.write(genDataPath * "/parallelEmbedded.csv", dfEmbed)

@@ -131,7 +131,7 @@ function load_fcs_distributed(
             Main,
             :(
                 begin
-                    $name = vcollect_slice(
+                    $name = GigaSOM.vcollect_slice(
                         (i) -> last(
                             $postLoad(
                                 load_fcs($fns[i]; applyCompensation = $applyCompensation),
@@ -278,7 +278,7 @@ function load_csv_distributed(
             Main,
             :(
                 begin
-                    $name = vcollect_slice(
+                    $name = GigaSOM.vcollect_slice(
                         (i) -> $postLoad(load_csv($fns[i]; $csvargs...), i),
                         $slice,
                     )

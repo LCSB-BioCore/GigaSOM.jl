@@ -113,7 +113,7 @@ $(TYPEDSIGNATURES)
 Return a "bubble" (spherical) distribution kernel.
 
 """
-kernel_bubble(x, r::Float64) = bubbleKernelSqScalar.(x .^ 2, r^2)
+kernel_bubble(x, r::Float64) = bubble_kernel_squared_scalar.(x .^ 2, r^2)
 
 export kernel_bubble
 

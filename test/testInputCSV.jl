@@ -1,4 +1,6 @@
 
+import GigaSOM: read_csv_size, read_csv_sizes
+
 @testset "CSV loading" begin
     files = [refDataPath * "/refBatchDfCodes.csv", refDataPath * "/refParallelDfCodes.csv"]
 

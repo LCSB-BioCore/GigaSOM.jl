@@ -1,4 +1,6 @@
 
+import GigaSOM: load_fcs_header
+
 # This loads the PBMC8 dataset that is used for later tests
 
 checkDir()

@@ -20,7 +20,7 @@
 
     winners = assign(som, pbmc8_data)
 
-    embed = embed(som, pbmc8_data, k = 10, smooth = 0.1, adjust = 2.3, m = 4.5)
+    e = embed(som, pbmc8_data, k = 10, smooth = 0.1, adjust = 2.3, m = 4.5)
 
     @testset "Check results" begin
         codes = som.codes
@@ -28,7 +28,7 @@
 
         dfCodes = DataFrame(codes, :auto)
         rename!(dfCodes, Symbol.(antigens))
-        dfEmbed = DataFrame(embed, :auto)
+        dfEmbed = DataFrame(e, :auto)
         CSV.write(genDataPath * "/batchDfCodes.csv", dfCodes)
         CSV.write(genDataPath * "/batchWinners.csv", winners)
         CSV.write(genDataPath * "/batchEmbedded.csv", dfEmbed)

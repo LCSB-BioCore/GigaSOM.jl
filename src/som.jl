@@ -156,12 +156,12 @@ Overload of `train` for simple DataFrames and matrices. This slices the
 data, distributes them to the workers, and runs normal `train`. Data is
 `unscatter`d after the computation.
 """
-function train(som::SOM, train; kwargs...)
+function train(som::SOM, train_data; kwargs...)
 
-    train = Matrix{Float64}(train)
+    train_data = Matrix{Float64}(train_data)
 
     #this slices the data into parts and and sends them to workers
-    dInfo = scatter_array(:GigaSOMtrainDataVar, train, workers())
+    dInfo = scatter_array(:GigaSOMtrainDataVar, train_data, workers())
     som_res = train(som, dInfo; kwargs...)
     unscatter(dInfo)
     return som_res
@@ -272,4 +272,4 @@ $(TYPEDSIGNATURES)
 Convert iteration ID and epoch number to relative time in training.
 """
 scaled_epoch_time(iteration::Int64, epochs::Int64) =
-    Float64(iteration - 1) / Float64(max(epochs, 1))
+    Float64(iteration - 1) / Float64(max(epochs - 1, 1))

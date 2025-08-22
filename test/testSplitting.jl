@@ -1,4 +1,6 @@
 
+import GigaSOM: slicesof, vcollect_slice
+
 @testset "Dataset splitting helpers" begin
 
     @testset "slice computation" begin
