@@ -56,7 +56,7 @@ using GigaSOM
 
 import Random #src
 Random.seed!(12345) #src
-d = randn(10000,4) .+ rand(0:1, 10000, 4).*10
+d = randn(10000,4) .+ rand(0:1, 10000, 4).*10;
 
 # The SOM (of size 20×20) is created and trained as such:
 
@@ -75,7 +75,7 @@ som.codes
 
 # This information can be used to categorize the dataset into clusters:
 
-assign(som, d)
+assign(som, d);
 
 # In the result, `index` is a cluster ID for the original datapoint from `d` at
 # the same row.  (As in the previous case, your numbers may differ.)
@@ -83,7 +83,7 @@ assign(som, d)
 # Finally, you can use EmbedSOM dimensionality reduction to convert all
 # multidimensional points to 2D; which can eventually be used to create a
 # good-looking 2D scatterplot.
-e = embed(som, d)
+e = embed(som, d);
 
 # The 2D coordinates may be plotted using any standard plotting library. In the
 # following example we show how to do that with `Gadfly`:

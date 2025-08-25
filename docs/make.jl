@@ -15,7 +15,7 @@ for example in examples
     )
 end
 
-example_mds = first.(splitext.(basename.(examples))) .* ".md"
+tutorial_mds = first.(splitext.(basename.(examples))) .* ".md"
 
 withenv("COLUMNS" => 150) do
     makedocs(
@@ -26,19 +26,21 @@ withenv("COLUMNS" => 150) do
             assets = ["assets/gigasomlogotransp.ico"],
         ),
         sitename = "GigaSOM.jl",
-        linkcheck = false,
         pages = [
             "Home" => "index.md",
             "Background" => "background.md",
-            "Tutorials" => example_mds,
+            "Tutorials" => [
+                "Contents" => "tutorials.md"
+                tutorial_mds
+            ],
             "Tutorial (old)" => [ # TODO remove
-                "Introduction" => "tutorials-old/basicUsage.md",
                 "Cytometry data" => "tutorials-old/processingFCSData.md",
                 "Advanced distributed processing" => "tutorials-old/distributedProcessing.md",
                 "Conclusion" => "tutorials-old/whereToGoNext.md",
             ],
             "Reference" => "reference.md",
         ],
+        warnonly = [:linkcheck, :cross_references, :missing_docs], #TODO fix
     )
 end
 
