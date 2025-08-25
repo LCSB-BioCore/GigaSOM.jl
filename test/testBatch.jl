@@ -30,7 +30,7 @@
         rename!(dfCodes, Symbol.(antigens))
         dfEmbed = DataFrame(e, :auto)
         CSV.write(genDataPath * "/batchDfCodes.csv", dfCodes)
-        CSV.write(genDataPath * "/batchWinners.csv", winners)
+        CSV.write(genDataPath * "/batchWinners.csv", DataFrame(index = winners))
         CSV.write(genDataPath * "/batchEmbedded.csv", dfEmbed)
 
         #load the ref data

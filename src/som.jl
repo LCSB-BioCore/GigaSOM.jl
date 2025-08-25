@@ -243,9 +243,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Overload of `assign` for simple DataFrames and matrices. This slices the
-data using `DistributedArrays`, sends them the workers, and runs normal
-`assign`. Data is `unscatter`d after the computation.
+Overload of `assign` for simple data such as DataFrames and matrices. This
+slices the data using `DistributedArrays`, sends them the workers, and runs
+normal `assign`. Data is `unscatter`d after the computation.
 """
 function assign(som::SOM, data; knnTreeFun = BruteTree, metric = Euclidean())
 
@@ -261,7 +261,7 @@ function assign(som::SOM, data; knnTreeFun = BruteTree, metric = Euclidean())
     res = gather_array(rInfo)
     unscatter(dInfo)
     unscatter(rInfo)
-    return DataFrame(index = res)
+    return res
 end
 
 export assign

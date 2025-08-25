@@ -27,7 +27,7 @@
         rename!(dfCodes, Symbol.(antigens))
         dfEmbed = DataFrame(e, :auto)
         CSV.write(genDataPath * "/parallelDfCodes.csv", dfCodes)
-        CSV.write(genDataPath * "/parallelWinners.csv", winners)
+        CSV.write(genDataPath * "/parallelWinners.csv", DataFrame(index = winners))
         CSV.write(genDataPath * "/parallelEmbedded.csv", dfEmbed)
 
         # load the ref data
