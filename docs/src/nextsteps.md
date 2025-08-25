@@ -20,4 +20,4 @@ the most frequently used ones:
   neighbors (`k`) and smoothing of the neighborhood (`smooth`) of
   [`embed`](@ref).
 - For plotting of really huge data, you may want to try
-  [GigaScatter](https://github.com/LCSB-BioCore/GigaScatter.jl).
+  [GigaScatter.jl](https://github.com/LCSB-BioCore/GigaScatter.jl).

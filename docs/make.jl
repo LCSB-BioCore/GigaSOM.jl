@@ -33,11 +33,7 @@ withenv("COLUMNS" => 150) do
                 "Contents" => "tutorials.md"
                 tutorial_mds
             ],
-            "Tutorial (old)" => [ # TODO remove
-                "Cytometry data" => "tutorials-old/processingFCSData.md",
-                "Advanced distributed processing" => "tutorials-old/distributedProcessing.md",
-                "Conclusion" => "tutorials-old/whereToGoNext.md",
-            ],
+            "Further reading" => "nextsteps.md",
             "Reference" => "reference.md",
         ],
         warnonly = [:linkcheck, :cross_references, :missing_docs], #TODO fix
