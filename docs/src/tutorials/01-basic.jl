@@ -54,6 +54,8 @@ using GigaSOM
 # code generates a 4D hypercube of "size" 10 with gaussian clusters at the
 # cube's vertices:
 
+import Random #src
+Random.seed!(12345) #src
 d = randn(10000,4) .+ rand(0:1, 10000, 4).*10
 
 # The SOM (of size 20×20) is created and trained as such:

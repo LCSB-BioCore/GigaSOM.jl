@@ -14,37 +14,23 @@ If you use GigaSOM.jl and want to refer to it in your work, use the following ci
 
 # How to get started
 
-## Prerequisites and requirements
-
-- **Operating system**: Use Linux (Debian, Ubuntu or centOS), MacOS, or Windows 10 as your operating system. GigaSOM has been tested on these systems.
-- **Julia language**: In order to use GigaSOM, you need to install Julia 1.0 or higher. You can find the download and installation instructions for Julia [here](https://julialang.org/downloads/).
-- **Hardware requirements**: GigaSOM runs on any hardware that can run Julia, and can easily use resources from multiple computers interconnected by network. For processing large datasets, you require to ensure that the total amount of available RAM on all involved computers is larger than the data size.
-
-:bulb: If you are new to Julia, it is adviseable to [familiarize youself with
-the environment
-first](https://docs.julialang.org/en/v1/manual/getting-started/).  Use the full
-Julia [documentation](https://docs.julialang.org) to solve various possible
-language-related problems, and the [Julia package manager
-docs](https://julialang.github.io/Pkg.jl/v1/getting-started/) to solve
-installation-related difficulties.
+As a major prerequisite, you will need to be able to run [Julia](https://julialang.org/). The environment is quite similar to other languages (R, Python, Matlab) and it is usually quite easy to start by following the [official user guide]().
 
 ## Installation
 
-Using the Julia package manager to install GigaSOM is easy -- after starting Julia, type:
+To install Julia, you can [download it from the official website](https://julialang.org/downloads/) or use your system's package manager to install one. Aim for using Julia version at least 1.6.
 
+To install GigaSOM.jl, start Julia and type:
 ```julia
 import Pkg; Pkg.add("GigaSOM");
 ```
 
-> All these commands should be run from Julia at the `julia>` prompt.
-
-Then you can load the GigaSOM package and start using it:
-
+After the installation finishes, you should be able to load GigaSOM package using:
 ```julia
 using GigaSOM
 ```
 
-The first loading of the GigaSOM package may take several minutes to complete due to precompilation of the sources, especially on a fresh Julia install.
+The first loading of the GigaSOM package may take some time (a few minutes) to complete due to precompilation of the sources, especially if your Julia installation is new.
 
 ### Test the installation
 
@@ -62,7 +48,7 @@ global_logger(ConsoleLogger(stderr, Logging.Debug))
 
 ## How to use GigaSOM
 
-A comprehensive documentation is [available online](https://lcsb-biocore.github.io/GigaSOM.jl/); several [introductory tutorials](https://lcsb-biocore.github.io/GigaSOM.jl/latest/tutorials/basicUsage/) of increasing complexity are also included.
+A comprehensive documentation is [available online](https://lcsb-biocore.github.io/GigaSOM.jl/); several [introductory tutorials](https://lcsb-biocore.github.io/GigaSOM.jl/latest/tutorials/) of increasing complexity are also included.
 
 A very basic dataset (Levine13 from [FR-FCM-ZZPH](https://flowrepository.org/id/FR-FCM-ZZPH)) can be loaded, clustered and visualized as such:
 
@@ -98,7 +84,3 @@ savePNG("Levine13-CD4.png",
 The output may look like this (blue is negative expresison, red is positive):
 
 ![Levine13 embedding with CD4 highlighted](docs/src/assets/Levine13-CD4.png "Levine13/CD4")
-
-## Feedback, issues, questions
-
-Please follow the [contributing guide](.github/CONTRIBUTING.md) when you have questions, want to raise issues, or just want to leave us some feedback!
