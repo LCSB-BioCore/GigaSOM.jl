@@ -21,7 +21,7 @@ fcs_column_metadata(params)
 # it just as in the previous tutorial, with one exception- we start with
 # cutting off the `label` column that contains `NaN` values:
 
-data = data[:,1:13]
+data = data[:, 1:13]
 som = init(data, 16, 16)
 som = train(som, data)
 clusters = assign(som, data)
@@ -120,8 +120,8 @@ end
 # actual content using the XLSX package:
 
 using XLSX
-md = GigaSOM.DataFrame(readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes=true)...)
-panel = GigaSOM.DataFrame(readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes=true)...)
+md = GigaSOM.DataFrame(readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes = true)...)
+panel = GigaSOM.DataFrame(readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes = true)...)
 
 # After that, we can get the parameter structure from the first FCS files:
 _, fcsParams = read_fcs_header(md[1, :file_name])
@@ -131,7 +131,7 @@ _, fcsAntigens = fcs_header_marker_names(fcs_column_metadata(fcsParams))
 
 # Now, TO see which antigens we want to use (assume we want only the lineage
 # markers):
-antigens = panel[panel[:,:Lineage].==1, :Antigen]
+antigens = panel[panel[:, :Lineage] .== 1, :Antigen]
 
 # Finally, it is often useful to make the names a bit more Julia-friendly and
 # predictable:
@@ -143,7 +143,7 @@ clean_names!(fcsAntigens)
 # Now we have the vector of `fcsAntigens` that the FCS files store, and list of
 # `antigens` that we want to analyze. We continue by loading the data, reducing
 # it to the desired antigens and transforming it a bit:
-di = load_fcs_distributed(:pbmc8, md[:,:file_name])
+di = load_fcs_distributed(:pbmc8, md[:, :file_name])
 
 # (If data distribution and parallelization is required, you must add parallel
 # workers using `addprocs` **before** this step.)
@@ -182,10 +182,10 @@ som_clusters = assign(som, di)
 
 using Clustering
 import Distances
-metaClusters =
-  cutree(k=10,
-         hclust(linkage=:average,
-            GigaSOM.distance_matrix(Distances.Euclidean())(som.codes)))
+metaClusters = cutree(
+    k = 10,
+    hclust(linkage = :average, GigaSOM.distance_matrix(Distances.Euclidean())(som.codes)),
+)
 
 # The `metaClusters` represent membership of the SOM codes in cluster; these
 # can be expanded to membership of all cells using [`assign`](@ref):

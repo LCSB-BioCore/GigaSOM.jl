@@ -1,6 +1,4 @@
 
 @testset "Aqua.jl" begin
-  Aqua.test_all(
-    GigaSOM;
-  )
+    Aqua.test_all(GigaSOM;)
 end

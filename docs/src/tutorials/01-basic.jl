@@ -56,7 +56,7 @@ using GigaSOM
 
 import Random #src
 Random.seed!(12345) #src
-d = randn(10000,4) .+ rand(0:1, 10000, 4).*10;
+d = randn(10000, 4) .+ rand(0:1, 10000, 4) .* 10;
 
 # The SOM (of size 20×20) is created and trained as such:
 
