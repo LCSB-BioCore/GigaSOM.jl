@@ -88,12 +88,12 @@ e = embed(som, d)
 # The 2D coordinates may be plotted using any standard plotting library. In the
 # following example we show how to do that with `Gadfly`:
 
-#TODO
-#Pkg.add("Gadfly")
-#Pkg.add("Cairo")
-#using Gadfly
-#import Cairo
-#draw(PNG("test.png",20cm,20cm), plot(x=e[:,1], y=e[:,2], color=d[:,1]))
+# TODO
+# Pkg.add("Gadfly")
+# Pkg.add("Cairo")
+# using Gadfly
+# import Cairo
+# draw(PNG("test.png",20cm,20cm), plot(x=e[:,1], y=e[:,2], color=d[:,1]))
 
 # The output shows all 16 ($16 = 2^d$ where $d =4$), colored by their position
 # in the 1st dimension in the original space.
