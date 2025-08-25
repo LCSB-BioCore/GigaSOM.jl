@@ -1,4 +1,0 @@
-
-# Basic tutorial
-
-println("test")
