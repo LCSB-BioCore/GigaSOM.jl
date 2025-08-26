@@ -8,7 +8,15 @@
 using GigaSOM
 import Downloads: download
 
+isfile("Levine_13dim.fcs") || download(
+    "https://github.com/lmweber/benchmark-data-Levine-13-dim/raw/refs/heads/master/data/Levine_13dim.fcs",
+    "Levine_13dim.fcs",
+)
+
 params, data = load_fcs("Levine_13dim.fcs")
+
+@test length(params)==111 #src
+@test size(data)==(167044, 14) #src
 
 # `params` will now contain the list of FCS parameters; you can parse a lot of
 # interesting information from it using the [`fcs_column_metadata`](@ref)
@@ -16,13 +24,15 @@ params, data = load_fcs("Levine_13dim.fcs")
 
 fcs_column_metadata(params)
 
+@test fcs_column_metadata(params).N[14] == "label" #src
+
 # `data` is a matrix with cell expressions, one cell per row, one marker per
 # column. If you want to run SOM analysis on it, you can cluster and visualize
 # it just as in the previous tutorial, with one exception- we start with
 # cutting off the `label` column that contains `NaN` values:
 
 data = data[:, 1:13]
-som = init(data, 16, 16)
+som = init(data, 16, 16, seed = 12345)
 som = train(som, data)
 clusters = assign(som, data)
 e = embed(som, data)
@@ -58,7 +68,7 @@ datainfo = load_fcs_distributed(:levine, ["Levine_13dim.fcs"])
 # The following example exploits the possibility to actually split the data,
 # and processes the Levine dataset parallelly on 2 workers:
 
-using Distributed
+using Distributed, DistributedData
 addprocs(2)                 # add any number of CPUs/tasks/workers you have available
 @everywhere using GigaSOM   # load GigaSOM also on the workers
 

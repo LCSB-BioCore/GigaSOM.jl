@@ -22,19 +22,24 @@ Aqua = "0.8"
 CSV = "^0.5.12, 0.6, 0.7, 0.8, 0.10"
 DataFrames = "0.20, 0.21, 0.22, 1.0"
 Distances = "^0.8.2, 0.9, 0.10"
+Distributed = "1.6"
 DistributedData = "0.1.4, 0.2"
 Distributions = "^0.21.1, 0.22, 0.23, 0.24, 0.25"
 DocStringExtensions = "0.9.5"
+Downloads = "1.6"
 FCSFiles = "^0.1.1, 0.2"
 FileIO = "^1.0.7"
 JSON = "0.21"
 NearestNeighbors = "^0.4.3"
+Random = "1.6"
+Serialization = "1.6"
 StableRNGs = "1.0"
 XLSX = "0.8"
 julia = "1"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 SHA = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -42,4 +47,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [targets]
-test = ["Aqua", "JSON", "LinearAlgebra", "SHA", "Test", "XLSX"]
+test = ["Aqua", "Downloads", "JSON", "LinearAlgebra", "SHA", "Test", "XLSX"]

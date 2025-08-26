@@ -64,32 +64,43 @@ dmapreduce(di, d -> mapslices(sum, d, dims = 1), +) ./ dmapreduce(di, x->size(x,
 # because the distributed `assign` does exactly that).
 # 
 # First, compute the clustering:
+som = init(di, 10, 10, seed = 12345)
+train(som, di)
 mapping = assign(som, di)
+
+# Given a metaclustering (as produced in the [flow cytometry
+# tutorial](02-flow-data.md), we can transform the mapping to SOM clusters to
+# the mapping to metaclusters. (For simplicity, we use a random metaclustering
+# here.)
+
+meta_clusters = rand(1:5, 100)
 dtransform(mapping, m -> meta_clusters[m])
 
-# Now, the distributed computation is run on 2 scattered datasets. We employ a
-# helper function `mapbuckets` which provides bucket-wise execution of a
-# function, in a way very similar to `mapslices`. (In the example, we actually
-# use `catmapbuckets` that concatenates the result into a nice array.) The
-# following code produces a matrix of tuples `(sum, count)`, for separate
-# clusters (in rows) and data columns (in columns):
+# The computation is automatically run over the 2 distributed partitions of the
+# dataset.
+#
+# To aggregate some statistic information about the clusters, we use a helper
+# function `mapbuckets` which provides bucket-wise execution of any
+# statistics-generating function, in a way very similar to `mapslices`. (In the
+# example, we actually use `catmapbuckets` that concatenates the result into a
+# nice array.) The following code produces a matrix of tuples `(sum, count)`,
+# for separate clusters (in rows) and data columns (in columns):
 
 sumscounts = dmapreduce(
     [di, mapping],
-    (d, mapping) ->
-        catmapbuckets((_, clData) -> (sum(clData), length(clData)), d, 10, mapping),
+    (d, mapping) -> DistributedData.catmapbuckets(
+        (_, clust) -> (sum(clust), length(clust)),
+        d,
+        5,
+        mapping,
+    ),
     (a, b) -> (((as, al), (bs, bl)) -> ((as+bs), (al+bl))).(a, b),
 )
 
-# With a bit of Julia, this can be aggregated to actual per-cluster means:
-
+# With a bit of extra programming, the gathered information can be aggregated
+# to produce actual per-cluster means:
 cluster_means = [sum/count for (sum, count) in sumcounts]
 
-# Since we used the data from the hypercube dataset from the beginning of the
-# tutorial, you should be able to recognize several clusters that perfectly
-# match the hypercube vertices (although not all, because `k = 10` is not
-# enough to capture all of the actual 16 existing clusters)
-#
 # Finally, we can remove the temporary data from workers to create free memory
 # for other analyses:
 unscatter(mapping)
