@@ -49,11 +49,11 @@ dmapreduce(di, sum, +) / dmapreduce(di, length, +)
 #   processed by the map function are successively joined in pairs using this
 #   function, until there is only a single result left. This final result is
 #   also what `dmapreduce` returns.
-# 
+#
 # Above example thus reads: Sum all data on all workers, add up the intermediate
 # results, and divide the final number to the sum of all lengths of data on the
 # workers.
-# 
+#
 # Column-wise mean (as produced by `dstat`) is slightly more useful; we only need
 # to split the computation on columns:
 
@@ -62,7 +62,7 @@ dmapreduce(di, d -> mapslices(sum, d, dims = 1), +) ./ dmapreduce(di, x->size(x,
 # Finally, for distributed computation of per-cluster mean, the clustering
 # information needs to be distributed as well (Fortunately, that is easy,
 # because the distributed `assign` does exactly that).
-# 
+#
 # First, compute the clustering:
 som = init(di, 10, 10, seed = 12345)
 train(som, di)
@@ -106,10 +106,10 @@ cluster_means = [sum/count for (sum, count) in sums_counts]
 unscatter(mapping)
 
 # ## Convenience statistical functions
-# 
+#
 # Notably, several of the most used statistical functions are available in
 # DistributedData.jl in a form that can cope with distributed data.
-# 
+#
 # For example, you can run a distributed median computation as such:
 dmedian(di, [1, 2, 3, 4])
 

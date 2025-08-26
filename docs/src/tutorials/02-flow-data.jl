@@ -102,7 +102,7 @@ e = gather_array(e)
 #
 # 10 cell surface markers (lineage markers) are used to identify different cell
 # populations. The dataset is described in two files:
-# 
+#
 # - `PBMC8_panel.xlsx` (with antigen names categorized as lineage markers and
 #    functional markers)
 # - `PBMC8_metadata.xlsx` (file names, sample IDs, condition IDs and patient
@@ -130,8 +130,11 @@ end
 # actual content using the XLSX package:
 
 import XLSX
-md = GigaSOM.DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes = true)...)
-panel = GigaSOM.DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes = true)...)
+md = GigaSOM.DataFrame(
+    XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes = true)...,
+)
+panel =
+    GigaSOM.DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes = true)...)
 
 # After that, we can get the parameter structure from the first FCS files:
 _, fcsParams = read_fcs_header(md[1, :file_name])
@@ -149,7 +152,7 @@ clean_names!(antigens)
 clean_names!(fcsAntigens)
 
 # ### Load and prepare the data
-# 
+#
 # Now we have the vector of `fcsAntigens` that the FCS files store, and list of
 # `antigens` that we want to analyze. We continue by loading the data, reducing
 # it to the desired antigens and transforming it a bit:
