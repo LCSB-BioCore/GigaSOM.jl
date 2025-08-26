@@ -86,7 +86,7 @@ dtransform(mapping, m -> meta_clusters[m])
 # nice array.) The following code produces a matrix of tuples `(sum, count)`,
 # for separate clusters (in rows) and data columns (in columns):
 
-sumscounts = dmapreduce(
+sums_counts = dmapreduce(
     [di, mapping],
     (d, mapping) -> DistributedData.catmapbuckets(
         (_, clust) -> (sum(clust), length(clust)),
@@ -99,7 +99,7 @@ sumscounts = dmapreduce(
 
 # With a bit of extra programming, the gathered information can be aggregated
 # to produce actual per-cluster means:
-cluster_means = [sum/count for (sum, count) in sumcounts]
+cluster_means = [sum/count for (sum, count) in sums_counts]
 
 # Finally, we can remove the temporary data from workers to create free memory
 # for other analyses:
