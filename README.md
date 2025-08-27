@@ -1,12 +1,27 @@
-![GigaSOM.jl](https://webdav-r3lab.uni.lu/public/GigaSOM/img/logo-GigaSOM.jl.png?maxAge=0)
 
-# GigaSOM.jl <br> Huge-scale, high-performance flow cytometry clustering
+# GigaSOM.jl:Huge-scale, high-performance flow cytometry clustering
 
-GigaSOM is a Julia toolkit for clustering and visualisation of really large cytometry data. Most generally, it can load FCS files, perform transformation and cleaning operations in their contents, run FlowSOM-style clustering, and visualize and export the results. GigaSOM is distributed and parallel in nature, which makes processing huge datasets a breeze -- a hundred of millions of cells with a few dozen parameters can be clustered and visualized in a few minutes.
+GigaSOM is a Julia toolkit for clustering and visualisation of really large datasets from flow cytometry. In overview, it can load FCS files, perform transformation and cleaning operations in their contents, run FlowSOM-style clustering, and visualize and export the results. GigaSOM is distributed and parallel in nature, which makes processing of huge datasets a breeze -- a few hundred of millions of cells with a few dozen parameters may be clustered and visualized in minutes.
 
-| **Documentation** | **Test Coverage** | **CI** | **SciCrunch** |
+[docs-img-stable]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-url-stable]: https://lcsb-biocore.github.io/GigaSOM.jl
+[docs-img-dev]: https://img.shields.io/badge/docs-latest-0af.svg
+[docs-url-dev]: https://lcsb-biocore.github.io/GigaSOM.jl/dev/
+[docs-img-tutorials]: https://img.shields.io/badge/docs-tutorials-0ee.svg
+[docs-img-tutorials]: https://lcsb-biocore.github.io/GigaSOM.jl/stable/tutorials/
+
+[ci-img]: https://github.com/LCSB-BioCore/GigaSOM.jl/actions/workflows/ci.yml/badge.svg?branch=master
+[ci-url]: https://github.com/LCSB-BioCore/GigaSOM.jl/actions/workflows/ci.yml
+
+[cov-img]: https://codecov.io/gh/LCSB-BioCore/GigaSOM.jl/branch/master/graph/badge.svg?token=H3WSWOBD7L
+[cov-url]: https://codecov.io/gh/LCSB-BioCore/GigaSOM.jl
+
+[rrid-img]: https://img.shields.io/badge/RRID-SCR__019020-72c02c
+[rrid-url]: https://scicrunch.org/resolver/RRID:SCR_019020
+
+| **Documentation** | **Test Coverage** | **CI** | **SciCrunch RRID** |
 |:-----------------:|:-----------------:|:-----------------------------------------------------:|:--------:|
-| [![doc](https://img.shields.io/badge/doc-GigaSOM-blue)](http://git.io/GigaSOM.jl) | [![coverage status](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl/coverage.svg?branch=master)](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl?branch=master) | [![linux](https://github.com/LCSB-BioCore/GigaSOM.jl/workflows/CI/badge.svg?branch=master)](https://github.com/LCSB-BioCore/GigaSOM.jl/actions) | [![rrid](https://img.shields.io/badge/RRID-SCR__019020-72c02c)](https://scicrunch.org/resolver/RRID:SCR_019020) |
+| [![stable documentation][docs-img-stable]][docs-url-stable] [![dev documentation][docs-img-dev]][docs-url-dev]  [![tutorials][docs-img-tutorials]][docs-url-tutorials] | [![coverage status][cov-img]][cov-url] | [![CI status][ci-img]][ci-url] | [![rrid][rrid-img]][rrid-url] |
 
 If you use GigaSOM.jl and want to refer to it in your work, use the following citation format (also available as BibTeX in [gigasom.bib](gigasom.bib)):
 
