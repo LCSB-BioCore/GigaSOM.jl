@@ -13,10 +13,11 @@
 # The main functions, listed by category, include:
 #
 # - [`load_fcs`](@ref) and [`load_fcs_distributed`](@ref) for loading the data
-# - [`fcs_column_metadata`](@ref) and [`getMarkerNames`](@ref) for accessing
-#   the information about data columns stored in FCS files
+# - [`fcs_column_metadata`](@ref) and [`fcs_metadata_marker_names`](@ref) for
+#   accessing the information about data columns stored in FCS files
 # - [`dselect`](@ref), [`dtransform_asinh`](@ref), [`dscale`](@ref) and similar
-#   functions for transforming, scaling and preparing the data
+#   functions from `DistributedData.jl` for transforming, scaling and preparing
+#   the data
 # - [`init`](@ref) for initializing the self-organizing map, [`train`](@ref)
 #   for running the SOM training, [`assign`](@ref) for classification using the
 #   trained SOM, and [`embed`](@ref) for dimensionality reduction to 2D
@@ -36,8 +37,8 @@
 # above in fact accept the `Dinfo` as argument, and often return another
 # `Dinfo` that describes the scattered result.
 #
-# Most importantly, using `Dinfo` **prevents memory exhaustion at the
-# master node**, which is a critical feature required to handle huge datasets.
+# Most importantly, using `Dinfo` *prevents memory exhaustion at the
+# master node*, which is a critical feature required to handle huge datasets.
 #
 # You can always collect the scattered data back into a matrix (if it fits to
 # your RAM) with `gather_array`, and utilize many other functions to manipulate
@@ -73,9 +74,15 @@ som = train(som, d)
 
 som.codes
 
+@test size(som.grid) == (400, 2) #src
+@test size(som.codes) == (400, 4) #src
+@test isapprox(sum(som.codes), 8560.881975246337) #src
+
 # This information can be used to categorize the dataset into clusters:
 
 assign(som, d)
+
+@test length(assign(som, d)) == 10000 #src
 
 # In the result, `index` is a cluster ID for the original datapoint from `d` at
 # the same row.  (As in the previous case, your numbers may differ.)
@@ -84,6 +91,8 @@ assign(som, d)
 # multidimensional points to 2D; which can eventually be used to create a
 # good-looking 2D scatterplot.
 e = embed(som, d)
+
+@test isapprox(sum(e, dims = 1), [93072.76296681864 94834.6404517213]) #src
 
 # The 2D coordinates may be plotted using any standard plotting library. In the
 # following example we show how to do that with `Gadfly`:
