@@ -1,4 +1,8 @@
 
+<div align="center">
+    <img src="docs/src/assets/logo.svg?maxAge=0" width="20%">
+</div>
+
 # GigaSOM.jl:Huge-scale, high-performance flow cytometry clustering
 
 GigaSOM is a Julia toolkit for clustering and visualisation of really large datasets from flow cytometry. In overview, it can load FCS files, perform transformation and cleaning operations in their contents, run FlowSOM-style clustering, and visualize and export the results. GigaSOM is distributed and parallel in nature, which makes processing of huge datasets a breeze -- a few hundred of millions of cells with a few dozen parameters may be clustered and visualized in minutes.
@@ -7,8 +11,8 @@ GigaSOM is a Julia toolkit for clustering and visualisation of really large data
 [docs-url-stable]: https://lcsb-biocore.github.io/GigaSOM.jl
 [docs-img-dev]: https://img.shields.io/badge/docs-latest-0af.svg
 [docs-url-dev]: https://lcsb-biocore.github.io/GigaSOM.jl/dev/
-[docs-img-tutorials]: https://img.shields.io/badge/docs-tutorials-0ee.svg
-[docs-img-tutorials]: https://lcsb-biocore.github.io/GigaSOM.jl/stable/tutorials/
+[docs-img-tutorials]: https://img.shields.io/badge/docs-tutorial-0dd.svg
+[docs-url-tutorials]: https://lcsb-biocore.github.io/GigaSOM.jl/stable/tutorials/
 
 [ci-img]: https://github.com/LCSB-BioCore/GigaSOM.jl/actions/workflows/ci.yml/badge.svg?branch=master
 [ci-url]: https://github.com/LCSB-BioCore/GigaSOM.jl/actions/workflows/ci.yml
