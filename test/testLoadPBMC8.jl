@@ -1,5 +1,5 @@
 
-import GigaSOM: load_fcs_header
+import GigaSOM: read_fcs_header
 
 # This loads the PBMC8 dataset that is used for later tests
 
@@ -59,7 +59,7 @@ md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes = t
 panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes = true))
 
 antigens = panel[panel[:, :Lineage] .== 1, :Antigen]
-_, fcsParams = load_fcs_header(md[1, :file_name])
+_, fcsParams = read_fcs_header(md[1, :file_name])
 _, fcsAntigens = fcs_metadata_marker_names(fcs_column_metadata(fcsParams))
 clean_names!(antigens)
 clean_names!(fcsAntigens)

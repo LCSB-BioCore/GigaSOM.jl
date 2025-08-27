@@ -130,17 +130,15 @@ end
 # actual content using the XLSX package:
 
 import XLSX
-md = GigaSOM.DataFrame(
-    XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes = true)...,
-)
-panel =
-    GigaSOM.DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes = true)...)
+using DataFrames
+md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes = true))
+panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes = true))
 
 # After that, we can get the parameter structure from the first FCS files:
-_, fcsParams = read_fcs_header(md[1, :file_name])
+_, fcsParams = GigaSOM.read_fcs_header(md[1, :file_name])
 
 # ...and continue with extracting marker names using the prepared functions:
-_, fcsAntigens = fcs_header_marker_names(fcs_column_metadata(fcsParams))
+_, fcsAntigens = GigaSOM.fcs_metadata_marker_names(fcs_column_metadata(fcsParams))
 
 # Now, TO see which antigens we want to use (assume we want only the lineage
 # markers):

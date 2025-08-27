@@ -3,7 +3,7 @@ $(TYPEDSIGNATURES)
 
 Efficiently extract data offsets and keyword dictionary from an FCS file.
 """
-function load_fcs_header(fn::String)::Tuple{Vector{Int},Dict{String,String}}
+function read_fcs_header(fn::String)::Tuple{Vector{Int},Dict{String,String}}
     open(fn) do io
         offsets = FCSFiles.parse_header(io)
         params = FCSFiles.parse_text(io, offsets[1], offsets[2])
@@ -53,7 +53,7 @@ Load cell counts in many FCS files at once. Useful as input for `slicesof`.
 function read_fcs_sizes(fns::Vector{String})::Vector{Int}
     [(
         begin
-            o, s = load_fcs_header(fn)
+            o, s = read_fcs_header(fn)
             read_fcs_size(o, s)[1]
         end
     ) for fn in fns]
