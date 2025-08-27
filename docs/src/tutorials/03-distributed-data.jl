@@ -64,6 +64,7 @@ dmapreduce(di, d -> mapslices(sum, d, dims = 1), +) ./ dmapreduce(di, x->size(x,
 # because the distributed `assign` does exactly that).
 #
 # First, compute the clustering:
+using GigaSOM
 som = init(di, 10, 10, seed = 12345)
 train(som, di)
 mapping = assign(som, di)
@@ -73,7 +74,10 @@ mapping = assign(som, di)
 # the mapping to metaclusters. (For simplicity, we use a random metaclustering
 # here.)
 
-meta_clusters = rand(1:5, 100)
+import Random
+Random.seed!(12345); # set a seed for reproducibility of rand()
+
+meta_clusters = rand(1:5, 100);
 dtransform(mapping, m -> meta_clusters[m])
 
 # The computation is automatically run over the 2 distributed partitions of the
@@ -101,10 +105,6 @@ sums_counts = dmapreduce(
 # to produce actual per-cluster means:
 cluster_means = [sum/count for (sum, count) in sums_counts]
 
-# Finally, we can remove the temporary data from workers to create free memory
-# for other analyses:
-unscatter(mapping)
-
 # ## Convenience statistical functions
 #
 # Notably, several of the most used statistical functions are available in
@@ -120,14 +120,20 @@ dmedian(di, [1, 2, 3, 4])
 # different clusters. This computes the per-cluster standard deviations of the
 # dataset:
 
-dstat_buckets(di, 10, mapping, [1, 2, 3, 4])[2]
+(means, sds) = dstat_buckets(di, 5, mapping, [1, 2, 3, 4])
 
 # In the result, we can count 4 "nice" clusters, and 6 clusters that span 2 of
 # the original clusters, totally giving 16. (Hypercube validation succeeded!)
 #
 # A similar bucketed version is available for computation of medians:
-dmedian_buckets(di, 10, mapping, [1, 2, 3, 4])
+dmedian_buckets(di, 5, mapping, [1, 2, 3, 4])
 
 # Note that the cluster medians are similar to means, except for the cases when
 # the cluster is formed by 2 actual data aggregations (e.g. on the second row),
 # where medians dodge the empty space in the middle of the data:
+
+# ## Cleaning up
+
+# Finally, we can remove the temporary data from workers to create free memory
+# for other analyses:
+unscatter(mapping)
