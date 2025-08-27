@@ -3,7 +3,7 @@
     <img src="docs/src/assets/logo.svg?maxAge=0" width="20%">
 </div>
 
-# GigaSOM.jl:Huge-scale, high-performance flow cytometry clustering
+# GigaSOM.jl: Huge-scale, high-performance flow cytometry clustering
 
 [docs-img-stable]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-url-stable]: https://lcsb-biocore.github.io/GigaSOM.jl
