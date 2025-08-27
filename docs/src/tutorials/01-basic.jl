@@ -15,9 +15,9 @@
 # - [`load_fcs`](@ref) and [`load_fcs_distributed`](@ref) for loading the data
 # - [`fcs_column_metadata`](@ref) and [`fcs_metadata_marker_names`](@ref) for
 #   accessing the information about data columns stored in FCS files
-# - [`dselect`](@ref), [`dtransform_asinh`](@ref), [`dscale`](@ref) and similar
-#   functions from `DistributedData.jl` for transforming, scaling and preparing
-#   the data
+# - `dselect`, `dtransform_asinh`, `dscale` and similar functions from
+#   [`DistributedData.jl`](https://lcsb-biocore.github.io/DistributedData.jl/stable/)
+#   for transforming, scaling and preparing the data
 # - [`init`](@ref) for initializing the self-organizing map, [`train`](@ref)
 #   for running the SOM training, [`assign`](@ref) for classification using the
 #   trained SOM, and [`embed`](@ref) for dimensionality reduction to 2D
@@ -95,14 +95,38 @@ e = embed(som, d)
 @test isapprox(sum(e, dims = 1), [93072.76296681864 94834.6404517213]) #src
 
 # The 2D coordinates may be plotted using any standard plotting library. In the
-# following example we show how to do that with `Gadfly`:
+# following example we show how to do that with `Vizagrams.jl`:
 
-# TODO
-# Pkg.add("Gadfly")
-# Pkg.add("Cairo")
-# using Gadfly
-# import Cairo
-# draw(PNG("test.png",20cm,20cm), plot(x=e[:,1], y=e[:,2], color=d[:,1]))
+using Vizagrams, DataFrames
+
+embedded_data = [DataFrame(e, [:x, :y]) DataFrame(d, [:v1, :v2, :v3, :v4])]
+
+draw(
+    Plot(
+        data = embedded_data,
+        x = (field = :x,),
+        y = (field = :y,),
+        color = (field = :v1, scale_range = :YlGnBu),
+        graphic = Circle(r = 1),
+    ),
+    height = 512,
+)
 
 # The output shows all 16 ($16 = 2^d$ where $d =4$), colored by their position
 # in the 1st dimension in the original space.
+#
+# For complete clarity on the underlying data structures, we can also plot the
+# self-organizing map that "describes" the space:
+
+som_data = [DataFrame(som.grid, [:x, :y]) DataFrame(som.codes, [:v1, :v2, :v3, :v4])]
+
+draw(
+    Plot(
+        data = som_data,
+        x = (field = :x,),
+        y = (field = :y,),
+        color = (field = :v1, scale_range = :YlGnBu),
+        graphic = Circle(r = 4),
+    ),
+    height = 512,
+)

@@ -1,6 +1,8 @@
 [deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 GigaSOM = "a03a9c34-069e-5582-a11c-5c984cab887c"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
+Vizagrams = "8c229dad-8b3a-4031-83d6-73545c88426d"

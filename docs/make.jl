@@ -1,21 +1,18 @@
 using Documenter, Literate, GigaSOM
 
-examples = sort(
-    filter(
-        x -> endswith(x, ".jl"),
-        readdir(joinpath(@__DIR__, "src", "tutorials"), join = true),
-    ),
-)
+tutorial_path = joinpath(@__DIR__, "src", "tutorials")
 
-for example in examples
+tutorials = sort(filter(x -> endswith(x, ".jl"), readdir(tutorial_path, join = true)))
+
+for tutorial in tutorials
     Literate.markdown(
-        example,
-        joinpath(@__DIR__, "src"),
+        tutorial,
+        tutorial_path,
         repo_root_url = "https://github.com/LCSB-BioCore/GitaSOM.jl/blob/master",
     )
 end
 
-tutorial_mds = first.(splitext.(basename.(examples))) .* ".md"
+tutorial_mds = "tutorials/" .* first.(splitext.(basename.(tutorials))) .* ".md"
 
 withenv("COLUMNS" => 150) do
     makedocs(
@@ -24,6 +21,9 @@ withenv("COLUMNS" => 150) do
             ansicolor = true,
             canonical = "https://lcsb-biocore.github.io/GigaSOM.jl/stable/",
             assets = ["assets/gigasomlogotransp.ico"],
+            example_size_threshold = nothing,
+            size_threshold_warn = 10 * 1024 * 1024,
+            size_threshold = nothing,
         ),
         sitename = "GigaSOM.jl",
         pages = [
