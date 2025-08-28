@@ -99,20 +99,11 @@ e = embed(som, d)
 # The 2D coordinates may be plotted using any standard plotting library. In the
 # following example we show how to do that with `Vizagrams.jl`:
 
-using Vizagrams, DataFrames
+using AlgebraOfGraphics, DataFrames
 
 embedded_data = [DataFrame(e, [:x, :y]) DataFrame(d, [:v1, :v2, :v3, :v4])]
 
-draw(
-    Plot(
-        data = embedded_data,
-        x = (field = :x,),
-        y = (field = :y,),
-        color = (field = :v1, scale_range = :YlGnBu),
-        graphic = Circle(r = 1),
-    ),
-    height = 512,
-)
+draw(data(embedded_data)*mapping(:x, :y, color = :v1)*visual(Scatter, markersize = 2))
 
 # The output shows all 16 ($16 = 2^d$ where $d =4$), colored by their position
 # in the 1st dimension in the original space.
@@ -122,13 +113,13 @@ draw(
 
 som_data = [DataFrame(som.grid, [:x, :y]) DataFrame(som.codes, [:v1, :v2, :v3, :v4])]
 
-draw(
-    Plot(
-        data = som_data,
-        x = (field = :x,),
-        y = (field = :y,),
-        color = (field = :v1, scale_range = :YlGnBu),
-        graphic = Circle(r = 4),
-    ),
-    height = 512,
-)
+draw(data(som_data)*mapping(:x, :y, color = :v1)*visual(Scatter, markersize = 20))
+
+# To be completely clear about cluster occupancy, we can also compute the
+# assignment counts and highlight them in the plot:
+som_data[!, :count] .= 0
+for i in assign(som, d)
+    som_data[i, :count] += 1
+end
+
+draw(data(som_data)*mapping(:x, :y, color = :v1, markersize = :count)*visual(Scatter))
