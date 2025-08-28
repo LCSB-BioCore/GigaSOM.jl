@@ -37,7 +37,9 @@ som = train(som, expressions)
 clusters = assign(som, expressions)
 e = embed(som, expressions)
 
-# ... etc, you can save the results and plot them as needed.
+# ... etc, you can save the results and plot them as needed. We demonstrate the
+# plotting below.
+
 #
 # ## Working with distributed data
 #
@@ -175,11 +177,29 @@ dscale(di, cols)
 # ### Train a self-organizing map (SOM)
 #
 # With the data prepared, running the SOM algorithm is straightforward:
-som = init(di, 16, 16, seed = 12345)
+som = init(di, 20, 20, seed = 12345)
 som = train(som, di, epochs = 20)
 
 # Finally, we can calculate the clustering:
 som_clusters = assign(som, di)
+
+# Among other, the ability to collect the data also allows us to plot it using
+# general plotting libraries. (With much larger datasets, a more complicated
+# setup is needed where the plotting is done by parts.) In this case, we simply
+# collect the expressions and embedding into a single dataframe and plot them
+# as usual:
+
+using AlgebraOfGraphics, CairoMakie, DataFrames
+
+e = embed(som, di)
+
+plot_data = [DataFrame(gather_array(di), antigens) DataFrame(gather_array(e), [:x, :y])]
+
+draw(
+    data(plot_data)*mapping(:x, :y, color = :CD3)*visual(Scatter, markersize = 2),
+    scales(Color = (; colormap = :RdYlBu)),
+)
+
 
 # ### FlowSOM-style metaclustering
 #
@@ -193,7 +213,7 @@ som_clusters = assign(som, di)
 
 using Clustering
 import Distances
-metaClusters = cutree(
+metaclusters = cutree(
     k = 10,
     hclust(linkage = :average, GigaSOM.distance_matrix(Distances.Euclidean())(som.codes)),
 )
@@ -201,12 +221,19 @@ metaClusters = cutree(
 # The `metaClusters` represent membership of the SOM codes in cluster; these
 # can be expanded to membership of all cells using [`assign`](@ref):
 
-mapping = gather_array(assign(som, di), free = true)
-clusters = metaClusters[mapping]
+clustering = gather_array(assign(som, di), free = true)
+plot_data[!, :cluster] = Symbol.(metaclusters[clustering])
 
-# `clusters` now contain integers from `1` to `10` that classify each cell in
-# the dataset.
-#
-# (The argument `free=true` of `gather_array` automatically removes the
-# distributed data from workers after collecting, which saves their memory for
-# other datasets.)
+# The plot data column `cluster` now contains classification of each cell in
+# the dataset. We can plot it as follows:
+draw(
+    data(plot_data)*mapping(:x, :y, color = :cluster)*visual(
+        Scatter,
+        markersize = 2,
+        colormap = :Set3_10,
+    ),
+)
+
+# (Note: The argument `free=true` of `gather_array` automatically removes the
+# distributed data from workers after collecting, which frees the memory for
+# use with other datasets.)
