@@ -13,10 +13,10 @@ isfile("Levine_13dim.fcs") || download(
     "Levine_13dim.fcs",
 )
 
-params, data = load_fcs("Levine_13dim.fcs")
+params, expressions = load_fcs("Levine_13dim.fcs")
 
 @test length(params)==111 #src
-@test size(data)==(167044, 14) #src
+@test size(expressions)==(167044, 14) #src
 
 # `params` will now contain the list of FCS parameters; you can parse a lot of
 # interesting information from it using the [`fcs_column_metadata`](@ref)
@@ -26,16 +26,16 @@ fcs_column_metadata(params)
 
 @test fcs_column_metadata(params).N[14] == "label" #src
 
-# `data` is a matrix with cell expressions, one cell per row, one marker per
+# `expressions` is a matrix with cell expressions, one cell per row, one marker per
 # column. If you want to run SOM analysis on it, you can cluster and visualize
 # it just as in the previous tutorial, with one exception- we start with
 # cutting off the `label` column that contains `NaN` values:
 
-data = data[:, 1:13]
-som = init(data, 16, 16, seed = 12345)
-som = train(som, data)
-clusters = assign(som, data)
-e = embed(som, data)
+expressions = expressions[:, 1:13]
+som = init(expressions, 16, 16, seed = 12345)
+som = train(som, expressions)
+clusters = assign(som, expressions)
+e = embed(som, expressions)
 
 # ... etc, you can save the results and plot them as needed.
 #
