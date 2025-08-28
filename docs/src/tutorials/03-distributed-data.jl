@@ -67,18 +67,18 @@ dmapreduce(di, d -> mapslices(sum, d, dims = 1), +) ./ dmapreduce(di, x->size(x,
 using GigaSOM
 som = init(di, 10, 10, seed = 12345)
 train(som, di)
-mapping = assign(som, di)
+clustering = assign(som, di)
 
 # Given a metaclustering (as produced in the [flow cytometry
-# tutorial](02-flow-data.md), we can transform the mapping to SOM clusters to
-# the mapping to metaclusters. (For simplicity, we use a random metaclustering
+# tutorial](02-flow-data.md), we can transform the clustering to SOM clusters to
+# the clustering to metaclusters. (For simplicity, we use a random metaclustering
 # here.)
 
 import Random
 Random.seed!(12345); # set a seed for reproducibility of rand()
 
 meta_clusters = rand(1:5, 100);
-dtransform(mapping, m -> meta_clusters[m])
+dtransform(clustering, m -> meta_clusters[m])
 
 # The computation is automatically run over the 2 distributed partitions of the
 # dataset.
@@ -91,12 +91,12 @@ dtransform(mapping, m -> meta_clusters[m])
 # for separate clusters (in rows) and data columns (in columns):
 
 sums_counts = dmapreduce(
-    [di, mapping],
-    (d, mapping) -> DistributedData.catmapbuckets(
+    [di, clustering],
+    (d, clustering) -> DistributedData.catmapbuckets(
         (_, clust) -> (sum(clust), length(clust)),
         d,
         5,
-        mapping,
+        clustering,
     ),
     (a, b) -> (((as, al), (bs, bl)) -> ((as+bs), (al+bl))).(a, b),
 )
@@ -120,13 +120,13 @@ dmedian(di, [1, 2, 3, 4])
 # different clusters. This computes the per-cluster standard deviations of the
 # dataset:
 
-(means, sds) = dstat_buckets(di, 5, mapping, [1, 2, 3, 4])
+(means, sds) = dstat_buckets(di, 5, clustering, [1, 2, 3, 4])
 
 # In the result, we can count 4 "nice" clusters, and 6 clusters that span 2 of
 # the original clusters, totally giving 16. (Hypercube validation succeeded!)
 #
 # A similar bucketed version is available for computation of medians:
-dmedian_buckets(di, 5, mapping, [1, 2, 3, 4])
+dmedian_buckets(di, 5, clustering, [1, 2, 3, 4])
 
 # Note that the cluster medians are similar to means, except for the cases when
 # the cluster is formed by 2 actual data aggregations (e.g. on the second row),
@@ -136,4 +136,4 @@ dmedian_buckets(di, 5, mapping, [1, 2, 3, 4])
 
 # Finally, we can remove the temporary data from workers to create free memory
 # for other analyses:
-unscatter(mapping)
+unscatter(clustering)
