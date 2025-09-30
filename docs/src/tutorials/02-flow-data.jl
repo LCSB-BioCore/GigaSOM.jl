@@ -189,7 +189,7 @@ som_clusters = assign(som, di)
 # collect the expressions and embedding into a single dataframe and plot them
 # as usual:
 
-using AlgebraOfGraphics, GLMakie, DataFrames
+using AlgebraOfGraphics, CairoMakie, DataFrames
 
 e = embed(som, di)
 
