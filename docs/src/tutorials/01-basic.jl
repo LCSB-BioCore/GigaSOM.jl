@@ -97,7 +97,7 @@ e = embed(som, d)
 @test maximum(e) < 22 #src
 
 # The 2D coordinates may be plotted using any standard plotting library. In the
-# following example we show how to do that with `Vizagrams.jl`:
+# following example we show how to do that with AlgebraOfGraphics package:
 
 using AlgebraOfGraphics, GLMakie, DataFrames
 
