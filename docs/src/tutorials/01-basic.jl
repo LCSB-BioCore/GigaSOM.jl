@@ -99,7 +99,7 @@ e = embed(som, d)
 # The 2D coordinates may be plotted using any standard plotting library. In the
 # following example we show how to do that with `Vizagrams.jl`:
 
-using AlgebraOfGraphics, CairoMakie, DataFrames
+using AlgebraOfGraphics, GLMakie, DataFrames
 
 embedded_data = [DataFrame(e, [:x, :y]) DataFrame(d, [:v1, :v2, :v3, :v4])]
 
