@@ -72,16 +72,16 @@ A comprehensive documentation is [available online](https://lcsb-biocore.github.
 A very basic dataset (Levine13 from [FR-FCM-ZZPH](https://flowrepository.org/id/FR-FCM-ZZPH)) can be loaded, clustered and visualized as such:
 
 ```julia
-using GigaSOM
+import GigaSOM
 
-params, fcsmatrix = loadFCS("Levine_13dim.fcs")  # load the FCS file
+params, fcsmatrix = GigaSOM.load_fcs("Levine_13dim.fcs")  # load the FCS file
 
 exprs = fcsmatrix[:,1:13]  # extract only the data columns with expression values
 
-som = initGigaSOM(exprs, 20, 20)    # random initialization of the SOM codebook
-som = trainGigaSOM(som, exprs)      # SOM training
-clusters = mapToGigaSOM(som, exprs) # extraction of per-cell cluster IDs
-e = embedGigaSOM(som, exprs)        # EmbedSOM projection to 2D
+som = GigaSOM.init(exprs, 20, 20)     # initiali ze the SOM codebook randomly
+som = GigaSOM.train(som, exprs)       # train the SOM over the data
+clusters = GigaSOM.assign(som, exprs) # extract per-cell cluster IDs
+e = GigaSOM.embed(som, exprs)         # make a 2D projection with EmbedSOM
 ```
 
 The example loads the data, runs the SOM training (as in FlowSOM) and computes a 2D projection of the dataset (using EmbedSOM); the total computation time (excluding the possible precompilation of the libraries) should be around 15 seconds.
@@ -100,6 +100,6 @@ savePNG("Levine13-CD4.png",
       expressionPalette(100, alpha=0.5)))))   # colors for plotting (based on RdYlBu)
 ```
 
-The output may look like this (blue is negative expresison, red is positive):
+The output may look like this (blue is negative expresison of CD4, red is positive):
 
 ![Levine13 embedding with CD4 highlighted](docs/src/assets/Levine13-CD4.png "Levine13/CD4")
