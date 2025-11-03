@@ -1,25 +1,19 @@
 """
-    Som
+$(TYPEDEF)
 
 Structure to hold all data of a trained SOM.
 
 # Fields:
-- `codes::Array{Float64,2}`: 2D-array of codebook vectors. One vector per row
-- `xdim::Int`: number of neurons in x-direction
-- `ydim::Int`: number of neurons in y-direction
-- `numCodes::Int`: total number of neurons
-- `grid::Array{Float64,2}`: 2D-array of coordinates of neurons on the map
-          (2 columns (x,y)] for rectangular and hexagonal maps
-           3 columns (x,y,z) for spherical maps)
+$(TYPEDFIELDS)
 """
-mutable struct Som
+mutable struct SOM
     codes::Matrix{Float64}
     xdim::Int
     ydim::Int
     numCodes::Int
     grid::Matrix{Float64}
 
-    Som(;
+    SOM(;
         codes::Matrix{Float64},
         xdim::Int,
         ydim::Int,
@@ -28,7 +22,9 @@ mutable struct Som
     ) = new(codes, xdim, ydim, numCodes, grid)
 end
 
-Base.copy(som::Som) = Som(
+export SOM
+
+Base.copy(som::SOM) = SOM(
     codes = som.codes,
     xdim = som.xdim,
     ydim = som.ydim,

@@ -4,7 +4,7 @@
     W = addprocs(2)
     @everywhere using GigaSOM
 
-    som = initGigaSOM(pbmc8_data, 10, 10, seed = 1234)
+    som = init(pbmc8_data, 10, 10, seed = 1234)
 
     @testset "Check SOM dimensions" begin
         @test size(som.codes) == (100, 10)
@@ -13,11 +13,11 @@
         @test som.numCodes == 100
     end
 
-    som = trainGigaSOM(som, pbmc8_data, epochs = 2, rStart = 6.0)
+    som = train(som, pbmc8_data, epochs = 2, rStart = 6.0)
 
-    winners = mapToGigaSOM(som, pbmc8_data)
+    winners = assign(som, pbmc8_data)
 
-    embed = embedGigaSOM(som, pbmc8_data)
+    e = embed(som, pbmc8_data)
 
     @testset "Check results" begin
         codes = som.codes
@@ -25,9 +25,9 @@
 
         dfCodes = DataFrame(codes, :auto)
         rename!(dfCodes, Symbol.(antigens))
-        dfEmbed = DataFrame(embed, :auto)
+        dfEmbed = DataFrame(e, :auto)
         CSV.write(genDataPath * "/parallelDfCodes.csv", dfCodes)
-        CSV.write(genDataPath * "/parallelWinners.csv", winners)
+        CSV.write(genDataPath * "/parallelWinners.csv", DataFrame(index = winners))
         CSV.write(genDataPath * "/parallelEmbedded.csv", dfEmbed)
 
         # load the ref data

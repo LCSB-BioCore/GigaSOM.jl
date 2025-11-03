@@ -1,36 +1,29 @@
-using GigaSOM, DataFrames, XLSX, CSV, Test, Random, Distributed, DistributedData
-using FileIO, DataFrames, Distances
-using JSON, SHA
-import LinearAlgebra
 
-owd = pwd()
+using Test
+using Aqua
+import GigaSOM
 
-"""
-Check if the `pwd()` is the `/test` directory, and if not it changes to it.
-"""
-function checkDir()
-    files = readdir()
-    if !in("runtests.jl", files)
-        cd(dirname(dirname(pathof(GigaSOM))))
+# helper functions for running tests en masse
+print_timing(fn, t) = @info "$(fn) done in $(round(t; digits = 2))s"
+
+function run_test_file(path...)
+    fn = joinpath(path...)
+    t = @elapsed include(fn)
+    print_timing(fn, t)
+end
+
+function run_doc_examples()
+    for ex in filter(endswith(".jl"), readdir("../docs/src/tutorials", join = true))
+        @testset "docs/$(basename(ex))" begin
+            run_test_file(ex)
+        end
     end
 end
 
-checkDir()
-
 @testset "GigaSOM test suite" begin
-    include("testDataOps.jl")
-    include("testTrainutils.jl")
-    include("testSplitting.jl")
-    include("testInput.jl")
+    @testset "Documentation tests" begin
+        run_doc_examples()
+    end
 
-    #this loads the PBMC dataset required for the batch/parallel tests
-    include("testLoadPBMC8.jl")
-    include("testBatch.jl")
-    include("testParallel.jl")
-
-    #misc tests that require some of the above data too
-    include("testInputCSV.jl")
-    include("testFileSplitting.jl")
+    run_test_file("aqua.jl")
 end
-
-cd(owd)

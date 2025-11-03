@@ -1,11 +1,11 @@
 
 @testset "Single-CPU batch processing" begin
 
-    som = initGigaSOM(pbmc8_data, 10, 10, seed = 1234)
+    som = init(pbmc8_data, 10, 10, seed = 1234)
 
     #check whether the distributed version works the same
     save_at(1, :test, pbmc8_data)
-    som2 = initGigaSOM(Dinfo(:test, [1]), 10, 10, seed = 1234)
+    som2 = init(Dinfo(:test, [1]), 10, 10, seed = 1234)
     @test som.codes == som2.codes
     remove_from(1, :test)
 
@@ -16,11 +16,11 @@
         @test som.numCodes == 100
     end
 
-    som = trainGigaSOM(som, pbmc8_data, epochs = 1)
+    som = train(som, pbmc8_data, epochs = 1)
 
-    winners = mapToGigaSOM(som, pbmc8_data)
+    winners = assign(som, pbmc8_data)
 
-    embed = embedGigaSOM(som, pbmc8_data, k = 10, smooth = 0.1, adjust = 2.3, m = 4.5)
+    e = embed(som, pbmc8_data, k = 10, smooth = 0.1, adjust = 2.3, m = 4.5)
 
     @testset "Check results" begin
         codes = som.codes
@@ -28,9 +28,9 @@
 
         dfCodes = DataFrame(codes, :auto)
         rename!(dfCodes, Symbol.(antigens))
-        dfEmbed = DataFrame(embed, :auto)
+        dfEmbed = DataFrame(e, :auto)
         CSV.write(genDataPath * "/batchDfCodes.csv", dfCodes)
-        CSV.write(genDataPath * "/batchWinners.csv", winners)
+        CSV.write(genDataPath * "/batchWinners.csv", DataFrame(index = winners))
         CSV.write(genDataPath * "/batchEmbedded.csv", dfEmbed)
 
         #load the ref data

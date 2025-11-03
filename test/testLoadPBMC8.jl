@@ -1,4 +1,6 @@
 
+import GigaSOM: read_fcs_header
+
 # This loads the PBMC8 dataset that is used for later tests
 
 checkDir()
@@ -42,7 +44,7 @@ end
 fileNames = readdir()
 csDict = Dict{String,Any}()
 for f in fileNames
-    if f[end-3:end] == ".fcs" || f[end-4:end] == ".xlsx"
+    if f[(end-3):end] == ".fcs" || f[(end-4):end] == ".xlsx"
         cs = bytes2hex(sha256(f))
         csDict[f] = cs
     end
@@ -56,13 +58,13 @@ end
 md = DataFrame(XLSX.readtable("PBMC8_metadata.xlsx", "Sheet1", infer_eltypes = true))
 panel = DataFrame(XLSX.readtable("PBMC8_panel.xlsx", "Sheet1", infer_eltypes = true))
 
-antigens = panel[panel[:, :Lineage].==1, :Antigen]
-_, fcsParams = loadFCSHeader(md[1, :file_name])
-_, fcsAntigens = getMarkerNames(getMetaData(fcsParams))
-cleanNames!(antigens)
-cleanNames!(fcsAntigens)
+antigens = panel[panel[:, :Lineage] .== 1, :Antigen]
+_, fcsParams = read_fcs_header(md[1, :file_name])
+_, fcsAntigens = fcs_metadata_marker_names(fcs_column_metadata(fcsParams))
+clean_names!(antigens)
+clean_names!(fcsAntigens)
 
-di = loadFCSSet(:fcsData, md[:, :file_name], [myid()])
+di = load_fcs_distributed(:fcsData, md[:, :file_name], [myid()])
 
 #prepare the data a bit
 dselect(di, fcsAntigens, antigens)
@@ -74,11 +76,11 @@ pbmc8_data = gather_array(di)
 unscatter(di)
 
 @testset "load-time columns normalization" begin
-    di = loadFCSSet(
+    di = load_fcs_distributed(
         :fcsData,
         md[:, :file_name],
         [myid()],
-        postLoad = selectFCSColumns(antigens),
+        postLoad = select_fcs_columns(antigens),
     )
     dtransform_asinh(di, cols, 5)
     dscale(di, cols)

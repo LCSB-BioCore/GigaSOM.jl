@@ -1,12 +1,31 @@
-![GigaSOM.jl](https://webdav-r3lab.uni.lu/public/GigaSOM/img/logo-GigaSOM.jl.png?maxAge=0)
 
-# GigaSOM.jl <br> Huge-scale, high-performance flow cytometry clustering
+<div align="center">
+    <img src="docs/src/assets/logo.svg?maxAge=0" width="20%">
+</div>
 
-GigaSOM is a Julia toolkit for clustering and visualisation of really large cytometry data. Most generally, it can load FCS files, perform transformation and cleaning operations in their contents, run FlowSOM-style clustering, and visualize and export the results. GigaSOM is distributed and parallel in nature, which makes processing huge datasets a breeze -- a hundred of millions of cells with a few dozen parameters can be clustered and visualized in a few minutes.
+# GigaSOM.jl: Huge-scale, high-performance flow cytometry clustering
 
-| **Documentation** | **Test Coverage** | **CI** | **SciCrunch** |
+[docs-img-stable]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-url-stable]: https://lcsb-biocore.github.io/GigaSOM.jl
+[docs-img-dev]: https://img.shields.io/badge/docs-latest-0af.svg
+[docs-url-dev]: https://lcsb-biocore.github.io/GigaSOM.jl/dev/
+[docs-img-tutorials]: https://img.shields.io/badge/docs-tutorial-0dd.svg
+[docs-url-tutorials]: https://lcsb-biocore.github.io/GigaSOM.jl/stable/tutorials/
+
+[ci-img]: https://github.com/LCSB-BioCore/GigaSOM.jl/actions/workflows/ci.yml/badge.svg?branch=master
+[ci-url]: https://github.com/LCSB-BioCore/GigaSOM.jl/actions/workflows/ci.yml
+
+[cov-img]: https://codecov.io/gh/LCSB-BioCore/GigaSOM.jl/branch/master/graph/badge.svg?token=H3WSWOBD7L
+[cov-url]: https://codecov.io/gh/LCSB-BioCore/GigaSOM.jl
+
+[rrid-img]: https://img.shields.io/badge/RRID-SCR__019020-72c02c
+[rrid-url]: https://scicrunch.org/resolver/RRID:SCR_019020
+
+| **Documentation** | **Test Coverage** | **CI** | **SciCrunch RRID** |
 |:-----------------:|:-----------------:|:-----------------------------------------------------:|:--------:|
-| [![doc](https://img.shields.io/badge/doc-GigaSOM-blue)](http://git.io/GigaSOM.jl) | [![coverage status](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl/coverage.svg?branch=master)](http://codecov.io/github/LCSB-BioCore/GigaSOM.jl?branch=master) | [![linux](https://github.com/LCSB-BioCore/GigaSOM.jl/workflows/CI/badge.svg?branch=master)](https://github.com/LCSB-BioCore/GigaSOM.jl/actions) | [![rrid](https://img.shields.io/badge/RRID-SCR__019020-72c02c)](https://scicrunch.org/resolver/RRID:SCR_019020) |
+| [![stable documentation][docs-img-stable]][docs-url-stable] [![dev documentation][docs-img-dev]][docs-url-dev]  [![tutorials][docs-img-tutorials]][docs-url-tutorials] | [![coverage status][cov-img]][cov-url] | [![CI status][ci-img]][ci-url] | [![rrid][rrid-img]][rrid-url] |
+
+GigaSOM is a Julia toolkit for clustering and visualisation of really large datasets from flow cytometry. In overview, it can load FCS files, perform transformation and cleaning operations in their contents, run FlowSOM-style clustering, and visualize and export the results. GigaSOM is distributed and parallel in nature, which makes processing of huge datasets a breeze -- a few hundred of millions of cells with a few dozen parameters may be clustered and visualized in minutes.
 
 If you use GigaSOM.jl and want to refer to it in your work, use the following citation format (also available as BibTeX in [gigasom.bib](gigasom.bib)):
 
@@ -14,37 +33,23 @@ If you use GigaSOM.jl and want to refer to it in your work, use the following ci
 
 # How to get started
 
-## Prerequisites and requirements
-
-- **Operating system**: Use Linux (Debian, Ubuntu or centOS), MacOS, or Windows 10 as your operating system. GigaSOM has been tested on these systems.
-- **Julia language**: In order to use GigaSOM, you need to install Julia 1.0 or higher. You can find the download and installation instructions for Julia [here](https://julialang.org/downloads/).
-- **Hardware requirements**: GigaSOM runs on any hardware that can run Julia, and can easily use resources from multiple computers interconnected by network. For processing large datasets, you require to ensure that the total amount of available RAM on all involved computers is larger than the data size.
-
-:bulb: If you are new to Julia, it is adviseable to [familiarize youself with
-the environment
-first](https://docs.julialang.org/en/v1/manual/getting-started/).  Use the full
-Julia [documentation](https://docs.julialang.org) to solve various possible
-language-related problems, and the [Julia package manager
-docs](https://julialang.github.io/Pkg.jl/v1/getting-started/) to solve
-installation-related difficulties.
+As a major prerequisite, you will need to be able to run [Julia](https://julialang.org/). The environment is quite similar to other languages (R, Python, Matlab) and it is usually quite easy to start by following the [official user guide]().
 
 ## Installation
 
-Using the Julia package manager to install GigaSOM is easy -- after starting Julia, type:
+To install Julia, you can [download it from the official website](https://julialang.org/downloads/) or use your system's package manager to install one. Aim for using Julia version at least 1.6.
 
+To install GigaSOM.jl, start Julia and type:
 ```julia
 import Pkg; Pkg.add("GigaSOM");
 ```
 
-> All these commands should be run from Julia at the `julia>` prompt.
-
-Then you can load the GigaSOM package and start using it:
-
+After the installation finishes, you should be able to load GigaSOM package using:
 ```julia
 using GigaSOM
 ```
 
-The first loading of the GigaSOM package may take several minutes to complete due to precompilation of the sources, especially on a fresh Julia install.
+The first loading of the GigaSOM package may take some time (a few minutes) to complete due to precompilation of the sources, especially if your Julia installation is new.
 
 ### Test the installation
 
@@ -62,21 +67,21 @@ global_logger(ConsoleLogger(stderr, Logging.Debug))
 
 ## How to use GigaSOM
 
-A comprehensive documentation is [available online](https://lcsb-biocore.github.io/GigaSOM.jl/); several [introductory tutorials](https://lcsb-biocore.github.io/GigaSOM.jl/latest/tutorials/basicUsage/) of increasing complexity are also included.
+A comprehensive documentation is [available online](https://lcsb-biocore.github.io/GigaSOM.jl/); several [introductory tutorials](https://lcsb-biocore.github.io/GigaSOM.jl/latest/tutorials/) of increasing complexity are also included.
 
 A very basic dataset (Levine13 from [FR-FCM-ZZPH](https://flowrepository.org/id/FR-FCM-ZZPH)) can be loaded, clustered and visualized as such:
 
 ```julia
-using GigaSOM
+import GigaSOM
 
-params, fcsmatrix = loadFCS("Levine_13dim.fcs")  # load the FCS file
+params, fcsmatrix = GigaSOM.load_fcs("Levine_13dim.fcs")  # load the FCS file
 
 exprs = fcsmatrix[:,1:13]  # extract only the data columns with expression values
 
-som = initGigaSOM(exprs, 20, 20)    # random initialization of the SOM codebook
-som = trainGigaSOM(som, exprs)      # SOM training
-clusters = mapToGigaSOM(som, exprs) # extraction of per-cell cluster IDs
-e = embedGigaSOM(som, exprs)        # EmbedSOM projection to 2D
+som = GigaSOM.init(exprs, 20, 20)     # initiali ze the SOM codebook randomly
+som = GigaSOM.train(som, exprs)       # train the SOM over the data
+clusters = GigaSOM.assign(som, exprs) # extract per-cell cluster IDs
+e = GigaSOM.embed(som, exprs)         # make a 2D projection with EmbedSOM
 ```
 
 The example loads the data, runs the SOM training (as in FlowSOM) and computes a 2D projection of the dataset (using EmbedSOM); the total computation time (excluding the possible precompilation of the libraries) should be around 15 seconds.
@@ -95,10 +100,6 @@ savePNG("Levine13-CD4.png",
       expressionPalette(100, alpha=0.5)))))   # colors for plotting (based on RdYlBu)
 ```
 
-The output may look like this (blue is negative expresison, red is positive):
+The output may look like this (blue is negative expresison of CD4, red is positive):
 
 ![Levine13 embedding with CD4 highlighted](docs/src/assets/Levine13-CD4.png "Levine13/CD4")
-
-## Feedback, issues, questions
-
-Please follow the [contributing guide](.github/CONTRIBUTING.md) when you have questions, want to raise issues, or just want to leave us some feedback!

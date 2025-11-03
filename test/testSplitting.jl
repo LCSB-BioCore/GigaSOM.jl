@@ -1,4 +1,6 @@
 
+import GigaSOM: slicesof, vcollect_slice
+
 @testset "Dataset splitting helpers" begin
 
     @testset "slice computation" begin
@@ -34,8 +36,8 @@
     @testset "slice collection" begin
         s = slicesof([4, 4], 3)
 
-        @test vcollectSlice(i -> repeat([i], 4), s[1])[:, 1] == [1, 1, 1]
-        @test vcollectSlice(i -> repeat([i], 4), s[2])[:, 1] == [1, 2, 2]
-        @test vcollectSlice(i -> repeat([i], 4), s[3])[:, 1] == [2, 2]
+        @test vcollect_slice(i -> repeat([i], 4), s[1])[:, 1] == [1, 1, 1]
+        @test vcollect_slice(i -> repeat([i], 4), s[2])[:, 1] == [1, 2, 2]
+        @test vcollect_slice(i -> repeat([i], 4), s[3])[:, 1] == [2, 2]
     end
 end

@@ -1,31 +1,48 @@
-using Documenter, GigaSOM
+using Documenter, Literate, GigaSOM
 
-makedocs(modules = [GigaSOM],
-        clean = false,
-        format = Documenter.HTML(prettyurls = !("local" in ARGS),
-                canonical = "https://lcsb-biocore.github.io/GigaSOM.jl/stable/",
-                assets = ["assets/gigasomlogotransp.ico"]),
+tutorial_path = joinpath(@__DIR__, "src", "tutorials")
+
+tutorials = sort(filter(x -> endswith(x, ".jl"), readdir(tutorial_path, join = true)))
+
+for tutorial in tutorials
+    Literate.markdown(
+        tutorial,
+        tutorial_path,
+        repo_root_url = "https://github.com/LCSB-BioCore/GitaSOM.jl/blob/master",
+    )
+end
+
+tutorial_mds = "tutorials/" .* first.(splitext.(basename.(tutorials))) .* ".md"
+
+withenv("COLUMNS" => 150) do
+    makedocs(
+        modules = [GigaSOM],
+        format = Documenter.HTML(
+            ansicolor = true,
+            canonical = "https://lcsb-biocore.github.io/GigaSOM.jl/stable/",
+            assets = ["assets/gigasomlogotransp.ico"],
+            example_size_threshold = nothing,
+            size_threshold_warn = 10 * 1024 * 1024,
+            size_threshold = nothing,
+        ),
         sitename = "GigaSOM.jl",
-        authors = "The developers of GigaSOM.jl",
-        linkcheck = !("skiplinks" in ARGS),
         pages = [
-                "Home" => "index.md",
-                "Background" => "background.md",
-                "Tutorial" => [
-                    "Introduction" => "tutorials/basicUsage.md",
-                    "Cytometry data" => "tutorials/processingFCSData.md",
-                    "Advanced distributed processing" => "tutorials/distributedProcessing.md",
-                    "Conclusion" => "tutorials/whereToGoNext.md",
-                ],
-                "Functions" => "functions.md",
-                "How to contribute" => "howToContribute.md",
-                ],
-        )
+            "Home" => "index.md",
+            "Background" => "background.md",
+            "Tutorials" => [
+                "Contents" => "tutorials.md"
+                tutorial_mds
+            ],
+            "Further reading" => "nextsteps.md",
+            "Reference" => "reference.md",
+        ],
+        warnonly = [:linkcheck, :cross_references, :missing_docs], #TODO fix
+    )
+end
 
 deploydocs(
     repo = "github.com/LCSB-BioCore/GigaSOM.jl.git",
     target = "build",
     branch = "gh-pages",
-    devbranch = "develop",
-    push_preview = true
+    devbranch = "master",
 )

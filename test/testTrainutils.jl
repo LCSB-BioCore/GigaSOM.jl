@@ -1,37 +1,37 @@
 @testset "SOM training helper functions" begin
 
-    @testset "gridRectangular" begin
-        grid = GigaSOM.gridRectangular(5, 5)
+    @testset "grid_rectangular" begin
+        grid = GigaSOM.grid_rectangular(5, 5)
         @test size(grid) == (25, 2)
     end
 
     @testset "Kernels" begin
         @test isapprox(
-            gaussianKernel(Vector{Float64}(1:7), 2.0),
+            kernel_gaussian(Vector{Float64}(1:7), 2.0),
             [0.1760326, 0.1209853, 0.0647587, 0.0269954, 0.0087641, 0.0022159, 0.0004363],
             atol = 1e-4,
         )
         @test isapprox(
-            bubbleKernel(Vector{Float64}(1:6), 5.0),
+            kernel_bubble(Vector{Float64}(1:6), 5.0),
             [0.979796, 0.916515, 0.8, 0.6, 0, 0],
             atol = 0.001,
         )
         @test isapprox(
-            thresholdKernel(Vector{Float64}(1:10), 5.0),
+            kernel_threshold(Vector{Float64}(1:10), 5.0),
             [1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
             atol = 1e-3,
         )
         @test isapprox(
-            thresholdKernel(Vector{Float64}(1:10), 10.1),
+            kernel_threshold(Vector{Float64}(1:10), 10.1),
             [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0],
             atol = 1e-3,
         )
     end
 
     @testset "Radii-generating functions" begin
-        radii1 = expRadius().(5.0, 0.5, Vector(1:10), 10)
-        radii2 = expRadius(-10.0).(10.0, 0.1, Vector(1:20), 20)
-        radii3 = linearRadius.(50.0, 0.001, Vector(1:30), 30)
+        radii1 = radius_exp().(5.0, 0.5, Vector(1:10), 10)
+        radii2 = radius_exp(-10.0).(10.0, 0.1, Vector(1:20), 20)
+        radii3 = radius_linear.(50.0, 0.001, Vector(1:30), 30)
         @test isapprox(radii1[1], 5.0)
         @test isapprox(radii1[10], 0.5)
         @test isapprox(radii2[1], 10.0)
@@ -43,9 +43,9 @@
         @test all(isapprox.(radii3[1:29] .- radii3[2:30], radii3[1] - radii3[2]))
     end
 
-    @testset "distMatrix" begin
-        g = GigaSOM.gridRectangular(2, 2)
-        dm = GigaSOM.distMatrix(Euclidean())(g)
+    @testset "distance_matrix" begin
+        g = GigaSOM.grid_rectangular(2, 2)
+        dm = GigaSOM.distance_matrix(Euclidean())(g)
         @test size(dm) == (4, 4)
         @test all([dm[i, i] == 0 for i = 1:4])
     end

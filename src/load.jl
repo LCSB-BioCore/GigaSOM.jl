@@ -1,9 +1,9 @@
 """
-    loadFCSHeader(fn::String)::Tuple{Vector{Int}, Dict{String,String}}
+$(TYPEDSIGNATURES)
 
 Efficiently extract data offsets and keyword dictionary from an FCS file.
 """
-function loadFCSHeader(fn::String)::Tuple{Vector{Int},Dict{String,String}}
+function read_fcs_header(fn::String)::Tuple{Vector{Int},Dict{String,String}}
     open(fn) do io
         offsets = FCSFiles.parse_header(io)
         params = FCSFiles.parse_text(io, offsets[1], offsets[2])
@@ -13,12 +13,12 @@ function loadFCSHeader(fn::String)::Tuple{Vector{Int},Dict{String,String}}
 end
 
 """
-    getFCSSize(offsets, params)::Tuple{Int,Int}
+$(TYPEDSIGNATURES)
 
 Convert the offsets and keywords from an FCS file to cell and parameter count,
 respectively.
 """
-function getFCSSize(offsets, params)::Tuple{Int,Int}
+function read_fcs_size(offsets, params)::Tuple{Int,Int}
     nData = parse(Int, params["\$TOT"])
     nParams = parse(Int, params["\$PAR"])
 
@@ -46,21 +46,21 @@ function getFCSSize(offsets, params)::Tuple{Int,Int}
 end
 
 """
-    loadFCSSizes(fns::Vector{String})
+$(TYPEDSIGNATURES)
 
 Load cell counts in many FCS files at once. Useful as input for `slicesof`.
 """
-function loadFCSSizes(fns::Vector{String})::Vector{Int}
+function read_fcs_sizes(fns::Vector{String})::Vector{Int}
     [(
         begin
-            o, s = loadFCSHeader(fn)
-            getFCSSize(o, s)[1]
+            o, s = read_fcs_header(fn)
+            read_fcs_size(o, s)[1]
         end
     ) for fn in fns]
 end
 
 """
-    loadFCS(fn::String; applyCompensation::Bool=true)::Tuple{Dict{String,String}, Matrix{Float64}}
+$(TYPEDSIGNATURES)
 
 Read a FCS file. Return a tuple that contains in order:
 
@@ -73,15 +73,15 @@ If `applyCompensation` is set, the function parses and retrieves a spillover
 matrix (if any valid keyword in the FCS is found that would contain it) and
 applies it to compensate the data.
 """
-function loadFCS(
+function load_fcs(
     fn::String;
     applyCompensation::Bool = true,
 )::Tuple{Dict{String,String},Matrix{Float64}}
     fcs = FileIO.load(fn)
-    meta = getMetaData(fcs.params)
+    meta = fcs_column_metadata(fcs.params)
     data = hcat(map(x -> Vector{Float64}(fcs.data[x]), meta[:, :N])...)
     if applyCompensation
-        spill = getSpillover(fcs.params)
+        spill = fcs_spillover(fcs.params)
         if spill != nothing
             names, mtx = spill
             cols = indexin(names, meta[:, :N])
@@ -95,19 +95,21 @@ function loadFCS(
     return (fcs.params, data)
 end
 
+export load_fcs
+
 """
-    loadFCSSet(name::Symbol, fns::Vector{String}, pids=workers(); applyCompensation=true, postLoad=(d,i)->d)::Dinfo
+$(TYPEDSIGNATURES)
 
 This runs the FCS loading machinery in a distributed way, so that the files
 `fns` (with full path) are sliced into equal parts and saved as a distributed
 variable `name` on workers specified by `pids`.
 
-`applyCompensation` is passed to loadFCS function.
+`applyCompensation` is passed to load_fcs function.
 
 See `slicesof` for description of the slicing.
 
 `postLoad` is applied to the loaded FCS file data (and the index) -- use this
-function to e.g. filter out certain columns right on loading, using `selectFCSColumns`.
+function to e.g. filter out certain columns right on loading, using `select_fcs_columns`.
 
 The loaded dataset can be manipulated by the distributed functions, e.g.
 - `dselect` for removing columns
@@ -115,24 +117,24 @@ The loaded dataset can be manipulated by the distributed functions, e.g.
 - `dtransform_asinh` (and others) for transformation
 - etc.
 """
-function loadFCSSet(
+function load_fcs_distributed(
     name::Symbol,
     fns::Vector{String},
     pids = workers();
     applyCompensation = true,
     postLoad = (d, i) -> d,
 )::Dinfo
-    slices = slicesof(loadFCSSizes(fns), length(pids))
+    slices = slicesof(read_fcs_sizes(fns), length(pids))
     dmap(
         slices,
         (slice) -> Base.eval(
             Main,
             :(
                 begin
-                    $name = vcollectSlice(
+                    $name = GigaSOM.vcollect_slice(
                         (i) -> last(
                             $postLoad(
-                                loadFCS($fns[i]; applyCompensation = $applyCompensation),
+                                load_fcs($fns[i]; applyCompensation = $applyCompensation),
                                 i,
                             ),
                         ),
@@ -147,18 +149,20 @@ function loadFCSSet(
     return Dinfo(name, pids)
 end
 
-"""
-    selectFCSColumns(selectColnames::Vector{String})
+export load_fcs_distributed
 
-Return a function useful with `loadFCSSet`, which loads only the specified
-(prettified) column names from the FCS files. Use `getMetaData`,
-`getMarkerNames` and `cleanNames!` to retrieve the usable column names for a
+"""
+$(TYPEDSIGNATURES)
+
+Return a function useful with `load_fcs_distributed`, which loads only the specified
+(prettified) column names from the FCS files. Use `fcs_column_metadata`,
+`fcs_metadata_marker_names` and `clean_names!` to retrieve the usable column names for a
 FCS.
 """
-function selectFCSColumns(selectColnames::Vector{String})
+function select_fcs_columns(selectColnames::Vector{String})
     ((metadata, data), idx) -> begin
-        _, names = getMarkerNames(getMetaData(metadata))
-        cleanNames!(names)
+        _, names = fcs_metadata_marker_names(fcs_column_metadata(metadata))
+        clean_names!(names)
         colIdxs = indexin(selectColnames, names)
         if any(colIdxs .== nothing)
             @error "Some columns were not found"
@@ -168,27 +172,33 @@ function selectFCSColumns(selectColnames::Vector{String})
     end
 end
 
+export select_fcs_columns
+
 """
-    distributeFCSFileVector(name::Symbol, fns::Vector{String}, pids=workers())::Dinfo
+$(TYPEDSIGNATURES)
 
 Distribute a vector of integers among the workers that describes which file
 from `fns` the cell comes from. Useful for producing per-file statistics. The
 vector is saved on workers specified by `pids` as a distributed variable
 `name`.
 """
-function distributeFCSFileVector(name::Symbol, fns::Vector{String}, pids = workers())::Dinfo
-    sizes = loadFCSSizes(fns)
+function fcs_filevector_distribute(
+    name::Symbol,
+    fns::Vector{String},
+    pids = workers(),
+)::Dinfo
+    sizes = read_fcs_sizes(fns)
     slices = slicesof(sizes, length(pids))
-    return distributeFileVector(name, sizes, slices, pids)
+    return filevector_distribute(name, sizes, slices, pids)
 end
 
 """
-    distributeFileVector(name::Symbol, sizes::Vector{Int}, slices::Vector{Tuple{Int,Int,Int,Int}}, pids=workers())::Dinfo
+$(TYPEDSIGNATURES)
 
-Generalized version of `distributeFCSFileVector` that produces the integer
+Generalized version of `fcs_filevector_distribute` that produces the integer
 vector from any `sizes` and `slices`.
 """
-function distributeFileVector(
+function filevector_distribute(
     name::Symbol,
     sizes::Vector{Int},
     slices::Vector{Tuple{Int,Int,Int,Int}},
@@ -196,24 +206,26 @@ function distributeFileVector(
 )::Dinfo
     dmap(
         slices,
-        (slice) ->
-            Base.eval(Main, :($name = collectSlice((i) -> fill(i, $sizes[i]), $slice))),
+        (slice) -> Base.eval(
+            Main,
+            :($name = GigaSOM.collect_slice((i) -> fill(i, $sizes[i]), $slice)),
+        ),
         pids,
     )
     return Dinfo(name, pids)
 end
 
 """
-    function getCSVSize(fn::String; args...)::Tuple{Int,Int}
+$(TYPEDSIGNATURES)
 
 Read the dimensions (number of rows and columns, respectively) from a CSV file
 `fn`. `args` are passed to function `CSV.file`.
 
 # Example
 
-    getCSVSize("test.csv", header=false)
+    read_csv_size("test.csv", header=false)
 """
-function getCSVSize(fn::String; args...)::Tuple{Int,Int}
+function read_csv_size(fn::String; args...)::Tuple{Int,Int}
     n = 0
     k = 0
     # ideally, this will not try to load the whole CSV in the memory
@@ -227,53 +239,49 @@ function getCSVSize(fn::String; args...)::Tuple{Int,Int}
 end
 
 """
-    function loadCSVSizes(fns::Vector{String}; args...)::Vector{Int}
+$(TYPEDSIGNATURES)
 
 Determine number of rows in a list of CSV files (passed as `fns`). Equivalent
-to `loadFCSSizes`.
+to `read_fcs_sizes`.
 """
-function loadCSVSizes(fns::Vector{String}; args...)::Vector{Int}
-    [getCSVSize(fn, types = Float64; args...)[1] for fn in fns]
+function read_csv_sizes(fns::Vector{String}; args...)::Vector{Int}
+    [read_csv_size(fn, types = Float64; args...)[1] for fn in fns]
 end
 
 """
-    function loadCSV(fn::String; args...)::Matrix{Float64}
+$(TYPEDSIGNATURES)
 
-CSV equivalent of `loadFCS`. The metadata (header, column names) are not
+CSV equivalent of `load_fcs`. The metadata (header, column names) are not
 extracted. `args` are passed to `CSV.read`.
 """
-function loadCSV(fn::String; args...)::Matrix{Float64}
+function load_csv(fn::String; args...)::Matrix{Float64}
     CSV.read(fn, DataFrame, types = Float64; args...) |> Matrix{Float64}
 end
 
-"""
-    function loadCSVSet(
-        name::Symbol,
-        fns::Vector{String},
-        pids = workers();
-        postLoad = (d, i) -> d,
-        csvargs...,
-    )::Dinfo
+export load_csv
 
-CSV equivalent of `loadFCSSet`. `csvargs` are passed as keyword arguments to
+"""
+$(TYPEDSIGNATURES)
+
+CSV equivalent of `load_fcs_distributed`. `csvargs` are passed as keyword arguments to
 CSV-loading functions.
 """
-function loadCSVSet(
+function load_csv_distributed(
     name::Symbol,
     fns::Vector{String},
     pids = workers();
     postLoad = (d, i) -> d,
     csvargs...,
 )::Dinfo
-    slices = slicesof(loadCSVSizes(fns; csvargs...), length(pids))
+    slices = slicesof(read_csv_sizes(fns; csvargs...), length(pids))
     dmap(
         slices,
         (slice) -> Base.eval(
             Main,
             :(
                 begin
-                    $name = vcollectSlice(
-                        (i) -> $postLoad(loadCSV($fns[i]; $csvargs...), i),
+                    $name = GigaSOM.vcollect_slice(
+                        (i) -> $postLoad(load_csv($fns[i]; $csvargs...), i),
                         $slice,
                     )
                     nothing
@@ -284,3 +292,5 @@ function loadCSVSet(
     )
     return Dinfo(name, pids)
 end
+
+export load_csv_distributed

@@ -2,7 +2,7 @@
 checkDir()
 
 @testset "File loading with compensation" begin
-    _, data = loadFCS("test-compensation.fcs")
+    _, data = load_fcs("test-compensation.fcs")
     @test isapprox(
         data[:, 7:18],
         [

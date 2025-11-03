@@ -1,5 +1,5 @@
 """
-    cleanNames!(mydata::Vector{String})
+$(TYPEDSIGNATURES)
 
 Replaces problematic characters in column names, avoids duplicate names, and
 prefixes an '_' if the name starts with a number.
@@ -7,7 +7,7 @@ prefixes an '_' if the name starts with a number.
 # Arguments:
 - `mydata`: vector of names (gets modified)
 """
-function cleanNames!(mydata::Vector{String})
+function clean_names!(mydata::Vector{String})
     # replace problematic characters,
     # put "_" in front of colname in case it starts with a number
     # avoid duplicate names (add suffixes _2, _3, ...)
@@ -29,14 +29,14 @@ function cleanNames!(mydata::Vector{String})
     end
 end
 
-"""
-    getMetaData(f)
-Collect the meta data information in a more user friendly format.
+export clean_names!
 
-# Arguments:
-- `f`: input structure with `.params` and `.data` fields
 """
-function getMetaData(meta::Dict{String,String})::DataFrame
+$(TYPEDSIGNATURES)
+
+Collect the meta data information in a more user friendly format.
+"""
+function fcs_column_metadata(meta::Dict{String,String})::DataFrame
 
     # declarations and initializations
     metaKeys = keys(meta)
@@ -77,14 +77,16 @@ function getMetaData(meta::Dict{String,String})::DataFrame
     return df
 end
 
+export fcs_column_metadata
+
 """
-    getMarkerNames(meta::DataFrame)::Tuple{Vector{String}, Vector{String}}
+$(TYPEDSIGNATURES)
 
 Extract suitable raw names (useful for selecting columns) and pretty readable
 names (useful for humans) from FCS file metadata.
 
 """
-function getMarkerNames(meta::DataFrame)::Tuple{Vector{String},Vector{String}}
+function fcs_metadata_marker_names(meta::DataFrame)::Tuple{Vector{String},Vector{String}}
     orig = Array{String}(meta[:, :N])
     nice = copy(orig)
     if hasproperty(meta, :S)
@@ -97,9 +99,10 @@ function getMarkerNames(meta::DataFrame)::Tuple{Vector{String},Vector{String}}
     return (orig, nice)
 end
 
+export fcs_metadata_marker_names
 
 """
-    compensate!(data::Matrix{Float64}, spillover::Matrix{Float64}, cols::Vector{Int})
+$(TYPEDSIGNATURES)
 
 Apply a compensation matrix in `spillover` (the individual columns of which
 describe, in order, the spillover of `cols` in `data`) to the matrix `data`
@@ -109,12 +112,14 @@ function compensate!(data::Matrix{Float64}, spillover::Matrix{Float64}, cols::Ve
     data[:, cols] = data[:, cols] * inv(spillover)
 end
 
+export compensate!
+
 """
-    parseSpillover(str::String)::Union{Tuple{Vector{String},Matrix{Float64}}, Nothing}
+$(TYPEDSIGNATURES)
 
 Parses the spillover matrix from the string from FCS parameter value.
 """
-function parseSpillover(str::String)::Tuple{Vector{String},Matrix{Float64}}
+function parse_fcs_spillover(str::String)::Tuple{Vector{String},Matrix{Float64}}
     fields = split(str, ',')
     n = parse(Int, fields[1])
     if length(fields) != 1 + n + n * n
@@ -129,20 +134,33 @@ function parseSpillover(str::String)::Tuple{Vector{String},Matrix{Float64}}
 end
 
 """
-    getSpillover(params::Dict{String, String})::Union{Tuple{Vector{String},Matrix{Float64}}, Nothing}
+$(TYPEDSIGNATURES)
 
 Get a spillover matrix from FCS `params`. Returns a pair with description of
 columns to be applied, and with the actual spillover matrix. Returns `nothing`
 in case spillover is not present.
 """
-function getSpillover(
+function fcs_spillover(
     params::Dict{String,String},
 )::Union{Tuple{Vector{String},Matrix{Float64}},Nothing}
     spillNames = ["\$SPILL", "\$SPILLOVER", "SPILL", "SPILLOVER"]
     for i in spillNames
         if in(i, keys(params))
-            return parseSpillover(params[i])
+            return parse_fcs_spillover(params[i])
         end
     end
     return nothing
 end
+
+export fcs_spillover
+
+"""
+$(TYPEDSIGNATURES)
+
+Transform columns of the dataset by asinh transformation with `cofactor`.
+"""
+function dtransform_asinh(dInfo::Dinfo, columns::Vector{Int}, cofactor = 5)
+    dapply_cols(dInfo, (v, _) -> asinh.(v ./ cofactor), columns)
+end
+
+export dtransform_asinh

@@ -1,15 +1,15 @@
 """
-    initGigaSOM(data, args...)
+$(TYPEDSIGNATURES)
 
 Initializes a SOM by random selection from the training data. A generic
 overload that works for matrices and DataFrames that can be coerced to
 `Matrix{Float64}`. Other arguments are passed to the data-independent
-`initGigaSOM`.
+`init`.
 
 Arguments:
 - `data`: matrix of data for running the initialization
 """
-function initGigaSOM(data::Union{Matrix,DataFrame}, args...; kwargs...)
+function init(data::Union{Matrix,DataFrame}, args...; kwargs...)
 
     d = Matrix{Float64}(data)
 
@@ -17,33 +17,28 @@ function initGigaSOM(data::Union{Matrix,DataFrame}, args...; kwargs...)
     means = [sum(d[:, i]) / n for i = 1:ncol]
     sdevs = [sqrt(sum((d[:, i] .- means[i]) .^ 2.0) / n) for i = 1:ncol]
 
-    return initGigaSOM(ncol, means, sdevs, args...; kwargs...)
+    return init(ncol, means, sdevs, args...; kwargs...)
 end
 
 """
-    function initGigaSOM(data::Dinfo,
-                         xdim::Int64, ydim::Int64 = xdim;
-                         seed=rand(Int), rng=StableRNG(seed))
+$(TYPEDSIGNATURES)
 
-`initGigaSOM` overload for working with distributed-style `Dinfo`
+`init` overload for working with distributed-style `Dinfo`
 data. The rest of the arguments is passed to the data-independent
-`initGigaSOM`.
+`init`.
 
 Arguments:
 - `data`: a `Dinfo` object with the distributed dataset matrix
 """
-function initGigaSOM(data::Dinfo, args...; kwargs...)
+function init(data::Dinfo, args...; kwargs...)
     ncol = get_val_from(data.workers[1], :(size($(data.val))[2]))
     (means, sdevs) = dstat(data, Vector(1:ncol))
 
-    initGigaSOM(ncol, means, sdevs, args...; kwargs...)
+    init(ncol, means, sdevs, args...; kwargs...)
 end
 
 """
-    function initGigaSOM(ncol::Int64,
-                         means::Vector{Float64}, sdevs::Vector{Float64},
-                         xdim::Int64, ydim::Int64 = xdim;
-                         seed = rand(Int), rng = StableRNG(seed))
+$(TYPEDSIGNATURES)
 
 Generate a stable random initial SOM with the random distribution that matches the parameters.
 
@@ -54,9 +49,9 @@ Arguments:
 - `seed`: a seed (defaults to random seed from the current default random generator
 - `rng`: a random number generator to be used (defaults to a `StableRNG` initialized with the `seed`)
 
-Returns: a new `Som` structure
+Returns: a new `SOM` structure
 """
-function initGigaSOM(
+function init(
     ncol::Int64,
     means::Vector{Float64},
     sdevs::Vector{Float64},
@@ -67,7 +62,7 @@ function initGigaSOM(
 )
 
     numCodes = xdim * ydim
-    grid = gridRectangular(xdim, ydim)
+    grid = grid_rectangular(xdim, ydim)
 
     # Initialize with an unbiased random gaussian with same mean/sd as the data
     # in each dimension
@@ -77,51 +72,40 @@ function initGigaSOM(
         codes[:, col] .+= means[col]
     end
 
-    return Som(codes = codes, xdim = xdim, ydim = ydim, grid = grid)
+    return SOM(codes = codes, xdim = xdim, ydim = ydim, grid = grid)
 end
 
+export init
 
 """
-    trainGigaSOM(
-        som::Som,
-        dInfo::Dinfo;
-        kernelFun::Function = gaussianKernel,
-        metric = Euclidean(),
-        somDistFun = distMatrix(Chebyshev()),
-        knnTreeFun = BruteTree,
-        rStart = 0.0,
-        rFinal = 0.1,
-        radiusFun = expRadius(-5.0),
-        epochs = 20,
-        eachEpoch = (e, r, som) -> nothing,
-    )
+$(TYPEDSIGNATURES)
 
 # Arguments:
-- `som`: object of type Som with an initialised som
+- `som`: object of type SOM with an initialised som
 - `dInfo`: `Dinfo` object that describes a loaded dataset
-- `kernelFun::function`: optional distance kernel; one of (`bubbleKernel, gaussianKernel`)
-            default is `gaussianKernel`
+- `kernelFun::function`: optional distance kernel; one of (`kernel_bubble, kernel_gaussian`)
+            default is `kernel_gaussian`
 - `metric`: Passed as metric argument to the KNN-tree constructor
 - `somDistFun`: Function for computing the distances in the SOM map
 - `knnTreeFun`: Constructor of the KNN-tree (e.g. from NearestNeighbors package)
 - `rStart`: optional training radius. If zero (default), it is computed from the SOM grid size.
 - `rFinal`: target radius at the last epoch, defaults to 0.1
-- `radiusFun`: Function that generates radius decay, e.g. `linearRadius` or `expRadius(10.0)`
+- `radiusFun`: Function that generates radius decay, e.g. `radius_linear` or `radius_exp(10.0)`
 - `epochs`: number of SOM training iterations (default 10)
 - `eachEpoch`: a function to call back after each epoch, accepting arguments
   `(epochNumber, radius, som)`. For simplicity, this gets additionally called
   once before the first epoch, with `epochNumber` set to zero.
 """
-function trainGigaSOM(
-    som::Som,
+function train(
+    som::SOM,
     dInfo::Dinfo;
-    kernelFun::Function = gaussianKernel,
+    kernelFun::Function = kernel_gaussian,
     metric = Euclidean(),
-    somDistFun = distMatrix(Chebyshev()),
+    somDistFun = distance_matrix(Chebyshev()),
     knnTreeFun = BruteTree,
     rStart = 0.0,
     rFinal = 0.1,
-    radiusFun = expRadius(-5.0),
+    radiusFun = radius_exp(-5.0),
     epochs = 20,
     eachEpoch = (e, r, som) -> nothing,
 )
@@ -143,7 +127,7 @@ function trainGigaSOM(
     for epoch = 1:epochs
         @debug "Epoch $epoch..."
 
-        numerator, denominator = distributedEpoch(
+        numerator, denominator = run_epoch_distributed(
             dInfo,
             result_som.codes,
             knnTreeFun(Array{Float64,2}(transpose(result_som.codes)), metric),
@@ -166,27 +150,27 @@ function trainGigaSOM(
 end
 
 """
-    trainGigaSOM(som::Som, train;
-                 kwargs...)
+$(TYPEDSIGNATURES)
 
-Overload of `trainGigaSOM` for simple DataFrames and matrices. This slices the
-data, distributes them to the workers, and runs normal `trainGigaSOM`. Data is
+Overload of `train` for simple DataFrames and matrices. This slices the
+data, distributes them to the workers, and runs normal `train`. Data is
 `unscatter`d after the computation.
 """
-function trainGigaSOM(som::Som, train; kwargs...)
+function train(som::SOM, train_data; kwargs...)
 
-    train = Matrix{Float64}(train)
+    train_data = Matrix{Float64}(train_data)
 
     #this slices the data into parts and and sends them to workers
-    dInfo = scatter_array(:GigaSOMtrainDataVar, train, workers())
-    som_res = trainGigaSOM(som, dInfo; kwargs...)
+    dInfo = scatter_array(:GigaSOMtrainDataVar, train_data, workers())
+    som_res = train(som, dInfo; kwargs...)
     unscatter(dInfo)
     return som_res
 end
 
+export train
 
 """
-    doEpoch(x::Array{Float64, 2}, codes::Array{Float64, 2}, tree)
+$(TYPEDSIGNATURES)
 
 vectors and the adjustment in radius after each epoch.
 
@@ -195,7 +179,7 @@ vectors and the adjustment in radius after each epoch.
 - `codes`: Codebook
 - `tree`: knn-compatible tree built upon the codes
 """
-function doEpoch(x::Array{Float64,2}, codes::Array{Float64,2}, tree)
+function run_epoch(x::Array{Float64,2}, codes::Array{Float64,2}, tree)
 
     # initialise numerator and denominator with 0's
     sumNumerator = zeros(Float64, size(codes))
@@ -215,24 +199,21 @@ function doEpoch(x::Array{Float64,2}, codes::Array{Float64,2}, tree)
 end
 
 """
-    distributedEpoch(dInfo::Dinfo, codes::Matrix{Float64}, tree)
+$(TYPEDSIGNATURES)
 
-Execute the `doEpoch` in parallel on workers described by `dInfo` and collect
+Execute the `run_epoch` in parallel on workers described by `dInfo` and collect
 the results. Returns pair of numerator and denominator matrices.
 """
-function distributedEpoch(dInfo::Dinfo, codes::Matrix{Float64}, tree)
+function run_epoch_distributed(dInfo::Dinfo, codes::Matrix{Float64}, tree)
     return dmapreduce(
         dInfo,
-        (data) -> doEpoch(data, codes, tree),
+        (data) -> run_epoch(data, codes, tree),
         ((n1, d1), (n2, d2)) -> (n1 + n2, d1 + d2),
     )
 end
 
-
 """
-    mapToGigaSOM(som::Som, dInfo::Dinfo;
-        knnTreeFun = BruteTree, metric = Euclidean(),
-        output::Symbol=tmp_symbol(dInfo)::Dinfo
+$(TYPEDSIGNATURES)
 
 Compute the index of the BMU for each row of the input data.
 
@@ -246,8 +227,8 @@ Compute the index of the BMU for each row of the input data.
 Data must have the same number of dimensions as the training dataset
 and will be normalised with the same parameters.
 """
-function mapToGigaSOM(
-    som::Som,
+function assign(
+    som::SOM,
     dInfo::Dinfo;
     knnTreeFun = BruteTree,
     metric = Euclidean(),
@@ -260,14 +241,13 @@ function mapToGigaSOM(
 end
 
 """
-    mapToGigaSOM(som::Som, data;
-                 knnTreeFun = BruteTree,
-                 metric = Euclidean())
-Overload of `mapToGigaSOM` for simple DataFrames and matrices. This slices the
-data using `DistributedArrays`, sends them the workers, and runs normal
-`mapToGigaSOM`. Data is `unscatter`d after the computation.
+$(TYPEDSIGNATURES)
+
+Overload of `assign` for simple data such as DataFrames and matrices. This
+slices the data using `DistributedArrays`, sends them the workers, and runs
+normal `assign`. Data is `unscatter`d after the computation.
 """
-function mapToGigaSOM(som::Som, data; knnTreeFun = BruteTree, metric = Euclidean())
+function assign(som::SOM, data; knnTreeFun = BruteTree, metric = Euclidean())
 
     data = Matrix{Float64}(data)
 
@@ -277,23 +257,19 @@ function mapToGigaSOM(som::Som, data; knnTreeFun = BruteTree, metric = Euclidean
     end
 
     dInfo = scatter_array(:GigaSOMmappingDataVar, data, workers())
-    rInfo = mapToGigaSOM(som, dInfo, knnTreeFun = knnTreeFun, metric = metric)
+    rInfo = assign(som, dInfo, knnTreeFun = knnTreeFun, metric = metric)
     res = gather_array(rInfo)
     unscatter(dInfo)
     unscatter(rInfo)
-    return DataFrame(index = res)
+    return res
 end
 
+export assign
+
 """
-    scaleEpochTime(iteration::Int64, epochs::Int64)
+$(TYPEDSIGNATURES)
 
 Convert iteration ID and epoch number to relative time in training.
 """
-function scaleEpochTime(iteration::Int64, epochs::Int64)
-    # prevent division by zero on 1-epoch training
-    if epochs > 1
-        epochs -= 1
-    end
-
-    return Float64(iteration - 1) / Float64(epochs)
-end
+scaled_epoch_time(iteration::Int64, epochs::Int64) =
+    Float64(iteration - 1) / Float64(max(epochs - 1, 1))
