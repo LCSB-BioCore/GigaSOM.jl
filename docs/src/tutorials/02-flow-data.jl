@@ -113,19 +113,18 @@ e = gather_array(e)
 ### Download and prepare the dataset
 
 # The example data can be downloaded from
-# [imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/](http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/).
+# [imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/](http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/). For availability reasons, we mirror them also in GigaSOM repository.
 #
 # You can fetch the files directly from within Julia:
 
 dataFiles = ["PBMC8_metadata.xlsx", "PBMC8_panel.xlsx", "PBMC8_fcs_files.zip"]
 for f in dataFiles
     if !isfile(f)
-        download("http://imlspenticton.uzh.ch/robinson_lab/cytofWorkflow/"*f, f)
-        if occursin(".zip", f)
-            run(`unzip PBMC8_fcs_files.zip`)
-        end
+        download("https://github.com/LCSB-BioCore/GigaSOM.jl/raw/refs/heads/mirrored-data/"*f, f)
     end
 end
+
+run(`unzip PBMC8_fcs_files.zip`)
 
 # The metadata is present in external files; we read it into a `DataFrame` and
 # extract information about FCS data columns from there. First, we read the
