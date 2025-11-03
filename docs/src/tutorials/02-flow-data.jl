@@ -120,7 +120,10 @@ e = gather_array(e)
 dataFiles = ["PBMC8_metadata.xlsx", "PBMC8_panel.xlsx", "PBMC8_fcs_files.zip"]
 for f in dataFiles
     if !isfile(f)
-        download("https://github.com/LCSB-BioCore/GigaSOM.jl/raw/refs/heads/mirrored-data/"*f, f)
+        download(
+            "https://github.com/LCSB-BioCore/GigaSOM.jl/raw/refs/heads/mirrored-data/"*f,
+            f,
+        )
     end
 end
 
